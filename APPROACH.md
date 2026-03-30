@@ -61,6 +61,10 @@ To score in the **Excellent** band on every criterion, the team must commit to U
 - **Frontend**: Global API config grouped by business domain (`authAPI`, `gameAPI`, `profileAPI`, `adminAPI`)
 - **Frontend**: Role-based route guards (PLAYER blocked from `/admin/*`, vice versa)
 - **Frontend**: Responsive design on Profile page and **all** Admin UIs
+- **Performance**: **Zustand** for high-frequency game state (Optimistic UI + Server Reconciliation)
+- **Performance**: **Radial Local Search O(1)** algorithm for win-check to prevent server bottleneck
+- **Performance**: **Collation Index** on MongoDB for case-insensitive username searches
+- **Performance**: **Binary Compression** and disabled Nagle algorithm (`noDelay`) on Socket.IO
 
 ---
 
@@ -70,13 +74,14 @@ To score in the **Excellent** band on every criterion, the team must commit to U
 
 | Layer | Technology | Justification |
 |---|---|---|
-| Frontend | React 18 + Vite | Fast HMR, modern JSX, course-approved |
+| Frontend | React 18 + Vite | Fast HMR, modern JSX, Concurrent Rendering (useTransition) |
 | Frontend | Tailwind CSS + Bootstrap 5 | Tailwind for layout architecture; Bootstrap for standard UI elements (modal, badge, card) |
+| Frontend | **Zustand** | Zero-latency game state management (Optimistic UI) — avoids React Context re-render penalties |
 | Frontend | Axios | HTTP client with interceptor support for JWT auto-attachment |
-| Frontend | Socket.IO Client | Real-time game state sync and in-game chat |
+| Frontend | Socket.IO Client | Real-time game state sync with Client-side Prediction |
 | Backend | **Node.js + Express.js** | MEN Stack — required by SRS (section b) |
-| Backend | **MongoDB + Mongoose** | Document DB, flexible schema for game board state |
-| Backend | Socket.IO | WebSocket server for real-time multiplayer (SRS 4.3.1) |
+| Backend | **MongoDB + Mongoose** | Document DB, Bounded Array Pattern for `moves[]`, Collation Indexes for string search |
+| Backend | Socket.IO | WebSocket server (Binary Compression + `noDelay` enabled) |
 | Backend | bcrypt | Password **hashing** — SRS 1.1.3 is explicit: hashing ≠ encryption |
 | Backend | jsonwebtoken | JWS token generation with `userId` + `role` claims (SRS 2.3.1) |
 | Backend | express-rate-limit | Per-IP brute-force protection middleware (SRS 2.2.1) |
