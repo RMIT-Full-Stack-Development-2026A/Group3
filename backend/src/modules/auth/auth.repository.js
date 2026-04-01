@@ -1,0 +1,2 @@
+/** auth repository */
+module.exports = {};

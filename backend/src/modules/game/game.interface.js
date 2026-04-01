@@ -1,0 +1,2 @@
+/** game interface */
+module.exports = {};

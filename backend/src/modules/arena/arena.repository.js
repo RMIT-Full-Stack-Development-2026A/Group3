@@ -1,0 +1,2 @@
+/** arena repository */
+module.exports = {};

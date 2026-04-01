@@ -1,0 +1,2 @@
+/** profile response */
+module.exports = {};

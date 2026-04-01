@@ -1,10 +1,10 @@
-require('dotenv').config(); // Load biến môi trường từ .env
+require('dotenv').config();
 const express = require('express');
-const connectDB = require('./config/db'); // Nhúng file kết nối DB
+const connectDB = require('./src/configs/db');
 
 const app = express();
 
-// Khởi chạy kết nối Database
+// Database Connection
 connectDB();
 
 app.use(express.json());
@@ -15,5 +15,5 @@ app.get('/api/v1/health', (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`[TicTacToang] Server đang chạy tại cổng ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });

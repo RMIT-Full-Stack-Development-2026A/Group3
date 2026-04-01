@@ -1,0 +1,2 @@
+/** subscription model */
+module.exports = {};

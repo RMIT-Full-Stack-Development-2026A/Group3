@@ -1,0 +1,2 @@
+/** auth interface */
+module.exports = {};

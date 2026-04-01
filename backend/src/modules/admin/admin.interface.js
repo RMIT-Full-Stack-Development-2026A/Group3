@@ -1,0 +1,2 @@
+/** admin interface */
+module.exports = {};

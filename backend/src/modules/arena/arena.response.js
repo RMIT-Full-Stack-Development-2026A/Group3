@@ -1,0 +1,2 @@
+/** arena response */
+module.exports = {};

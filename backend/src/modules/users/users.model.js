@@ -1,0 +1,2 @@
+/** users model */
+module.exports = {};

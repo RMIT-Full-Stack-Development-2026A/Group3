@@ -1,0 +1,2 @@
+/** arena interface */
+module.exports = {};

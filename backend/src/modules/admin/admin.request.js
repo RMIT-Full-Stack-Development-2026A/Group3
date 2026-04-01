@@ -1,0 +1,2 @@
+/** admin request */
+module.exports = {};

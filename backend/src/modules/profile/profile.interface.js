@@ -1,0 +1,2 @@
+/** profile interface */
+module.exports = {};

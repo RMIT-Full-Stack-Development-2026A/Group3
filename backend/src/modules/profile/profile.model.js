@@ -1,0 +1,2 @@
+/** profile model */
+module.exports = {};

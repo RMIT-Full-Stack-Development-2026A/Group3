@@ -1,0 +1,2 @@
+/** game service */
+module.exports = {};

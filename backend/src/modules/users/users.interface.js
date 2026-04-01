@@ -1,0 +1,2 @@
+/** users interface */
+module.exports = {};

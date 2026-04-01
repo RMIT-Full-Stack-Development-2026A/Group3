@@ -1,0 +1,2 @@
+/** admin response */
+module.exports = {};

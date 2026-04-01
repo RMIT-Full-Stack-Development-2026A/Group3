@@ -1,0 +1,2 @@
+/** arena model */
+module.exports = {};

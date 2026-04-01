@@ -1,0 +1,2 @@
+/** game request */
+module.exports = {};

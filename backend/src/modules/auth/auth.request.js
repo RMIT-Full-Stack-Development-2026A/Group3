@@ -1,0 +1,2 @@
+/** auth request */
+module.exports = {};

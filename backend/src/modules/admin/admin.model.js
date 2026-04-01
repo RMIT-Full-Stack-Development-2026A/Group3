@@ -1,0 +1,2 @@
+/** admin model */
+module.exports = {};
