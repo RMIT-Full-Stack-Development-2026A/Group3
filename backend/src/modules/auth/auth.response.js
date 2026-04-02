@@ -1,2 +1,0 @@
-/** auth response */
-module.exports = {};
