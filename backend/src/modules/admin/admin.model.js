@@ -1,21 +1,19 @@
-/** admin model */
-
 import mongoose from 'mongoose';
 
-const auditLogSchema = new mongoose.Schema({
-    adminId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    action: { type: String, enum: ['BAN_USER', 'FORCE_CLOSE_ROOM', 'UPDATE_CONFIG'], required: true },
-    targetId: { type: String, required: true },
-    oldValue: { type: mongoose.Schema.Types.Mixed }, // Cho phép lưu JSON linh hoạt
-    newValue: { type: mongoose.Schema.Types.Mixed },
-    createdAt: { type: Date, default: Date.now }
-});
-
-const systemConfigSchema = new mongoose.Schema({
-    key: { type: String, required: true, unique: true },
-    value: { type: mongoose.Schema.Types.Mixed, required: true },
-    updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+const adminSchema = new mongoose.Schema({
+    username: { type: String, required: true, unique: true, index: true },
+    email: { type: String, required: true, unique: true, index: true },
+    passwordHash: { type: String, required: true },
+    role: { type: String, default: 'admin' }
 }, { timestamps: true });
 
-export const AuditLog = mongoose.model('AuditLog', auditLogSchema);
-export const SystemConfig = mongoose.model('SystemConfig', systemConfigSchema);
+const auditLogSchema = new mongoose.Schema({
+    adminId: { type: mongoose.Schema.Types.ObjectId, ref: 'admin', required: true },
+    action: { type: String, enum: ['BAN_USER', 'FORCE_CLOSE_ROOM', 'UNBAN_USER'], required: true },
+    targetId: { type: String, required: true },
+    oldValue: { type: mongoose.Schema.Types.Mixed }, // Mixed cho phép lưu Object JSON linh hoạt
+    newValue: { type: mongoose.Schema.Types.Mixed }
+}, { timestamps: true });
+
+export const Admin = mongoose.model('admin', adminSchema);
+export const AuditLog = mongoose.model('audit_log', auditLogSchema);

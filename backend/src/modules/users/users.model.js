@@ -1,5 +1,3 @@
-/** users model */
-
 import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
@@ -8,12 +6,11 @@ const userSchema = new mongoose.Schema({
     passwordHash: { type: String, required: true },
     country: { type: String, required: true },
     avatarUrl: { type: String, default: '' },
-    role: { type: String, enum: ['PLAYER', 'ADMIN'], default: 'PLAYER' },
+    role: { type: String, default: 'player' },
     isActive: { type: Boolean, default: true },
     walletBalance: { type: Number, default: 0 },
     isPremium: { type: Boolean, default: false },
-    lockedUntil: { type: Date, default: null },
-    failedLoginAttempts: { type: Number, default: 0 }
+    premiumExpiry: { type: Date, default: null }
 }, { timestamps: true });
 
-export const User = mongoose.model('User', userSchema);
+export const User = mongoose.model('user', userSchema);
