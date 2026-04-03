@@ -50,7 +50,7 @@ const checkWin = (board, row, col, marker) => {
     { dr: 0, dc: 1 },  // Horizontal
     { dr: 1, dc: 0 },  // Vertical
     { dr: 1, dc: 1 },  // Main Diagonal
-    { dr: 1, dc: -1 }  // Sub Diagonal
+    { dr: 1, dc: -1 }  // Anti-Diagonal
   ];
 
   for (const { dr, dc } of directions) {

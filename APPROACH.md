@@ -187,14 +187,7 @@ backend/
 | **DTO** | `*DTO.js` | Shape data coming in (validation) and going out (field filtering) | Persist data or enforce business rules |
 | **Interface** | `*Interface.js` | Re-export selected service functions for other modules to call | Expose internal Repository or Model |
 
-#### Module Interface Rule (SRS A.3.1)
-
-When one module needs data from another, it calls the **public interface file** of that module — never its Service directly. This preserves bounded context and prevents cascading changes across modules.
-
-- **Correct**: `gameService` needs user info → calls `authInterface.getUserById()`
-- **Incorrect**: `gameService` imports `authService` directly → breaks module isolation
-
-Each module that exposes functionality to peers must maintain an `*Interface.js` file that acts as a controlled API boundary. Only functions listed in the interface file are part of the module's public contract. This is an application of the **Facade pattern** — the interface file hides internal complexity and exposes only a curated surface.
+---
 
 ---
 

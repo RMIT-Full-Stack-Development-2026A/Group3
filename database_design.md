@@ -17,29 +17,12 @@ Dưới đây là chi tiết Attributes BẮT BUỘC cho 13 Entities, áp dụng
 *   `country`: String -> Dropdown chuẩn ISO-3166.
 *   `avatarUrl`: String -> Local path hoặc Cloud CDN link.
 *   `role`: String -> Enum `['PLAYER', 'ADMIN']` (RBAC).
-*   `isActive`: Boolean -> Admin toggle để ban/unban.
-*   `walletBalance`: Number -> Default 0. Số dư mua Premium.
-*   `isPremium`: Boolean -> Default `false`. Bộ lọc cho Replay Access (ABAC).
-*   `lockedUntil`: Date -> Account-level Brute-force lock (Ví dụ: Khóa 60s sau 5 lần sai).
-*   `failedLoginAttempts`: Number -> Reset về 0 khi đăng nhập thành công.
+*   `isActive`: Boolean -> Admin toggle để ban/unban người dùng. Nếu là `false`, người dùng không thể đăng nhập.
+*   `walletBalance`: Number -> Default 0. Dùng để nạp tiền và mua Premium.
+*   `isPremium`: Boolean -> Cờ hiệu năng (Cache flag). Được cập nhật từ bảng `subscriptions`.
+*   `premiumExpiry`: Date -> Ngày hết hạn gói Premium. Hệ thống sẽ kiểm tra flag này khi người dùng đăng nhập.
+*   `isAdmin`: Boolean -> Thay cho role nếu bạn muốn đơn giản, hoặc giữ `role: ['PLAYER', 'ADMIN']`.
 *   `createdAt`, `updatedAt`: Date.
-
-### 1.2 `userSessions`
-*Cơ chế xác thực có trạng thái (Stateful JWS) để hỗ trợ "Đăng xuất khỏi thiết bị khác".*
-*   `_id`: ObjectId (PK)
-*   `userId`: ObjectId (Ref: `users`, Indexed)
-*   `tokenSignature`: String -> Lưu chuỗi hash của JWS để đối chiếu.
-*   `ipAddress`: String -> IP lúc đăng nhập.
-*   `userAgent`: String -> Trình duyệt/Thiết bị (VD: Chrome on iPhone).
-*   `expiresAt`: Date -> **TTL Index** (MongoDB tự động xóa document này khi JWT hết hạn 24h).
-*   `isRevoked`: Boolean -> Mark là `true` khi người bấm Logout.
-
-### 1.3 `securityLogs`
-*Audit log tự động dọn dẹp để chặn High-Volume IP Brute-forcing trước khi chạm tới Controller.*
-*   `_id`: ObjectId
-*   `ipAddress`: String (Indexed)
-*   `event`: String -> Enum `['LOGIN_FAILED', 'INVALID_TOKEN']`
-*   `createdAt`: Date -> **TTL Index** (MongoDB tự xóa sau 1 giờ để không lấp đầy ổ cứng).
 
 ---
 
@@ -72,14 +55,14 @@ Dưới đây là chi tiết Attributes BẮT BUỘC cho 13 Entities, áp dụng
 *   `sessionId`: ObjectId (Nullable, Ref: `gameSessions`) -> Liên kết ván đấu khi phòng bắt đầu.
 *   `status`: String -> `['WAITING', 'PLAYING', 'CLOSED']`.
 
-### 2.3 `matchmakingTickets`
+<!-- ### 2.3 `matchmakingTickets`
 *Hàng đợi (Queue) giải quyết bài toán chắp ghép 2 người chơi ngẫu nhiên cùng level.*
 *   `_id`: ObjectId
 *   `userId`: ObjectId (Unique Index) -> Một người chỉ có 1 vé tìm trận lúc đang xếp hàng.
 *   `eloScore`: Number -> Điểm rank để ghép trận môn đăng hộ đối.
 *   `status`: String -> `['QUEUING', 'MATCHED']`.
 *   `matchedRoomId`: ObjectId -> Trả về Room khi tìm thấy đối thủ.
-*   `createdAt`: Date -> Dùng để đánh giá độ ưu tiên (Priority) ai xếp hàng lâu được ghép trước.
+*   `createdAt`: Date -> Dùng để đánh giá độ ưu tiên (Priority) ai xếp hàng lâu được ghép trước. -->
 
 ### 2.4 `chatMessages`
 *Lưu trữ log chat.*
@@ -102,13 +85,7 @@ Dưới đây là chi tiết Attributes BẮT BUỘC cho 13 Entities, áp dụng
 *   `draws`: Number
 *   `eloRating`: Number -> Điểm xếp hạng để tính toán Leaderboard (Indexed `DESC`).
 
-### 3.2 `notifications`
-*In-app Alert System (Thông báo chuông).*
-*   `_id`: ObjectId
-*   `userId`: ObjectId (Indexed)
-*   `type`: String -> `['SYSTEM', 'PREMIUM_EXPIRE']`
-*   `message`: String
-*   `isRead`: Boolean -> Đếm số chấm đỏ ở icon cái chuông.
+---
 
 ---
 
@@ -125,12 +102,18 @@ Dưới đây là chi tiết Attributes BẮT BUỘC cho 13 Entities, áp dụng
 *   `createdAt`: Date.
 
 ### 4.2 `subscriptions`
-*Theo dõi dòng đời chứng nhận Premium cho User.*
+*Ghi lại lịch sử các gói Premium đã mua. Đóng vai trò là "Bằng chứng thanh toán" (Evidence of Payment).*
 *   `_id`: ObjectId
-*   `userId`: ObjectId (Indexed)
-*   `status`: String -> `['ACTIVE', 'EXPIRED']`
-*   `validFrom`: Date
-*   `validUntil`: Date -> System quét cron-job mỗi ngày, ai qua mốc này tự bị đổi `status` -> `EXPIRED` & gửi Notification + Email bằng Nodemailer.
+*   `userId`: ObjectId (Ref: `users`, Indexed)
+*   `validFrom`: Date -> Ngày bắt đầu hiệu lực.
+*   `validUntil`: Date -> Ngày hết hạn.
+*   `status`: String -> `['ACTIVE', 'EXPIRED', 'CANCELLED']`
+*   `transactionId`: ObjectId -> (Ref: `transactions`) Liên kết với hóa đơn nạp tiền.
+
+> [!NOTE]
+> **Tư duy thiết kế HD Tier:** Tại sao có cả `isPremium` ở bảng `users` và bảng `subscriptions`?
+> 1. **Hiệu năng (Performance)**: `users.isPremium` giúp Middleware kiểm tra quyền truy cập Replay ngay lập tức mà không cần JOIN bảng Subscriptions tốn tài nguyên.
+> 2. **Minh bạch (Accountability)**: Bảng `subscriptions` lưu lại lịch sử. Nếu người dùng kiện cáo "Tôi mới mua mà sao hết hạn?", bạn có bằng chứng để đối soát.
 
 ---
 
@@ -145,13 +128,6 @@ Dưới đây là chi tiết Attributes BẮT BUỘC cho 13 Entities, áp dụng
 *   `oldValue`: Object -> Chứa JSON dữ liệu trước khi sửa.
 *   `newValue`: Object -> Chứa JSON dữ liệu sau khi sửa.
 *   `createdAt`: Date.
-
-### 5.2 `systemConfigs`
-*Khắc phục lỗi Hardcode. Admin sửa luật game ngay trên Website mà không cần Deploy.*
-*   `key`: String (Unique, PK) -> Ví dụ: `PREMIUM_MONTHLY_FEE`, `MAX_LOGIN_FAILURES`, `REPLAY_TIMEOUT`.
-*   `value`: Number/String -> Giá trị tương ứng (Ví dụ: `10`, `5`).
-*   `updatedBy`: ObjectId -> Ai là người đổi luật cuối cùng.
-*   `updatedAt`: Date.
 
 ---
 

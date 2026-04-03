@@ -1,2 +1,0 @@
-/** subscription interface */
-module.exports = {};

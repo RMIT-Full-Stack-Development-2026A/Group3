@@ -1,14 +1,13 @@
 import { useState } from 'react';
-import { checkWin, isValidMove } from './gameLogic.helper';
+import { checkWin, isValidMove } from './helper/gameLogic.helper';
 
 export const useGameLogic = (initialSize = 10) => {
     // State variables to store the game state
     const [boardSize, setBoardSize] = useState(initialSize);
-    
+
     // Create a 2D array filled with null
     const createEmptyBoard = (size) => Array(size).fill(null).map(() => Array(size).fill(null));
     const [board, setBoard] = useState(createEmptyBoard(initialSize));
-    
     const [currentTurn, setCurrentTurn] = useState('X');
     const [winner, setWinner] = useState(null);
     const [winLine, setWinLine] = useState(null); // win line to highlight
@@ -29,21 +28,21 @@ export const useGameLogic = (initialSize = 10) => {
 
         // Clone the 2D array to ensure React's immutability
         const newBoard = board.map(r => [...r]);
-        
+
         // Update the clicked position
         newBoard[row][col] = currentTurn;
         setBoard(newBoard);
 
         // Call checkWin function to receive 1 object
         const result = checkWin(newBoard, row, col, currentTurn);
-        
+
         if (result.win) {
             // Update winner and pass winLine to UI to highlight Cập nhật người chiến thắng và truyền mảng winLine ra ngoài để UI nhấp nháy
             setWinner(currentTurn);
-            setWinLine(result.winLine); 
+            setWinLine(result.winLine);
         } else {
             // if nobody win, change turn
-            setCurrentTurn(currentTurn === 'X'? 'O' : 'X');
+            setCurrentTurn(currentTurn === 'X' ? 'O' : 'X');
         }
     };
 

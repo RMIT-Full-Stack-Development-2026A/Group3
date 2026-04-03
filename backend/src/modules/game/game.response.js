@@ -1,2 +1,0 @@
-/** game response */
-module.exports = {};
