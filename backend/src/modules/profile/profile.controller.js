@@ -1,0 +1,2 @@
+/** profile controller */
+module.exports = {};

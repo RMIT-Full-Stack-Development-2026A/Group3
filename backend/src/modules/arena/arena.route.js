@@ -1,0 +1,2 @@
+/** arena route */
+module.exports = {};

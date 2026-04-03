@@ -1,0 +1,2 @@
+/** profile service */
+module.exports = {};

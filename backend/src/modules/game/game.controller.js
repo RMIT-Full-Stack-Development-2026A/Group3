@@ -1,0 +1,2 @@
+/** game controller */
+module.exports = {};

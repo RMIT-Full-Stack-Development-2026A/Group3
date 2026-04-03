@@ -1,0 +1,2 @@
+/** profile repository */
+module.exports = {};

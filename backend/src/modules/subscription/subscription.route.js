@@ -1,0 +1,2 @@
+/** subscription route */
+module.exports = {};

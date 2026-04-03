@@ -1,0 +1,2 @@
+/** game route */
+module.exports = {};

@@ -1,0 +1,2 @@
+/** admin repository */
+module.exports = {};
