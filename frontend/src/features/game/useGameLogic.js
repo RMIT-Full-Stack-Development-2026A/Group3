@@ -37,7 +37,7 @@ export const useGameLogic = (initialSize = 10) => {
         const result = checkWin(newBoard, row, col, currentTurn);
 
         if (result.win) {
-            // Update winner and pass winLine to UI to highlight Cập nhật người chiến thắng và truyền mảng winLine ra ngoài để UI nhấp nháy
+            // Update winner and pass winLine to UI to highlight
             setWinner(currentTurn);
             setWinLine(result.winLine);
         } else {
