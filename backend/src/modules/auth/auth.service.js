@@ -1,13 +1,12 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const authRepository = require('./auth.repository');
-const usersRepository = require('../users/users.repository');
-const User = require('../users/users.model');
+const { User } = require('../users/users.model');
 
 const authService = {
 
   register: async (data) => {
-    const { username, email, password, country } = data;
+    const { username, email, password, country} = data;
 
     const passwordHash = await bcrypt.hash(password, 10);
 
@@ -18,8 +17,12 @@ const authService = {
         email: email,
         passwordHash: passwordHash,
         country: country,
-        role: 'PLAYER',
-        isPremium: false
+        avatarUrl: '',
+        role: 'player',
+        isActive: true,
+        walletBalance: 0,
+        isPremium: false,
+        premiumExpiry: null
       });
     } catch (error) {
       if (error.code === 11000) { // MongoDB duplicate key error

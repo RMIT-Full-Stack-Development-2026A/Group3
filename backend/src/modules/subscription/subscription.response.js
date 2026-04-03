@@ -1,2 +1,0 @@
-/** subscription response */
-module.exports = {};

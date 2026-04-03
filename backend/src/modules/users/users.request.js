@@ -1,2 +1,0 @@
-/** users request */
-module.exports = {};

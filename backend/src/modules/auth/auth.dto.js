@@ -8,7 +8,7 @@ const registerRequestDTO = {
   validate: (body = {}) => {
     const safeBody = body && typeof body === 'object' ? body : {};
 
-    const { username, email, password, confirmPassword, country } = safeBody;
+    const { username, email, password, confirmPassword, country, avatarUrl } = safeBody;
 
     if (!username || typeof username !== 'string') {
       throw new Error('username is required and must be a string');
@@ -49,11 +49,16 @@ const registerRequestDTO = {
       throw new Error('country is required');
     }
 
+    if (avatarUrl && typeof avatarUrl !== 'string') {
+      throw new Error('avatarUrl must be a string');
+    }
+
     return {
       username: username.trim(),
       email: email.trim(),
       password,
-      country
+      country,
+      avatarUrl: avatarUrl ? avatarUrl.trim() : ''
     };
   }
 };
@@ -78,7 +83,21 @@ const loginRequestDTO = {
   }
 };
 
+const loginResponseDTO = {
+  build: (user, token) => {
+    return {
+      id: user._id.toString(),
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      isPremium: user.isPremium,
+      token: token
+    };
+  }
+};
+
 module.exports = {
   loginRequestDTO,
-  registerRequestDTO
+  registerRequestDTO,
+  loginResponseDTO
 };

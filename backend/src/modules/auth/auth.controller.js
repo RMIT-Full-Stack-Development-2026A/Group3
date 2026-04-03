@@ -1,9 +1,7 @@
 const authService = require('./auth.service');
 
-const { registerRequestDTO } = require('./auth.request');
+const { loginRequestDTO, registerRequestDTO, loginResponseDTO } = require('./auth.dto');
 
-const { loginRequestDTO } = require('./auth.request');
-const { loginResponseDTO } = require('./auth.response');
 const { sendSuccess, sendError } = require('../../common/responseHelper');
 
 const authController = {
