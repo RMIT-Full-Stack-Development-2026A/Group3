@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const cors = require('cors');
 const connectDB = require('./src/configs/db');
 const authRouter = require('./src/modules/auth/auth.route');
 
@@ -8,6 +9,7 @@ const app = express();
 // Database Connection
 connectDB();
 
+app.use(cors());
 app.use(express.json());
 
 // Health check
