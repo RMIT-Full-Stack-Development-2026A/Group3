@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const moveSchema = new mongoose.Schema({
     step: { type: Number, required: true },
@@ -30,4 +30,8 @@ const gameSessionSchema = new mongoose.Schema({
     moves: [moveSchema] // Embed sub-document
 }, { timestamps: true });
 
-export const GameSession = mongoose.model('game_session', gameSessionSchema);
+const GameSession = mongoose.models.game_session || mongoose.model('game_session', gameSessionSchema);
+
+module.exports = {
+    GameSession
+};
