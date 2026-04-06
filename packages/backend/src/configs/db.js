@@ -4,7 +4,7 @@ import { env } from './env.js';
 const connectDB = async () => {
     try {
         const conn = await mongoose.connect(env.MONGO_URI, {
-            maxPoolSize: 100, // Đảm bảo chịu tải 100,000 users
+            maxPoolSize: 100,
             serverSelectionTimeoutMS: 5000,
         });
         console.log(`MongoDB Connected: ${conn.connection.host}`);
@@ -14,3 +14,4 @@ const connectDB = async () => {
     }
 };
 
+export default connectDB;
