@@ -1,6 +1,8 @@
 /**
  * Env Utility
  */
-const envConfig = {};
+const envConfig = {
+    MONGO_URI: process.env.MONGODB_URI,
+};
 
 module.exports = envConfig;
