@@ -1,2 +1,0 @@
-/** profile request */
-module.exports = {};

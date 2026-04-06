@@ -23,6 +23,7 @@ lerna-debug.log*
 **/uploads/
 **/temp/
 **/storage/
+**/tmp/
 
 # Editor / OS
 .vscode/*
@@ -44,7 +45,6 @@ Thumbs.db
 # Misc
 .parcel-cache
 .cache/
-**/.md/
 .DS_Store
 ._*
 __MACOSX/
