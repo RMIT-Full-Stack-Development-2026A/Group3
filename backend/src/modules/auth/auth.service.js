@@ -18,7 +18,7 @@ const authService = {
         passwordHash: passwordHash,
         country: country,
         avatarUrl: '',
-        role: 'player',
+        role: 'PLAYER',
         isActive: true,
         walletBalance: 0,
         isPremium: false,
