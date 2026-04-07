@@ -3,10 +3,12 @@
 ## **Khái quát Hệ thống và Tầm nhìn Kiến trúc Định hướng Hiệu năng**
 
 Trong bối cảnh công nghệ web hiện đại, các ứng dụng thời gian thực đòi hỏi một sự kết hợp khắt khe giữa khả năng mở rộng kiến trúc, độ trễ tiệm cận bằng không và trải nghiệm người dùng liền mạch.1 Dự án hệ thống trò chơi trực tuyến Full Stack TicTacToang được xây dựng nhằm đáp ứng các tiêu chuẩn công nghiệp cao nhất, đồng thời thỏa mãn hoàn toàn các mục tiêu học tập (CLO 01-05) và tiêu chí đánh giá khắt khe của khóa học phân tích.4 Hệ thống không chỉ phục vụ như một nền tảng giải trí đa người chơi mà còn là một minh chứng kỹ thuật về cách xử lý đồng bộ hóa trạng thái phức tạp, quản lý ranh giới miền dữ liệu và bảo mật đa tầng trong một môi trường phân tán.4  
-Để đạt được hiệu năng tối ưu trên mọi nền tảng (không giật/lag) và cấu trúc mở rộng linh hoạt, phân tích kỹ thuật chỉ ra rằng việc lựa chọn công nghệ cần vượt ra ngoài các giải pháp nguyên khối truyền thống (Traditional Monolith) dễ dẫn đến mã nguồn spaghetti, nhưng cũng cần tránh sự phức tạp vận hành không cần thiết của kiến trúc vi dịch vụ (Microservices) ở giai đoạn khởi đầu.7 Do đó, hệ thống áp dụng ngăn xếp công nghệ MEN (MongoDB, Express.js, Node.js) cho máy chủ và React 18 (Vite) cho máy khách, được cấu trúc theo mô hình Modular Monolith kết hợp N-Tier cho backend, và Feature-Sliced Design (Thiết kế Cắt lớp Tính năng) cho frontend.4  
+Để đạt được hiệu năng tối ưu trên mọi nền tảng (không giật/lag) và cấu trúc mở rộng linh hoạt, hệ thống áp dụng kiến trúc **Monorepo (NPM Workspaces)**. Ngăn xếp công nghệ MEN (MongoDB, Express.js, Node.js) được triển khai theo mô hình hiện đại, kết hợp **Modular Monolith** phân lớp N-Tier cho backend, và **Feature-Sliced Design** cho frontend. Toàn bộ logic cốt lõi (Game Rules, AI) được tập trung tại gói **@tictactoang/shared** nhằm đảm bảo tính đồng bộ tuyệt đối giữa client và server.4  
 Báo cáo này trình bày một bản thiết kế toàn diện, phân tích sâu sắc các quyết định kiến trúc, từ cơ chế đồng bộ hóa luồng sự kiện Socket.IO, thuật toán kiểm tra thắng thua tối ưu với độ phức tạp ![][image1], cho đến chiến lược thiết kế cơ sở dữ liệu MongoDB tuân thủ nghiêm ngặt quy tắc lập chỉ mục ESR (Equality, Sort, Range) nhằm giải quyết khối lượng dữ liệu lịch sử khổng lồ. Mọi quyết định kỹ thuật đều được đối chiếu trực tiếp với bộ tiêu chí đánh giá (Rubric) nhằm đảm bảo hệ thống đạt mức độ hoàn thiện xuất sắc (High Distinction) ở các khía cạnh tổ chức mã nguồn, triển khai, tính năng và cộng tác nhóm.
 
-## **Kiến trúc Backend: Mô hình Modular Monolith và Hệ thống Phân lớp N-Tier**
+## **Kiến trúc Backend: Monorepo Modular Monolith và Phân lớp N-Tier**
+
+Sự ổn định và khả năng bảo trì của backend được tối ưu hóa thông qua cấu trúc **Monorepo**. Toàn bộ mã nguồn máy chủ nằm trong gói `packages/backend`, tuân thủ mô hình Modular Monolith với khả năng chia cắt dọc (Vertical Slicing) kết hợp phân lớp chức năng (N-Tier) khắt khe.4
 
 Sự ổn định, khả năng bảo trì và khả năng ngăn chặn các lỗi ảnh hưởng chéo (cross-module ripple effects) của backend phụ thuộc hoàn toàn vào cách tổ chức mã nguồn và quản lý ranh giới dữ liệu.11 Hệ thống TicTacToang từ bỏ cách tiếp cận phân lớp ngang đơn thuần (nơi tất cả các bộ điều khiển nằm chung một thư mục) để chuyển sang cấu trúc chia cắt dọc (Vertical Slicing) kết hợp với phân lớp chức năng chi tiết (N-Tier) bên trong mỗi lát cắt.4
 
@@ -37,9 +39,10 @@ Bên trong mỗi module nghiệp vụ, kiến trúc áp dụng mô hình phân l
 
 ### **Mẫu Thiết kế Facade và Giao tiếp Liên Module**
 
-Để ngăn chặn tình trạng phụ thuộc chéo (cross-coupling) phá vỡ cấu trúc Modular Monolith, hệ thống thiết lập một quy tắc bất khả xâm phạm: Các module không được phép gọi trực tiếp đến lớp Service của một module khác.4 Sự tuân thủ này được thi hành thông qua mẫu thiết kế Facade (Facade Pattern) với các tệp giao diện \*Interface.js.4  
-Tệp giao diện đóng vai trò như một bản hợp đồng công khai (public contract) duy nhất của module.4 Thay vì xuất (export) toàn bộ các hàm nghiệp vụ, tệp Interface chỉ lựa chọn các phương thức an toàn và cần thiết để cung cấp cho các module ngoại vi. Ví dụ: Khi module game cần lấy thông tin chi tiết của người dùng để xác nhận quyền truy cập phòng chơi, gameService bắt buộc phải gọi phương thức authInterface.getUserById().4 Việc gọi trực tiếp authService bị coi là một vi phạm kiến trúc nghiêm trọng.4  
-Mẫu thiết kế Facade che giấu sự phức tạp nội bộ và các chi tiết triển khai cơ sở dữ liệu của một module, đảm bảo nguyên tắc Đóng/Mở (Open-Closed Principle). Các thay đổi nội bộ bên trong module auth sẽ không gây ra bất kỳ tác động phá vỡ nào đối với module game hay arena, miễn là chữ ký hàm trong tệp Interface không thay đổi.17 Việc thiết lập ranh giới module rõ ràng này trực tiếp đáp ứng yêu cầu kiến trúc bậc cao nhất của dự án và đảm bảo khả năng duy trì trong dài hạn.4
+Để ngăn chặn tình trạng phụ thuộc chéo (cross-coupling), hệ thống thiết lập quy tắc: Các module không được phép gọi trực tiếp Service của module khác. Toàn bộ giao tiếp liên module phải thông qua tệp giao diện `*.interface.js`.4  
+
+Đặc biệt, dự án triển khai lớp **Logic Chia sẻ (Shared logic - packages/shared/)**. Lớp này chứa các thuật toán "vàng" (Ground Truth) như Win-check và AI Heuristics. Cả Máy chủ (khi xác thực nước đi) và Máy khách (khi hiển thị trạng thái lạc quan) đều gọi chung một mã nguồn từ gói `@tictactoang/shared`. Điều này loại bỏ hoàn toàn rủi ro sai lệch trạng thái (Out-of-sync) giữa hai đầu hệ thống.4
+
 
 ## **Kiến trúc Frontend: Thiết kế Cắt lớp Tính năng (Feature-Sliced) và Quản lý Trạng thái**
 
@@ -47,15 +50,18 @@ Mẫu thiết kế Facade che giấu sự phức tạp nội bộ và các chi t
 
 ### **Ranh giới Tính năng và Nguyên tắc Nguyên tử (Atomic Design)**
 
-Bên trong thư mục src/features/, mọi mã nguồn phục vụ cho một tính năng hoặc miền nghiệp vụ cụ thể sẽ được tập trung tại một nơi.25 Chẳng hạn, thư mục tính năng xác thực (features/auth/) sẽ chứa 5 thành phần riêng biệt nhưng gắn kết chặt chẽ theo yêu cầu khắt khe của dự án 4:
+Bên trong thư mục `packages/frontend/src/features/`, mọi mã nguồn phục vụ một tính năng cụ thể sẽ được đóng gói riêng biệt:
 
-1. **Tệp Trình diễn (View \- JSX/HTML):** Chứa cấu trúc thẻ và giao diện người dùng. Tệp này được giữ ở trạng thái thuần túy nhất có thể (dumb component), không chứa logic nghiệp vụ phức tạp.4  
-2. **Tệp Hook Tùy chỉnh (useAuth.js):** Chứa toàn bộ trạng thái (state) nội bộ và các hàm xử lý sự kiện (event handlers). Sự tách rời (Decoupling) giữa giao diện JSX và Hook logic tuân thủ nguyên tắc đảo ngược phụ thuộc (Dependency Inversion Principle), cho phép các nhà phát triển dễ dàng sửa đổi hoặc thay thế hành vi của thành phần mà không phải thiết kế lại toàn bộ mã giao diện trực quan.4  
-3. **Tệp Dịch vụ Mạng (auth.service.js):** Cô lập toàn bộ các giao tiếp HTTP với backend. Lớp này sử dụng tiện ích Axios Interceptor (httpClient.js) để tự động gắn JSON Web Tokens (JWT) vào tiêu đề (header) của mọi yêu cầu, đồng thời xử lý tập trung các lỗi xác thực như mã 401 Unauthorized.4  
-4. **Tệp Lược đồ Dữ liệu (auth.model.js):** Định dạng và kiểm tra cấu trúc dữ liệu cục bộ phía trình duyệt, đảm bảo tính nhất quán của dữ liệu trước khi hiển thị lên giao diện hoặc gửi đi.4  
-5. **Tệp Kiểu dáng Phân lập (auth.css):** Giới hạn phạm vi ảnh hưởng của CSS chỉ trong nội bộ tính năng, ngăn chặn hiện tượng rò rỉ kiểu dáng (CSS bleeding) làm hỏng các thành phần khác.4
+1. **Giao diện (View - *.view.jsx):** Cấu trúc UI thuần túy (dumb component).4  
+2. **Hook logic (Hook - *.hook.js):** Quản lý state và event handlers, tách rời khỏi UI.4  
+3. **Dịch vụ mạng (Service - *.service.js):** Xử lý API thông qua `http.util.js` (Axios Interceptor).4  
+4. **Lược đồ dữ liệu (Model - *.model.js):** Định nghĩa cấu trúc dữ liệu cục bộ.4  
+5. **Kiểu dáng Scoped (Style - *.css):** Cô lập CSS cho từng tính năng.4
 
 Trong khi các tính năng phức tạp được nhóm theo miền nghiệp vụ, các yếu tố giao diện trực quan cốt lõi có khả năng tái sử dụng cao (như nút bấm tùy chỉnh, hộp thoại cảnh báo, biểu tượng tải trang, hình đại diện) lại được phát triển dựa trên phương pháp luận **Thiết kế Nguyên tử (Atomic Design)**.10 Các thành phần này được xem như những "nguyên tử" (Atoms) độc lập và ổn định, được lưu trữ tại src/components/, đóng vai trò như một thư viện UI nội bộ (Design System) nhất quán để cấu thành nên các giao diện phức tạp.28 Sự kết hợp giữa Feature-Driven và Atomic Design giải quyết trọn vẹn cả nhu cầu mở rộng tính năng và duy trì tính đồng nhất của hệ thống giao diện.30
+
+Sự kết hợp giữa Feature-Driven và Atomic Design (trong `src/components/`) giải quyết trọn vẹn nhu cầu mở rộng tính năng và duy trì tính đồng nhất của hệ thống giao diện.30
+
 
 ### **Đột phá Kết xuất Đồng thời (Concurrent Rendering) trong React 18**
 
