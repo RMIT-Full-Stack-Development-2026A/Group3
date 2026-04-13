@@ -1,8 +1,79 @@
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import PasswordInput from "../../components/form/PasswordInput"
 import SubmitButton from "../../components/form/SubmitButton"
 import TextInput from "../../components/form/TextInput"
 
 export default function LoginPage() {
+    const navigate = useNavigate()
+
+    const [formData, setFormData] = useState({
+        identifier: "",
+        password: ""
+    })
+
+    const [errors, setErrors] = useState({})
+    const [message, setMessage] = useState("")
+    const [isSuccess, setIsSuccess] = useState(false)
+
+    const validateForm = () => {
+        const tempErrors = {}
+
+        if (!formData.identifier.trim()) tempErrors.identifier = "Username or email is required"
+        if (!formData.password) tempErrors.password = "Password is required"
+
+        setErrors(tempErrors)
+        return Object.keys(tempErrors).length === 0
+    }
+
+    const handleChange = (e) => {
+        const { name, value } = e.target
+        setFormData((prev) => ({ ...prev, [name]: value }))
+
+        if (errors[name]) {
+            setErrors((prev) => ({ ...prev, [name]: null }))
+        }
+    }
+
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        setMessage("")
+        setIsSuccess(false)
+
+        if (!validateForm()) return
+
+        try {
+            const response = await fetch("http://localhost:5000/api/v1/auth/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    identifier: formData.identifier,
+                    password: formData.password,
+                }),
+            })
+
+            const data = await response.json()
+
+            if (!response.ok) {
+                setMessage(data.message || "Login failed")
+                setIsSuccess(false)
+                return
+            }
+
+            localStorage.setItem("authToken", data.data.token)
+            localStorage.setItem("authUser", JSON.stringify(data.data))
+            setMessage("Login successful")
+            setIsSuccess(true)
+            navigate("/")
+        } catch (error) {
+            console.error("Login error", error)
+            setMessage("Server is unavailable. Please try again.")
+            setIsSuccess(false)
+        }
+    }
+
     return (
         <main class="flex-1 relative flex items-center justify-center p-6">
             <div class="absolute inset-0 z-0">
@@ -17,16 +88,30 @@ export default function LoginPage() {
                         <h1 class="font-headline text-3xl font-extrabold tracking-tight text-on-surface mb-2">Welcome Back</h1>
                         <p class="text-on-surface-variant font-body leading-relaxed">Enter your credentials to enter the multiverse.</p>
                     </div>
-                    <form class="space-y-6">
+                    {message && (
+                        <div className={`mb-4 rounded-lg px-3 py-2 text-sm ${isSuccess ? "bg-emerald-500/20 text-emerald-200" : "bg-rose-500/20 text-rose-200"}`} role="alert">
+                            {message}
+                        </div>
+                    )}
+
+                    <form class="space-y-6" onSubmit={handleSubmit}>
                         <TextInput 
-                            title={"username"}
+                            title={"username or email"}
                             icon={"user.png"}
                             placeholder={"LegendaryPlayer123"}
+                            name="identifier"
+                            value={formData.identifier}
+                            onChange={handleChange}
                         />
+                        {errors.identifier && <p className="-mt-4 text-xs text-rose-300">{errors.identifier}</p>}
                         <div>
                             <PasswordInput 
                                 title={"password"}
+                                name="password"
+                                value={formData.password}
+                                onChange={handleChange}
                             />
+                            {errors.password && <p className="mt-2 text-xs text-rose-300">{errors.password}</p>}
                             <a class="text-xs text-primary/70 hover:text-primary transition-colors" href="#">Forgot Password?</a>
                         </div>
 

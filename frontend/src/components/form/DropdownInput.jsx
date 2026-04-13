@@ -33,7 +33,7 @@ export default function DropdownInput({
                 </select>
 
                 <span className="material-symbols-outlined pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-outline">
-                    <img src="public/assets/dropdown-arrow.png" alt="expand icon" />
+                    <img src="/assets/dropdown-arrow.png" alt="expand icon" />
                 </span>
             </div>
         </div>
