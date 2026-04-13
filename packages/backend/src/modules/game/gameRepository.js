@@ -1,55 +1,76 @@
 import { GameSession } from './gameModel.js';
 
-/**
- * Game Repository - Handles all direct MongoDB operations for Game Sessions
- */
-const GameRepository = {
-  /**
-   * Create a new game session in the database
-   */
-  createSession: async (sessionData) => {
-    const session = new GameSession(sessionData);
-    return await session.save();
-  },
 
-  /**
-   * Retrieve a game session by its ID
-   */
-  getSessionById: async (id) => {
-    return await GameSession.findById(id);
-  },
+class GameRepository {
+  async createSession(sessionData) {
+    return await GameSession.create(sessionData);
+  }
 
-  /**
-   * Add a move and update the board state of a session
-   */
-  updateSessionBoard: async (sessionId, move, newBoardState) => {
+  async findById(sessionId) {
+    return await GameSession.findById(sessionId)
+      .populate('player1Id', 'username avatar')
+      .populate('player2Id', 'username avatar')
+      .lean();
+  }
+
+  async recordMove(sessionId, { move, nextBoard, nextTurn }) {
     return await GameSession.findByIdAndUpdate(
       sessionId,
       {
         $push: { moves: move },
-        $set: { boardState: newBoardState }
+        $set: { 
+          boardState: nextBoard,
+          currentTurn: nextTurn 
+        }
       },
       { new: true }
     );
-  },
+  }
 
-  /**
-   * Update the final status and winner of a session
-   */
-  updateSessionStatus: async (sessionId, status, winnerId, winLine = []) => {
+  async recordMoves(sessionId, { moves, nextBoard, nextTurn }) {
+    return await GameSession.findByIdAndUpdate(
+      sessionId,
+      {
+        $push: { moves: { $each: moves } },
+        $set: { 
+          boardState: nextBoard,
+          currentTurn: nextTurn 
+        }
+      },
+      { new: true }
+    );
+  }
+
+  async completeGame(sessionId, { status, winnerId, winLine, endTime }) {
     return await GameSession.findByIdAndUpdate(
       sessionId,
       {
         $set: {
           status,
           winnerId,
-          winLine
+          winLine,
+          endTime: endTime || new Date()
         }
       },
       { new: true }
     );
   }
-};
 
-export default GameRepository;
+  async findActiveSessionByPlayer(userId) {
+    return await GameSession.findOne({
+      $or: [{ player1Id: userId }, { player2Id: userId }],
+      status: 'ACTIVE'
+    }).lean();
+  }
 
+  async findPlayerHistory(userId, limit = 10) {
+    return await GameSession.find({
+      $or: [{ player1Id: userId }, { player2Id: userId }]
+    })
+    .sort({ createdAt: -1 })
+    .limit(limit)
+    .lean();
+  }
+}
+
+export default new GameRepository();

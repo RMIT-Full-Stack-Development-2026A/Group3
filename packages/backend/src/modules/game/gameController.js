@@ -1,68 +1,87 @@
-import GameService from './gameService.js';
-import GameDTO from './gameDto.js';
+import gameService from './gameService.js';
 
-/**
- * Game Controller - Handles HTTP request/response for the Game module.
- */
-const GameController = {
-  /**
-   * Start a new game session (AI or Private Room placeholder)
-   */
+class GameController {
   async startGame(req, res) {
     try {
+      const userId = req.user.id;
       const gameData = req.body;
-      const result = await GameService.initGame(gameData);
-      
-      res.status(201).json({
-        success: true,
-        data: result // sessionId, board, isReplayable
-      });
-    } catch (error) {
-      res.status(500).json({ success: false, message: error.message });
-    }
-  },
 
-  /**
-   * Handle a player's move in AI Mode
-   */
-  async makeMove(req, res) {
-    try {
-      const { board, difficulty, aiMarker, playerMarker } = req.body;
+      const game = await gameService.startGame(userId, gameData);
       
-      // 1. Validate move and calculate AI counter
-      const result = await GameService.processAIMove(board, difficulty, aiMarker, playerMarker);
-      
-      // 2. Respond to client
-      res.status(200).json({
+      return res.status(201).json({
         success: true,
-        data: result
+        message: 'Match is ready!',
+        data: game
       });
     } catch (error) {
-      res.status(400).json({ success: false, message: error.message });
-    }
-  },
-
-  /**
-   * Sync a completed local (offline) match to the database for replay
-   */
-  async syncLocalMatch(req, res) {
-    try {
-      // 1. Filter input data using DTO
-      const matchData = GameDTO.toSyncLocalRequest(req.body);
-      
-      // 2. Persist via Service (which will call the Repo)
-      const session = await GameService.saveMatchResult(matchData);
-      
-      // 3. Return shaped response
-      res.status(201).json({
-        success: true,
-        data: GameDTO.toGameResponse(session)
+      return res.status(400).json({
+        success: false,
+        message: error.message || 'Failed to start match.'
       });
-    } catch (error) {
-      res.status(400).json({ success: false, message: error.message });
     }
   }
-};
 
-export default GameController;
+  async makeMove(req, res) {
+    try {
+      const { sessionId } = req.params;
+      const userId = req.user.id;
+      const { x, y } = req.body;
 
+      const updatedGame = await gameService.makeMove(sessionId, userId, { x, y });
+
+      return res.status(200).json({
+        success: true,
+        data: updatedGame
+      });
+    } catch (error) {
+      // Phân loại mã lỗi trả về cho Frontend
+      const statusCode = error.message.includes('not found') ? 404 : 400;
+      
+      return res.status(statusCode).json({
+        success: false,
+        message: error.message || 'Invalid move'
+      });
+    }
+  }
+
+  async getGame(req, res) {
+    try {
+      const { sessionId } = req.params;
+      const userId = req.user.id;
+
+      const game = await gameService.getGameById(sessionId, userId);
+
+      return res.status(200).json({
+        success: true,
+        data: game
+      });
+    } catch (error) {
+      const statusCode = error.message.includes('permission') ? 403 : 404;
+      return res.status(statusCode).json({
+        success: false,
+        message: error.message || 'Game not found.'
+      });
+    }
+  }
+
+  async getMyHistory(req, res) {
+    try {
+      const userId = req.user.id;
+      const limit = Math.min(parseInt(req.query.limit) || 10, 50);
+
+      const history = await gameService.getPlayerHistory(userId, limit);
+
+      return res.status(200).json({
+        success: true,
+        data: history
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: error.message || 'Failed to load match history.'
+      });
+    }
+  }
+}
+
+export default new GameController();

@@ -1,78 +1,141 @@
-import { getBestMove, checkWin, isBoardFull } from '@tictactoang/shared';
-import GameRepository from './gameRepository.js';
+import gameRepository from './gameRepository.js';
+import GameDTO from './gameDto.js';
+import { getBestMove } from '../../shared/utils/aiLogicUtil.js';
+import { checkWin, isValidMove, isBoardFull } from '../../shared/utils/gameLogicUtil.js';
 
-/**
- * Game Service - Handles game logic, AI turns, and Session persistence
- */
+class GameService {
+  /**
+   * Khởi tạo ván đấu mới
+   */
+  async startGame(userId, gameData) {
+    const activeSession = await gameRepository.findActiveSessionByPlayer(userId);
+    if (activeSession) {
+      return GameDTO.transformGameSession(activeSession, userId);
+    }
 
-/**
- * Determines if a game session should be stored as a replay based on policy
- */
-const shouldStoreReplay = (gameType, difficulty) => {
-  if (gameType === 'ONLINE' || gameType === 'LOCAL') return true;
-  if (gameType === 'SINGLE' && difficulty === 'HARD') return true;
-  return false;
-};
-
-/**
- * Initialize a new game session
- */
-const initGame = async (gameData) => {
-  const { gameType, boardSize, p1Id, p1Name, difficulty } = gameData;
-  
-  const board = Array(boardSize || 10).fill(null).map(() => Array(boardSize || 10).fill(null));
-  const shouldSave = shouldStoreReplay(gameType, difficulty);
-
-  let sessionId = 'SESSION-GUEST-' + Date.now();
-
-  if (shouldSave) {
-    const session = await GameRepository.createSession({
-      gameType,
-      boardSize: boardSize || 10,
-      player1Id: p1Id,
-      player1Name: p1Name,
-      player2Name: gameType === 'SINGLE' ? `Bot ${difficulty}` : 'Guest',
-      boardState: board,
+    const size = gameData.boardSize;
+    const initialBoard = Array(size).fill(null).map(() => Array(size).fill(null));
+    
+    const newSession = await gameRepository.createSession({
+      ...gameData,
+      player1Id: userId,
+      boardState: initialBoard,
+      currentTurn: 'PLAYER1',
       status: 'ACTIVE'
     });
-    sessionId = session._id;
+
+    return GameDTO.transformGameSession(newSession, userId);
   }
 
-  return { sessionId, board, isReplayable: shouldSave };
-};
+  async makeMove(sessionId, userId, { x, y }) {
+    const session = await gameRepository.findById(sessionId);
+    if (!session || session.status !== 'ACTIVE') {
+      throw new Error('Game not found or game has ended');
+    }
 
-/**
- * Process an AI move for a given game state
- * @returns {Object} { row, col, isWin, isDraw, winLine }
- */
-const processAIMove = async (board, difficulty, aiMarker, playerMarker) => {
-  const bestMove = getBestMove(board, difficulty, aiMarker, playerMarker);
-  if (!bestMove) throw new Error('AI could not find a valid move');
+    const isP1 = session.player1Id._id.toString() === userId.toString();
+    const currentTurnLabel = isP1 ? 'PLAYER1' : 'PLAYER2';
+    
+    if (session.currentTurn !== currentTurnLabel) {
+      throw new Error('It\'s not your turn');
+    }
 
-  const { row, col } = bestMove;
-  const winResult = checkWin(board, row, col, aiMarker);
-  const isDraw = !winResult.win && isBoardFull(board);
+    if (!isValidMove(session.boardState, y, x)) {
+      throw new Error('Invalid move');
+    }
 
-  return {
-    row,
-    col,
-    isWin: winResult.win,
-    winLine: winResult.winLine,
-    isDraw
-  };
-};
+    const playerMarker = isP1 ? session.player1Marker : session.player2Marker;
+    const board = session.boardState;
 
-/**
- * Sync a completed local match result to the database
- */
-const saveMatchResult = async (matchData) => {
-  return await GameRepository.createSession(matchData);
-};
+    board[y][x] = playerMarker;
+    const playerMove = {
+      step: session.moves.length + 1,
+      pId: userId,
+      x, y,
+      marker: playerMarker
+    };
 
-export default {
-  initGame,
-  processAIMove,
-  saveMatchResult,
-  shouldStoreReplay
-};
+    const playerWin = checkWin(board, y, x, playerMarker);
+    if (playerWin.win) {
+      await gameRepository.recordMove(sessionId, { move: playerMove, nextBoard: board, nextTurn: currentTurnLabel });
+      const finalSession = await gameRepository.completeGame(sessionId, {
+        status: 'COMPLETED',
+        winnerId: userId,
+        winLine: playerWin.winLine
+      });
+      return GameDTO.transformGameSession(finalSession, userId);
+    }
 
+    if (isBoardFull(board)) {
+      await gameRepository.recordMove(sessionId, { move: playerMove, nextBoard: board, nextTurn: currentTurnLabel });
+      const finalSession = await gameRepository.completeGame(sessionId, { status: 'COMPLETED', winnerId: null, winLine: [] });
+      return GameDTO.transformGameSession(finalSession, userId);
+    }
+
+    if (session.gameType === 'SINGLE') {
+      const aiMarker = isP1 ? session.player2Marker : session.player1Marker;
+      const bestMove = getBestMove(board, session.difficulty, aiMarker, playerMarker);
+      
+      board[bestMove.row][bestMove.col] = aiMarker;
+      const aiMove = {
+        step: session.moves.length + 2,
+        pId: null,
+        x: bestMove.col,
+        y: bestMove.row,
+        marker: aiMarker
+      };
+
+      const aiWin = checkWin(board, bestMove.row, bestMove.col, aiMarker);
+      
+      const updatedSession = await gameRepository.recordMoves(sessionId, { 
+        moves: [playerMove, aiMove], 
+        nextBoard: board, 
+        nextTurn: 'PLAYER1' 
+      });
+
+      if (aiWin.win) {
+        const finalSession = await gameRepository.completeGame(sessionId, {
+          status: 'COMPLETED',
+          winnerId: null, // AI win
+          winLine: aiWin.winLine
+        });
+        return GameDTO.transformGameSession(finalSession, userId);
+      }
+
+      if (isBoardFull(board)) {
+        const finalSession = await gameRepository.completeGame(sessionId, { status: 'COMPLETED', winnerId: null, winLine: [] });
+        return GameDTO.transformGameSession(finalSession, userId);
+      }
+
+      return GameDTO.transformGameSession(updatedSession, userId);
+    }
+
+    // online/local mode
+    const nextTurn = isP1 ? 'PLAYER2' : 'PLAYER1';
+    const updatedSession = await gameRepository.recordMove(sessionId, { move: playerMove, nextBoard: board, nextTurn: nextTurn });
+    return GameDTO.transformGameSession(updatedSession, userId);
+  }
+
+  async getGameById(sessionId, userId) {
+    const session = await gameRepository.findById(sessionId);
+    if (!session) throw new Error('Game not found');
+
+    const p1Id = session.player1Id?._id?.toString() || session.player1Id?.toString();
+    const p2Id = session.player2Id?._id?.toString() || session.player2Id?.toString();
+    const currentUserId = userId.toString();
+
+    if (p1Id !== currentUserId && p2Id !== currentUserId) {
+      throw new Error('You do not have permission to access this match');
+    }
+
+    return GameDTO.transformGameSession(session, userId);
+  }
+
+  async getPlayerHistory(userId, limit) {
+    const safeLimit = Math.min(limit, 50);
+    const sessions = await gameRepository.findPlayerHistory(userId, safeLimit);
+    return GameDTO.transformHistoryList(sessions, userId);
+  }
+}
+
+export default new GameService();
