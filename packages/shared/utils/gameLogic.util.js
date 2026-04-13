@@ -1,8 +1,4 @@
 /**
- * Game Logic Utilities (Shared between Offline Mode and AI Mode)
- */
-
-/**
  * Core radial scanning logic - Counts consecutive markers in a given direction
  * @returns {object} { count, openEnds }
  */
@@ -10,18 +6,18 @@ export const countInDirection = (board, row, col, dr, dc, marker) => {
   const boardSize = board.length;
   let count = 1;
   let openEnds = 0;
-  let winLine = [[row, col]];
+  let winLine = [{ x: col, y: row }];
 
   // Scan positive direction
   let r = row + dr;
   let c = col + dc;
   while (r >= 0 && r < boardSize && c >= 0 && c < boardSize && board[r][c] === marker) {
     count++;
-    winLine.push([r, c]);
+    winLine.push({ x: c, y: r });
     r += dr;
     c += dc;
   }
-  if (r >= 0 && r < boardSize && c >= 0 && c < boardSize && board[r][c] === null) {
+  if (r >= 0 && r < boardSize && c >= 0 && c < boardSize && (board[r][c] === null || board[r][c] === '')) {
     openEnds++;
   }
 
@@ -30,11 +26,11 @@ export const countInDirection = (board, row, col, dr, dc, marker) => {
   c = col - dc;
   while (r >= 0 && r < boardSize && c >= 0 && c < boardSize && board[r][c] === marker) {
     count++;
-    winLine.push([r, c]);
+    winLine.push({ x: c, y: r });
     r -= dr;
     c -= dc;
   }
-  if (r >= 0 && r < boardSize && c >= 0 && c < boardSize && board[r][c] === null) {
+  if (r >= 0 && r < boardSize && c >= 0 && c < boardSize && (board[r][c] === null || board[r][c] === '')) {
     openEnds++;
   }
 
@@ -67,12 +63,12 @@ export const checkWin = (board, row, col, marker) => {
  */
 export const isValidMove = (board, row, col) => {
   const size = board.length;
-  return row >= 0 && row < size && col >= 0 && col < size && board[row][col] === null;
+  return row >= 0 && row < size && col >= 0 && col < size && (board[row][col] === null || board[row][col] === '');
 };
 
 /**
  * Check if the board is full (Draw)
  */
 export const isBoardFull = (board) => {
-  return board.every((row) => row.every((cell) => cell !== null));
+  return board.every((row) => row.every((cell) => cell !== null && cell !== ''));
 };

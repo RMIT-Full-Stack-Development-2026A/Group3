@@ -2,14 +2,15 @@ import mongoose from 'mongoose';
 
 const transactionSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true, index: true },
-    type: { type: String, enum: ['DEPOSIT', 'BUY_PREMIUM'], required: true },
+    type: { type: String, enum: ['DEPOSIT', 'SUBSCRIPTION_WALLET'], required: true },
     amount: { type: Number, required: true },
+    status: { type: String, enum: ["SUCCESS", "FAILED"], default: "SUCESS" }
 }, { timestamps: true });
 
 const subscriptionSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true, index: true },
     validFrom: { type: Date, required: true },
-    validUntil: { type: Date, required: true, index: true }, // Index để quét cronjob những ai hết hạn
+    validUntil: { type: Date, required: true, index: true }, 
     status: { type: String, enum: ['ACTIVE', 'EXPIRED', 'CANCELLED'], default: 'ACTIVE' },
     transactionId: { type: mongoose.Schema.Types.ObjectId, ref: 'transaction', required: true }
 }, { timestamps: true });

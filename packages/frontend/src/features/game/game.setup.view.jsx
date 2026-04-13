@@ -52,7 +52,7 @@ export default function GameSetupView() {
 
           <h2 className="text-3xl font-orbitron mb-2 text-gold">Arena Setup</h2>
           <p className="text-text-secondary mb-8">
-            Greetings, <span className="text-white font-bold">{user?.username}</span>. Configure your {mode === 'local' ? 'local spar' : 'AI duel'}.
+            Greetings, <span className="text-white font-bold">{user?.username}</span>. Co nfigure your {mode === 'local' ? 'local spar' : 'AI duel'}.
           </p>
 
           <div className="mb-8">

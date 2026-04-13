@@ -5,7 +5,7 @@ const moveSchema = new mongoose.Schema({
     pId: { type: mongoose.Schema.Types.ObjectId, ref: 'user', default: null },
     x: { type: Number, required: true },
     y: { type: Number, required: true },
-    marker: { type: String, enum: ['X', 'O'], required: true },
+    marker: { type: String, required: true },
     time: { type: Date, default: Date.now }
 }, { _id: false });
 
@@ -21,14 +21,25 @@ const gameSessionSchema = new mongoose.Schema({
     player2Name: { type: String, required: true },
     player2Avatar: { type: String, default: '' },
     
-    currentTurn: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
-    boardState: [[{ type: mongoose.Schema.Types.Mixed, default: null }]], 
+    currentTurn: { type: String, enum: ['PLAYER1', 'PLAYER2'], required: true },
+    // boardState: [[{ type: mongoose.Schema.Types.Mixed, default: null }]], 
+    boardState: { type: [[String]], default: [] },
     
-    status: { type: String, enum: ['ACTIVE', 'WIN', 'DRAW', 'LOSE', 'ABORTED', 'ADMIN_CLOSED'], default: 'ACTIVE' },
+    status: { type: String, enum: ['ACTIVE', 'ABORTED'], default: 'ACTIVE' },
     winnerId: { type: mongoose.Schema.Types.ObjectId, ref: 'user', default: null },
-    winLine: [{ x: Number, y: Number }],
-    
-    moves: [moveSchema] // Embed sub-document
+    winLine: {
+        type: [{
+            x: { type: Number, required: true },
+            y: { type: Number, required: true },
+            _id: false
+        }],
+    default: [] },
+
+    roomId: { type: mongoose.Schema.Types.ObjectId, ref: 'game_room', default: null },
+    startTime: { type: Date, default: Date.now },
+    endTime: { type: Date, default: null },
+    moves: [moveSchema]
+
 }, { timestamps: true });
 
 export const GameSession = mongoose.model('game_session', gameSessionSchema);
