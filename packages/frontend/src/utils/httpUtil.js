@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { API_CONFIG } from '../configs/api.config.js';
-import { useAuthStore } from '../store/auth.store.js';
+import { API_CONFIG } from '../configs/apiConfig.js';
+import { useAuthStore } from '../store/authStore.js';
 
 /**
  * httpUtil - The Middleware Networking Layer.
@@ -40,3 +40,4 @@ httpUtil.interceptors.response.use(
 );
 
 export default httpUtil;
+

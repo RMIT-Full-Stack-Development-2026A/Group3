@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuthStore } from '../store/auth.store';
+import { useAuthStore } from '../store/authStore';
 
 /**
  * RouteGuard - The Gatekeeper of Frontend.
@@ -30,3 +30,4 @@ export const RouteGuard = ({ children, allowedRoles = [] }) => {
   // Authorized - Render the requested View
   return children;
 };
+

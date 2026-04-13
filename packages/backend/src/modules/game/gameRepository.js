@@ -1,4 +1,4 @@
-import { GameSession } from './game.model.js';
+import { GameSession } from './gameModel.js';
 
 /**
  * Game Repository - Handles all direct MongoDB operations for Game Sessions
@@ -52,3 +52,4 @@ const GameRepository = {
 };
 
 export default GameRepository;
+

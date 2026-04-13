@@ -3,8 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { LoginView } from './features/auth/auth.login.view.jsx';
 import { RegisterView } from './features/auth/auth.register.view.jsx';
 import DashboardView from './features/dashboard/dashboard.view.jsx';
-import GameSetupView from './features/game/game.setup.view.jsx';
-import GameView from './features/game/game.view.jsx';
+import GameSetupView from './features/game/gameSetupView.jsx';
+import GameView from './features/game/gameView.jsx';
 import { RouteGuard } from './components/RouteGuard.jsx';
 
 /**
@@ -71,3 +71,4 @@ function App() {
 }
 
 export default App;
+

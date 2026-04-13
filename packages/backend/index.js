@@ -2,8 +2,8 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import connectDB from './src/configs/db.js';
-import gameRouter from './src/modules/game/game.route.js';
-import authRouter from './src/modules/auth/auth.route.js';
+import gameRouter from './src/modules/game/gameRoute.js';
+import authRouter from './src/modules/auth/authRoute.js';
 
 const app = express();
 

@@ -4,8 +4,8 @@ import { Users, Bot, Globe, Calendar, RefreshCcw } from 'lucide-react';
 import { Navigation } from '../../components/Navigation.jsx';
 import { Card } from '../../components/Card.jsx';
 import { Button } from '../../components/Button.jsx';
-import { useAuthStore } from '../../store/auth.store.js';
-import GameService from '../game/game.service.js';
+import { useAuthStore } from '../../store/authStore.js';
+import GameService from '../game/gameService.js';
 
 /**
  * DashboardView - The central hub after login.
@@ -144,3 +144,4 @@ export default function DashboardView() {
     </div>
   );
 }
+

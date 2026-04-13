@@ -1,5 +1,5 @@
-import GameService from './game.service.js';
-import GameDTO from './game.dto.js';
+import GameService from './gameService.js';
+import GameDTO from './gameDto.js';
 
 /**
  * Game Controller - Handles HTTP request/response for the Game module.
@@ -65,3 +65,4 @@ const GameController = {
 };
 
 export default GameController;
+

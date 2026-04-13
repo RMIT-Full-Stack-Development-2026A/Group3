@@ -5,7 +5,7 @@ import { Navigation } from '../../components/Navigation.jsx';
 import { Avatar } from '../../components/Avatar.jsx';
 import { Button } from '../../components/Button.jsx';
 import { useGameLogic } from './game.hook.js';
-import { useAuthStore } from '../../store/auth.store.js';
+import { useAuthStore } from '../../store/authStore.js';
 import { motion, AnimatePresence } from 'motion/react';
 
 /**
@@ -204,3 +204,4 @@ export default function GameView() {
     </div>
   );
 }
+

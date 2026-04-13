@@ -1,4 +1,4 @@
-import { User } from './users.model.js';
+import { User } from './usersModel.js';
 
 export const usersRepository = {
   /**
@@ -16,3 +16,4 @@ export const usersRepository = {
     });
   }
 };
+

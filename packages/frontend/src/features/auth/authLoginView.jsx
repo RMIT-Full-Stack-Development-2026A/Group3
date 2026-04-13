@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Input } from '../../components/Input.jsx';
 import { Button } from '../../components/Button.jsx';
-import { useAuthStore } from '../../store/auth.store.js';
+import { useAuthStore } from '../../store/authStore.js';
 import { Card } from '../../components/Card.jsx';
-import AuthService from './auth.service.js';
+import AuthService from './authService.js';
 
 /**
  * LoginView - The entrance to TicTacToang Arena.
@@ -93,3 +93,4 @@ export function LoginView() {
     </div>
   );
 }
+

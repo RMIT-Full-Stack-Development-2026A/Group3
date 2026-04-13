@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { authRepository } from './auth.repository.js';
-import { User } from '../users/users.model.js';
+import { authRepository } from './authRepository.js';
+import { User } from '../users/usersModel.js';
 import { env } from '../../configs/env.js';
 
 
@@ -78,3 +78,4 @@ export const authService = {
     };
   }
 };
+

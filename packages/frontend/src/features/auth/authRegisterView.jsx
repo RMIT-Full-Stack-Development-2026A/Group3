@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Input } from '../../components/Input.jsx';
 import { Button } from '../../components/Button.jsx';
-import { useAuthStore } from '../../store/auth.store.js';
-import AuthService from './auth.service.js';
+import { useAuthStore } from '../../store/authStore.js';
+import AuthService from './authService.js';
 import { Card } from '../../components/Card.jsx';
 
 /**
@@ -176,3 +176,4 @@ export function RegisterView() {
     </div>
   );
 }
+

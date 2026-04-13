@@ -1,4 +1,4 @@
-import { checkWin, isValidMove, countInDirection } from './gameLogic.util.js';
+import { checkWin, isValidMove, countInDirection } from './gameLogicUtil.js';
 
 // Heuristic Score Table
 const SCORES = {

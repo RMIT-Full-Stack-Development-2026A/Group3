@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { checkWin, isValidMove, isBoardFull } from '@tictactoang/shared';
-import GameService from './game.service.js';
+import GameService from './gameService.js';
 
 /**
  * useGameLogic - React Hook managing the Tic-Tac-Toe game state.

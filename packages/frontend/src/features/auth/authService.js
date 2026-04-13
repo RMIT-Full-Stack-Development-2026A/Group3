@@ -1,5 +1,5 @@
-import httpUtil from '../../utils/http.util.js';
-import { useAuthStore } from '../../store/auth.store.js';
+import httpUtil from '../../utils/httpUtil.js';
+import { useAuthStore } from '../../store/authStore.js';
 
 /**
  * AuthService - Frontend Logic Layer
@@ -48,3 +48,4 @@ const AuthService = {
 };
 
 export default AuthService;
+

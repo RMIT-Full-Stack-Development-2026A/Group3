@@ -1,5 +1,5 @@
-import { authService } from './auth.service.js';
-import { loginRequestDTO, registerRequestDTO, loginResponseDTO } from './auth.dto.js';
+import { authService } from './authService.js';
+import { loginRequestDTO, registerRequestDTO, loginResponseDTO } from './authDto.js';
 import { responseHelper } from '../../common/responseHelper.js';
 
 const { sendSuccess, sendError } = responseHelper;
@@ -58,4 +58,5 @@ export const authController = {
     }
   }
 };
+
 

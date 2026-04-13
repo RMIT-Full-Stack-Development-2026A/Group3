@@ -1,4 +1,4 @@
-import httpUtil from '../../utils/http.util';
+import httpUtil from '../../utils/httpUtil';
 
 /**
  * GameService - Data Access Layer (Layer 4).
@@ -24,3 +24,4 @@ const GameService = {
 };
 
 export default GameService;
+

@@ -1,5 +1,5 @@
 import { getBestMove, checkWin, isBoardFull } from '@tictactoang/shared';
-import GameRepository from './game.repository.js';
+import GameRepository from './gameRepository.js';
 
 /**
  * Game Service - Handles game logic, AI turns, and Session persistence
@@ -75,3 +75,4 @@ export default {
   saveMatchResult,
   shouldStoreReplay
 };
+

@@ -1,5 +1,5 @@
 import express from 'express';
-import GameController from './game.controller.js';
+import GameController from './gameController.js';
 
 const router = express.Router();
 
@@ -20,3 +20,4 @@ router.post('/move', GameController.makeMove);
 router.post('/sync-local', GameController.syncLocalMatch);
 
 export default router;
+

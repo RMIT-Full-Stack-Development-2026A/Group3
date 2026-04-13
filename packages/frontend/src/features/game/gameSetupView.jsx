@@ -5,8 +5,8 @@ import { Navigation } from '../../components/Navigation.jsx';
 import { Card } from '../../components/Card.jsx';
 import { Button } from '../../components/Button.jsx';
 import { Badge } from '../../components/Badge.jsx';
-import { useAuthStore } from '../../store/auth.store.js';
-import GameService from '../game/game.service.js';
+import { useAuthStore } from '../../store/authStore.js';
+import GameService from '../game/gameService.js';
 
 /**
  * GameSetupView - Unified Game Configuration.
@@ -135,3 +135,4 @@ export default function GameSetupView() {
     </div>
   );
 }
+
