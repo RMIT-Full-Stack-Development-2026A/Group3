@@ -5,7 +5,7 @@ import TextInput from "../../components/form/TextInput"
 export default function LoginPage() {
     return (
         <main class="flex-1 relative flex items-center justify-center p-6">
-            \        <div class="absolute inset-0 z-0">
+            <div class="absolute inset-0 z-0">
                 <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[120px]"></div>
                 <div class="absolute bottom-1/4 right-1/4 w-125 h-125 bg-secondary-container/20 rounded-full blur-[160px]"></div>
             </div>
@@ -20,7 +20,7 @@ export default function LoginPage() {
                     <form class="space-y-6">
                         <TextInput 
                             title={"username"}
-                            icon={"person"}
+                            icon={"user.png"}
                             placeholder={"LegendaryPlayer123"}
                         />
                         <div>
@@ -35,7 +35,7 @@ export default function LoginPage() {
                     <div class="mt-8 text-center">
                         <p class="text-on-surface-variant font-body">
                             Don't have an account?
-                            <a class="text-primary font-semibold underline underline-offset-4 ml-1 hover:text-primary-dim transition-colors" href="register">Register</a>
+                            <a class="text-primary font-semibold underline underline-offset-4 ml-1 hover:text-primary-dim transition-colors" href="/register">Register</a>
                         </p>
                     </div>
                 </div>

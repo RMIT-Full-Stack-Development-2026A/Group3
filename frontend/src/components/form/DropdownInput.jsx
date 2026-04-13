@@ -5,7 +5,6 @@ export default function DropdownInput({
     onChange,
     options = [],
     placeholder = 'Select an option',
-    icon = 'expand_more',
 }) {
     return (
         <div className="space-y-2 group">
@@ -18,7 +17,7 @@ export default function DropdownInput({
                     name={name}
                     value={value}
                     onChange={onChange}
-                    className="w-full appearance-none bg-surface-container-highest/60 rounded-lg px-4 py-3 pr-11 border-b-2 border-transparent hover:border-primary/50 focus:border-primary text-on-surface transition-all"
+                    className="w-full appearance-none bg-surface-container-highest/60 rounded-lg px-3 py-3 pr-11 border-b-2 border-transparent hover:border-primary/50 focus:border-primary text-on-surface transition-all"
                 >
                     <option value="">{placeholder}</option>
                     {options.map((option) => {
@@ -34,7 +33,7 @@ export default function DropdownInput({
                 </select>
 
                 <span className="material-symbols-outlined pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-outline">
-                    {icon}
+                    <img src="public/assets/dropdown-arrow.png" alt="expand icon" />
                 </span>
             </div>
         </div>
