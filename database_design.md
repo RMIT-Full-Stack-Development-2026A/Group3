@@ -63,15 +63,18 @@ Lưu trữ trạng thái và lịch sử của một ván cờ.
 | `gameType` | String | Enum: `SINGLE`, `LOCAL`, `ONLINE` |
 | `boardSize` | Number | Enum: `10`, `15` |
 | `player1Id` | ObjectId | Ref `users._id`, Indexed, Required |
+| `player1Marker` | String | Enum: `CROSS`, `CIRCLE`, `TRIANGLE`, `SQUARE`, `DIAMOND`, `STAR` |
 | `player1Name` | String | Denormalized |
 | `player1Avatar` | String | Denormalized |
 | `player2Id` | ObjectId | Ref `users._id`, Indexed (Null nếu đánh với AI) |
+| `player2Marker` | String | Enum: `CROSS`, `CIRCLE`, `TRIANGLE`, `SQUARE`, `DIAMOND`, `STAR` |
 | `player2Name` | String | Denormalized (Hoặc tên AI) |
 | `player2Avatar` | String | Denormalized |
 | `currentTurn` | String | Enum: `PLAYER1`, `PLAYER2` |
 | `boardState` | Array (2D) | Ma trận bàn cờ |
+| `difficulty` | String | Enum: `EASY`, `MEDIUM`, `HARD` (Null nếu đánh với người) |
 | `moves` | Array | **Embedded sub-documents** (Xem bảng bên dưới) |
-| `status` | String | Enum: `ACTIVE`, `ABORTED`|
+| `status` | String | Enum: `ACTIVE`, `ABORTED`, `COMPLETED`|
 | `winnerId` | ObjectId | Ref `users._id` (Null cho đến khi có người thắng) |
 | `winLine` | Array | Chứa mảng 5 tọa độ `{x, y}` để highlight |
 | `roomId` | ObjectId | Ref `gameRooms._id` (Null nếu offline) |
@@ -83,7 +86,7 @@ Lưu trữ trạng thái và lịch sử của một ván cờ.
 #### Sub-document: `moves` (Embedded in `gameSessions`)
 | Field | Type | Notes / Constraints |
 | :--- | :--- | :--- |
-| `seq` | Number | Required (Thứ tự nước đi, bắt đầu từ 1) |
+| `step` | Number | Required (Thứ tự nước đi, bắt đầu từ 1) |
 | `playerId` | ObjectId | Ref `users._id` (Null nếu là AI) |
 | `x` | Number | Required (Zero-indexed column) |
 | `y` | Number | Required (Zero-indexed row) |
