@@ -1,23 +1,22 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Bot, Globe, Calendar, RefreshCcw } from 'lucide-react';
-import { Navigation } from '../../components/Navigation.jsx';
-import { Card } from '../../components/Card.jsx';
-import { Button } from '../../components/Button.jsx';
 import { useAuthStore } from '../../store/authStore.js';
 import GameService from '../game/gameService.js';
 
-/**
- * DashboardView - The central hub after login.
- * Real Logic: Fetches Match History and Auth Context (Layer 5/6).
- */
+// Layout & Components
+import Header from '../../components/layout/Header.jsx';
+import BottomDock from '../../components/layout/BottomDock.jsx';
+import ModeCard from '../../components/dashboard/ModeCard.jsx';
+import StatCard from '../../components/dashboard/StatCard.jsx';
+import GameSetupModal from '../../components/game/GameSetupModal.jsx';
+
 export default function DashboardView() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const [recentGames, setRecentGames] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
+  const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
 
-  // Real Data Fetching (GET /api/v1/game/history)
   const fetchHistory = async () => {
     setLoadingHistory(true);
     try {
@@ -35,112 +34,99 @@ export default function DashboardView() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-page text-text-primary">
-      {/* Real State-Powered Navigation */}
-      <Navigation />
-      
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Welcome Section */}
-        <div className="mb-12">
-          <h1 className="text-4xl md:text-5xl font-orbitron mb-4">
-            Welcome back, <span className="text-gold">{user?.username || 'Player'}</span>
-          </h1>
-          <p className="text-text-secondary text-lg">Choose your game mode and dominate the arena</p>
-        </div>
+    <div className={`min-h-screen bg-surface text-on-surface font-body selection:bg-primary selection:text-on-primary ${isSetupModalOpen ? 'overflow-hidden' : ''}`}>
+      <Header user={user} />
 
-        {/* Game Mode Selector Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <Card 
-            hover={true}
-            className="p-8 text-center cursor-pointer border-border hover:border-coral/50 transition-all bg-surface"
+      <main className={`min-h-screen pt-32 pb-40 px-6 flex flex-col items-center relative overflow-hidden transition-all duration-500 ${isSetupModalOpen ? 'blur-md scale-[0.98] pointer-events-none' : ''}`}>
+        {/* Background Atmospheric Element */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+        {/* Hero Section */}
+        <section className="text-center mb-16 relative z-10">
+          <h2 className="text-6xl md:text-8xl font-extrabold font-headline tracking-tighter text-on-surface neon-glow mb-4">
+            TicTacToang
+          </h2>
+          <p className="text-on-surface-variant max-w-xl mx-auto text-lg md:text-xl font-light tracking-wide">
+            Welcome back, <span className="text-primary font-bold">{user?.username || 'Player'}</span>. 
+            Experience the classic game evolved through an ethereal digital landscape.
+          </p>
+        </section>
+
+        {/* Mode Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 w-full max-w-6xl relative z-10 mb-12">
+          <ModeCard 
+            title="Local Mode"
+            description="Battle a friend side-by-side. 2 players, same device, infinite rivalry."
+            icon="group"
+            actionLabel="Start Duel"
+            actionIcon="arrow_forward"
             onClick={() => navigate('/game-setup?mode=local')}
-          >
-            <div className="mb-4 flex justify-center">
-              <div className="w-16 h-16 rounded-full bg-coral/20 flex items-center justify-center">
-                <Users size={32} className="text-coral" />
-              </div>
-            </div>
-            <h3 className="text-xl font-bold mb-2">Local Match</h3>
-            <p className="text-text-secondary">Play with a friend on the same device</p>
-          </Card>
+          />
 
-          <Card 
-            hover={true}
-            className="p-8 text-center cursor-pointer border-border hover:border-gold/50 transition-all bg-surface"
-            onClick={() => navigate('/game-setup?mode=ai')}
-          >
-            <div className="mb-4 flex justify-center">
-              <div className="w-16 h-16 rounded-full bg-gold/20 flex items-center justify-center">
-                <Bot size={32} className="text-gold" />
-              </div>
-            </div>
-            <h3 className="text-xl font-bold mb-2">vs AI</h3>
-            <p className="text-text-secondary">Challenge the computer opponent</p>
-          </Card>
+          <ModeCard 
+            isFeatured={true}
+            spanCols="md:col-span-4"
+            title="AI Mode"
+            description="Challenge the Aetheris Core. Can you outwit our adaptive tactical engine?"
+            icon="smart_toy"
+            actionLabel="Initialize AI"
+            actionIcon="memory"
+            onClick={() => setIsSetupModalOpen(true)}
+          />
 
-          <Card 
-            hover={true}
-            className="p-8 text-center cursor-pointer border-border hover:border-teal/50 transition-all bg-surface"
+          <ModeCard 
+            title="Online Lobby"
+            description="Enter the global arena. Match with legends from around the world."
+            icon="public"
+            actionLabel="Join Queue"
+            actionIcon="public"
             onClick={() => navigate('/arena')}
           >
-            <div className="mb-4 flex justify-center">
-              <div className="w-16 h-16 rounded-full bg-teal/20 flex items-center justify-center">
-                <Globe size={32} className="text-teal" />
-              </div>
-            </div>
-            <h3 className="text-xl font-bold mb-2">Online Arena</h3>
-            <p className="text-text-secondary">Compete against players worldwide</p>
-          </Card>
+             <div className="mt-4 flex -space-x-3 mb-4">
+               {[1, 2].map(i => (
+                 <div key={i} className="w-8 h-8 rounded-full border-2 border-surface bg-surface-container-highest overflow-hidden">
+                   <img alt="Portrait" src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i * 123}`} />
+                 </div>
+               ))}
+               <div className="w-8 h-8 rounded-full border-2 border-surface bg-surface-container-highest flex items-center justify-center text-[10px] font-bold text-primary">
+                 +14k
+               </div>
+             </div>
+          </ModeCard>
         </div>
 
-        {/* Match History (Real Sync) */}
-        <div>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-orbitron">Recent Games</h2>
-            <button 
-              onClick={fetchHistory}
-              className="p-2 text-text-secondary hover:text-gold transition-colors"
-              title="Refresh"
-            >
-              <RefreshCcw size={18} className={loadingHistory ? 'animate-spin' : ''} />
-            </button>
-          </div>
-
-          {loadingHistory ? (
-            <div className="space-y-4">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="h-24 bg-surface/50 animate-pulse rounded-xl border border-border" />
-              ))}
+        {/* Stats Section */}
+        <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
+          <StatCard 
+            icon="emoji_events"
+            label="Total Wins"
+            value={recentGames.length} 
+          />
+          <StatCard 
+            icon="military_tech"
+            label="ELO Rating"
+            value="1200"
+          />
+          <StatCard 
+            icon="schedule"
+            label="Daily Streak"
+            value="14 Days"
+          >
+             <div className="flex gap-1">
+              {[1, 2, 3].map(i => <div key={i} className="w-2 h-6 bg-primary rounded-full"></div>)}
+              {[1, 2].map(i => <div key={i} className="w-2 h-6 bg-primary/20 rounded-full"></div>)}
             </div>
-          ) : recentGames.length === 0 ? (
-            <Card className="p-12 text-center border-dashed border-border flex flex-col items-center">
-              <p className="text-text-secondary mb-4 italic">No matches played yet. Start your first game!</p>
-            </Card>
-          ) : (
-            <div className="space-y-4">
-              {recentGames.map((game) => (
-                <Card key={game.id} className="p-6 border-border bg-surface hover:border-gold/30 transition-all">
-                  <div className="flex items-center justify-between flex-wrap gap-4">
-                    <div className="flex items-center gap-4">
-                      <Calendar size={20} className="text-text-secondary" />
-                      <div>
-                        <p className="text-text-primary font-semibold">vs {game.opponent || 'Unknown'}</p>
-                        <p className="text-text-secondary text-sm">{game.createdAt || game.date}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <Badge variant={game.result === 'win' ? 'success' : game.result === 'lose' ? 'danger' : 'secondary'}>
-                        {game.result.toUpperCase()}
-                      </Badge>
-                      <span className="text-text-secondary text-sm font-mono">{game.boardSize || '10x10'}</span>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          )}
+          </StatCard>
         </div>
-      </div>
+      </main>
+
+      <BottomDock />
+
+      {/* AI Setup Modal */}
+      <GameSetupModal 
+        isOpen={isSetupModalOpen} 
+        onClose={() => setIsSetupModalOpen(false)} 
+      />
     </div>
   );
 }

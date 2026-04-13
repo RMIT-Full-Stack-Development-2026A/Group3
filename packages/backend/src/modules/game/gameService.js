@@ -1,26 +1,70 @@
 import gameRepository from './gameRepository.js';
 import GameDTO from './gameDto.js';
-import { getBestMove } from '../../shared/utils/aiLogicUtil.js';
-import { checkWin, isValidMove, isBoardFull } from '../../shared/utils/gameLogicUtil.js';
+import authService from '../auth/authService.js';
+import { getBestMove } from '@tictactoang/shared/utils/aiLogicUtil.js';
+import { checkWin, isValidMove, isBoardFull } from '@tictactoang/shared/utils/gameLogicUtil.js';
 
 class GameService {
   /**
    * Khởi tạo ván đấu mới
    */
   async startGame(userId, gameData) {
+    // Check for existing active session to prevent duplicates
     const activeSession = await gameRepository.findActiveSessionByPlayer(userId);
     if (activeSession) {
       return GameDTO.transformGameSession(activeSession, userId);
     }
 
-    const size = gameData.boardSize;
+    // Fetch player 1 info via AuthService (Decoupled Approach)
+    const p1 = await authService.getUserById(userId);
+
+    // Defensive Coding: Input Sanitization
+    const boardSizeRaw = parseInt(gameData.boardSize) || 10;
+    const size = Math.max(3, Math.min(boardSizeRaw, 20)); // Limit 3 to 20
+
+    const difficultyRaw = (gameData.difficulty || 'MEDIUM').toUpperCase();
+    const difficulty = ['EASY', 'MEDIUM', 'HARD'].includes(difficultyRaw) ? difficultyRaw : 'MEDIUM';
+
+    const player1Marker = gameData.player1Marker || 'CROSS';
+    const player2Marker = gameData.player2Marker || 'CIRCLE';
+    const moveFirst = (gameData.moveFirst || 'player').toLowerCase();
+
     const initialBoard = Array(size).fill(null).map(() => Array(size).fill(null));
-    
+    const initialMoves = [];
+    let currentTurn = 'PLAYER1';
+
+    // Handle "Bot moves first" logic (Atomic Initialization)
+    if (moveFirst === 'bot') {
+      const bestMove = getBestMove(initialBoard, difficulty, player2Marker, player1Marker);
+      initialBoard[bestMove.row][bestMove.col] = player2Marker;
+
+      initialMoves.push({
+        step: 1,
+        pId: null, // AI move
+        x: bestMove.col,
+        y: bestMove.row,
+        marker: player2Marker,
+        time: new Date()
+      });
+
+      currentTurn = 'PLAYER1';
+    }
+
     const newSession = await gameRepository.createSession({
-      ...gameData,
+      gameType: gameData.gameType || 'SINGLE',
+      boardSize: size,
+      difficulty: difficulty,
       player1Id: userId,
+      player1Name: p1.username,
+      player1Avatar: p1.avatarUrl || '',
+      player1Marker: player1Marker,
+      player2Id: null,
+      player2Name: 'AI',
+      player2Avatar: '',
+      player2Marker: player2Marker,
       boardState: initialBoard,
-      currentTurn: 'PLAYER1',
+      moves: initialMoves,
+      currentTurn: currentTurn,
       status: 'ACTIVE'
     });
 
@@ -35,7 +79,7 @@ class GameService {
 
     const isP1 = session.player1Id._id.toString() === userId.toString();
     const currentTurnLabel = isP1 ? 'PLAYER1' : 'PLAYER2';
-    
+
     if (session.currentTurn !== currentTurnLabel) {
       throw new Error('It\'s not your turn');
     }
@@ -45,14 +89,18 @@ class GameService {
     }
 
     const playerMarker = isP1 ? session.player1Marker : session.player2Marker;
-    const board = session.boardState;
-
+    const board = [...session.boardState.map(row => [...row])];
     board[y][x] = playerMarker;
+
+    // Explicitly update session object for Mongoose tracking (if not using lean)
+    session.boardState = board;
+
     const playerMove = {
       step: session.moves.length + 1,
       pId: userId,
       x, y,
-      marker: playerMarker
+      marker: playerMarker,
+      time: new Date()
     };
 
     const playerWin = checkWin(board, y, x, playerMarker);
@@ -75,22 +123,23 @@ class GameService {
     if (session.gameType === 'SINGLE') {
       const aiMarker = isP1 ? session.player2Marker : session.player1Marker;
       const bestMove = getBestMove(board, session.difficulty, aiMarker, playerMarker);
-      
+
       board[bestMove.row][bestMove.col] = aiMarker;
       const aiMove = {
         step: session.moves.length + 2,
         pId: null,
         x: bestMove.col,
         y: bestMove.row,
-        marker: aiMarker
+        marker: aiMarker,
+        time: new Date()
       };
 
       const aiWin = checkWin(board, bestMove.row, bestMove.col, aiMarker);
-      
-      const updatedSession = await gameRepository.recordMoves(sessionId, { 
-        moves: [playerMove, aiMove], 
-        nextBoard: board, 
-        nextTurn: 'PLAYER1' 
+
+      const updatedSession = await gameRepository.recordMoves(sessionId, {
+        moves: [playerMove, aiMove],
+        nextBoard: board,
+        nextTurn: 'PLAYER1'
       });
 
       if (aiWin.win) {
@@ -110,7 +159,6 @@ class GameService {
       return GameDTO.transformGameSession(updatedSession, userId);
     }
 
-    // online/local mode
     const nextTurn = isP1 ? 'PLAYER2' : 'PLAYER1';
     const updatedSession = await gameRepository.recordMove(sessionId, { move: playerMove, nextBoard: board, nextTurn: nextTurn });
     return GameDTO.transformGameSession(updatedSession, userId);

@@ -50,16 +50,20 @@ export const registerRequestDTO = {
       throw new Error('country is required');
     }
 
-    if (avatarUrl && typeof avatarUrl !== 'string') {
-      throw new Error('avatarUrl must be a string');
-    }
+    const finalAvatar = (avatarUrl && typeof avatarUrl === 'string') 
+  ? avatarUrl.trim() 
+  : "https://api.dicebear.com/7.x/bottts/svg?seed=" + username;
 
     return {
-      username: username.trim(),
-      email: email.trim(),
-      password,
-      country,
-      avatarUrl: avatarUrl ? avatarUrl.trim() : ''
+      authData: {
+        username: body.username.trim(),
+        email: body.email.trim(),
+        password: body.password,
+      },
+      profileData: {
+        country: body.country,
+        avatarUrl: body.avatarUrl ? body.avatarUrl.trim() : ''
+      }
     };
   }
 };
@@ -87,13 +91,23 @@ export const loginRequestDTO = {
 
 export const loginResponseDTO = {
 
-  build: (user, token) => {
+  build: (user, profile, token) => {
+    if (!user) return null;
+
     return {
-      id: user._id.toString(),
-      username: user.username,
-      email: user.email,
-      role: user.role,
-      isPremium: user.isPremium,
+      // Thông tin định danh (từ AuthModel)
+      user: {
+        id: user._id?.toString() || user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+      },
+      // Thông tin quyền lợi (từ UserProfileModel)
+      subscription: {
+        isPremium: profile?.isPremium || false,
+        premiumExpiry: profile?.premiumExpiry || null,
+      },
+      // Thông tin xác thực
       token: token
     };
   }

@@ -1,5 +1,6 @@
 import httpUtil from '../../utils/httpUtil.js';
 import { useAuthStore } from '../../store/authStore.js';
+import { createPlayerModel } from './authModel.js';
 
 /**
  * AuthService - Frontend Logic Layer
@@ -32,18 +33,25 @@ const AuthService = {
 
       const response = await httpUtil.post('/auth/login', payload);
       
-      // If successful, update the global store
+      // If successful, update the global store with a standardized player model
       if (response.success && response.data) {
-        const { token, ...user } = response.data;
-        useAuthStore.getState().setAuth(user, token);
+        const { token, user } = response.data;
+        const playerModel = createPlayerModel(user);
+        useAuthStore.getState().setAuth(playerModel, token);
       }
       
       return response;
     } catch (error) {
-
       console.error('Login API Error:', error);
       throw error;
     }
+  },
+
+  /**
+   * Logout and clear session
+   */
+  logout() {
+    useAuthStore.getState().clearAuth();
   }
 };
 

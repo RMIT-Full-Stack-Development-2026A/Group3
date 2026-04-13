@@ -1,61 +1,58 @@
 @import "tailwindcss";
 
 @theme {
-  /* TicTacToang Premium Theme - Handcrafted for a Dark Gaming Aesthetic */
+  /* Stitch Ethereal Dark Theme */
+  --color-primary: #b3a1ff;
+  --color-primary-container: #a690ff;
+  --color-on-primary: #31068f;
   
-  --color-page: #0D1B2A;
-  --color-surface: #1A2B3C;
-  --color-surface-elevated: #223347;
+  --color-secondary: #d6bcf4;
+  --color-secondary-container: #523d6c;
+  --color-on-secondary: #4b3765;
+
+  --color-tertiary: #ece4ff;
   
-  /* Gold: The Primary Accent */
-  --color-gold: #F4AB00;
-  --color-gold-light: #FFD060;
+  --color-surface: #100b1f;
+  --color-surface-bright: #2f2747;
+  --color-surface-container: #1c162e;
+  --color-surface-container-low: #151026;
+  --color-surface-container-high: #221b36;
+  --color-surface-container-highest: #28213e;
   
-  /* Teal: Player 2 / Success / Online */
-  --color-teal: #00C9B1;
-  --color-teal-light: #44FFD2;
-  
-  /* Coral: Player 1 / Danger / Errors */
-  --color-coral: #FF6B6B;
-  --color-danger: #FF4757;
-  
-  /* Text & Borders */
-  --color-text-primary: #E8EDF2;
-  --color-text-secondary: #7A8FA6;
-  --color-border: #2A3F54;
+  --color-on-surface: #ebe1fe;
+  --color-on-surface-variant: #afa7c2;
+  --color-outline: #79728b;
+  --color-outline-variant: #4b455c;
+
+  --color-error: #ff6e84;
 
   /* Typography */
-  --font-orbitron: "Orbitron", sans-serif;
-  --font-inter: "Inter", sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
+  --font-headline: "Manrope", sans-serif;
+  --font-body: "Inter", sans-serif;
+}
 
-  /* Animation Overrides */
-  --animate-pulse-gold: pulse-gold 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+@utility neon-glow {
+  text-shadow: 0 0 10px rgba(179, 161, 255, 0.4), 0 0 20px rgba(179, 161, 255, 0.2);
+}
+
+@utility glass-card {
+  backdrop-filter: blur(24px);
 }
 
 @layer base {
   body {
-    @apply bg-page text-text-primary font-inter;
+    @apply bg-surface text-on-surface font-body selection:bg-primary selection:text-on-primary;
     margin: 0;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-orbitron;
+    @apply font-headline;
   }
 }
 
-@keyframes pulse-gold {
-  0%, 100% { opacity: 1; text-shadow: 0 0 10px rgba(244, 171, 0, 0.5); }
-  50% { opacity: 0.8; text-shadow: 0 0 20px rgba(244, 171, 0, 0.8); }
-}
-
-/* Custom Gradients */
-.bg-gold-gradient {
-  background: linear-gradient(135deg, #F4AB00 0%, #FFD060 100%);
-}
-
-.text-gold-glow {
-  text-shadow: 0 0 30px rgba(244, 171, 0, 0.5);
+/* Material Symbols configuration */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }

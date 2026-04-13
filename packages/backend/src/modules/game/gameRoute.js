@@ -1,6 +1,6 @@
 import express from 'express';
 import gameController from './gameController.js';
-import { authMiddleware } from '../../middleware/authMiddleware.js';
+import authMiddleware from '../../middleware/authMiddleware.js';
 
 const router = express.Router();
 

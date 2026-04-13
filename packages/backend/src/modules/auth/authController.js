@@ -1,62 +1,56 @@
-import { authService } from './authService.js';
+import AuthService from './authService.js';
 import { loginRequestDTO, registerRequestDTO, loginResponseDTO } from './authDto.js';
 import { responseHelper } from '../../common/responseHelper.js';
 
 const { sendSuccess, sendError } = responseHelper;
 
-
 export const authController = {
 
-    register: async (req, res) => {
+  register: async (req, res) => {
     try {
+      // 1. Validate đầu vào (Trả về { authData, profileData })
       const validatedRequest = registerRequestDTO.validate(req.body);
 
-      const user = await authService.register(validatedRequest);
+      // 2. Gọi Service xử lý (Service giờ sẽ tạo cả User và Profile)
+      const { user, profile } = await AuthService.register(validatedRequest);
 
-      const responseData = loginResponseDTO.build(user, null); // No token on registration
+      // 3. Build response (Registration thường chưa trả Token ngay, tùy logic team bạn)
+      const responseData = loginResponseDTO.build(user, profile, null);
 
-      sendSuccess(res, 201, responseData, 'Register successful');
+      return sendSuccess(res, 201, responseData, 'Register successful');
     } catch (error) {
-      const isValidationError =
-        error.message.includes('required') ||
-        error.message.includes('must') ||
-        error.message.includes('invalid');
-
-      const statusCode = isValidationError ? 400 : 409;
-      const errorCode = isValidationError ? 'VALIDATION_ERROR' : 'REGISTER_FAILED';
-      
-      sendError(res, statusCode, errorCode, error.message);
+      // Phân loại lỗi dựa trên nội dung hoặc type
+      const statusCode = error.message.includes('exists') ? 409 : 400;
+      return sendError(res, statusCode, 'REGISTER_FAILED', error.message);
     }
   },
 
-
-  
   login: async (req, res) => {
     try {
-      const validatedRequest = loginRequestDTO.validate(req.body);
-      const { token, user } = await authService.login(
-        validatedRequest.identifier,
-        validatedRequest.password
-      );
-      const responseData = loginResponseDTO.build(user, token);
-      sendSuccess(res, 200, responseData, 'Login successful');
-    } catch (error) {
-      const isValidationError =
-        error.message.includes('required') || error.message.includes('must be a string');
-      const statusCode = isValidationError ? 400 : 401;
-      const errorCode = isValidationError ? 'VALIDATION_ERROR' : 'AUTH_FAILED';
+      // 1. Validate đầu vào
+      const { identifier, password } = loginRequestDTO.validate(req.body);
 
-    sendError(res, statusCode, errorCode, error.message);
+      // 2. Gọi Service (Service giờ trả về bộ 3: user, profile, token)
+      const { user, profile, token } = await AuthService.login(identifier, password);
+
+      // 3. Đưa cả profile vào để build DTO chuẩn
+      const responseData = loginResponseDTO.build(user, profile, token);
+
+      return sendSuccess(res, 200, responseData, 'Login successful');
+    } catch (error) {
+      // 401 cho lỗi sai credentials, 400 cho lỗi validation
+      const statusCode = error.message.includes('credentials') ? 401 : 400;
+      return sendError(res, statusCode, 'AUTH_FAILED', error.message);
     }
   },
 
   logout: async (req, res) => {
     try {
-      sendSuccess(res, 200, null, 'Logout successful');
+      // Với JWT, logout chủ yếu là xóa token ở client. 
+      // Ở server bạn có thể blacklist token nếu muốn nâng cao.
+      return sendSuccess(res, 200, null, 'Logout successful');
     } catch (error) {
-      sendError(res, 500, 'LOGOUT_FAILED', 'An error occurred during logout');
+      return sendError(res, 500, 'LOGOUT_FAILED', error.message);
     }
   }
 };
-
-

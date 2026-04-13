@@ -1,25 +1,24 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { LoginView } from './features/auth/auth.login.view.jsx';
-import { RegisterView } from './features/auth/auth.register.view.jsx';
-import DashboardView from './features/dashboard/dashboard.view.jsx';
+import AuthLoginView from './features/auth/authLoginView.jsx';
+import AuthRegisterView from './features/auth/authRegisterView.jsx';
+import DashboardView from './features/dashboard/dashboardView.jsx';
 import GameSetupView from './features/game/gameSetupView.jsx';
 import GameView from './features/game/gameView.jsx';
 import { RouteGuard } from './components/RouteGuard.jsx';
 
 /**
  * App Module - Premium TicTacToang Router.
- * Implements Layer 5 Middleware (RouteGuard) for SRS A.2.c Compliance.
  */
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Public Routes - Landing & Entrance */}
-        <Route path="/" element={<LoginView />} />
-        <Route path="/register" element={<RegisterView />} />
+        {/* Public Routes */}
+        <Route path="/" element={<AuthLoginView />} />
+        <Route path="/register" element={<AuthRegisterView />} />
 
-        {/* Protected Routes - Player & Admin Access (SRS A.2.c) */}
+        {/* Protected Routes */}
         <Route 
           path="/dashboard" 
           element={
@@ -39,7 +38,7 @@ function App() {
         />
         
         <Route 
-          path="/game/offline" 
+          path="/game/offline/:sessionId?" 
           element={
             <RouteGuard allowedRoles={['PLAYER', 'ADMIN']}>
               <GameView />
@@ -48,7 +47,7 @@ function App() {
         />
         
         <Route 
-          path="/game/ai" 
+          path="/game/ai/:sessionId?" 
           element={
             <RouteGuard allowedRoles={['PLAYER', 'ADMIN']}>
               <GameView />
@@ -56,12 +55,11 @@ function App() {
           } 
         />
 
-        {/* Level HD: RoleGuard for Admin Specific Pages */}
         <Route 
           path="/admin/*" 
           element={
             <RouteGuard allowedRoles={['ADMIN']}>
-              <div className="p-8 text-white font-orbitron">Admin Control Panel (Authorized Only)</div>
+              <div className="p-8 text-white font-headline">Admin Control Panel (Authorized Only)</div>
             </RouteGuard>
           } 
         />
