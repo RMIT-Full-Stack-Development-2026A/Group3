@@ -5,6 +5,7 @@ import AuthRegisterView from './features/auth/authRegisterView.jsx';
 import DashboardView from './features/dashboard/dashboardView.jsx';
 import GameSetupView from './features/game/gameSetupView.jsx';
 import GameView from './features/game/gameView.jsx';
+import ProfileView from './features/profile/profileView.jsx';
 import { RouteGuard } from './components/RouteGuard.jsx';
 
 /**
@@ -60,6 +61,15 @@ function App() {
           element={
             <RouteGuard allowedRoles={['ADMIN']}>
               <div className="p-8 text-white font-headline">Admin Control Panel (Authorized Only)</div>
+            </RouteGuard>
+          } 
+        />
+
+        <Route 
+          path="/profile" 
+          element={
+            <RouteGuard allowedRoles={['PLAYER', 'ADMIN']}>
+              <ProfileView />
             </RouteGuard>
           } 
         />
