@@ -1,2 +1,0 @@
-/** auth repository */
-module.exports = {};

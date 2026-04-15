@@ -1,0 +1,3 @@
+@import "./styles/tailwind.css";
+
+/* Base styles are now handled in styles/tailwind.css using @layer base */

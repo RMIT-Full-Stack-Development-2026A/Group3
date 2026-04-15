@@ -1,2 +1,0 @@
-/** users repository */
-module.exports = {};

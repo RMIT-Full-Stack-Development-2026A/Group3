@@ -1,2 +1,0 @@
-/** auth route */
-module.exports = {};
