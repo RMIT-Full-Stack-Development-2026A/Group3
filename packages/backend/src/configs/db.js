@@ -14,8 +14,4 @@ const connectDB = async () => {
     }
 };
 
-<<<<<<< HEAD:backend/src/configs/db.js
-module.exports = connectDB;
-=======
 export default connectDB;
->>>>>>> feature/ui-stabilization:packages/backend/src/configs/db.js
