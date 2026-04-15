@@ -5,22 +5,20 @@ import { getBestMove } from '@tictactoang/shared/utils/aiLogicUtil.js';
 import { checkWin, isValidMove, isBoardFull } from '@tictactoang/shared/utils/gameLogicUtil.js';
 
 class GameService {
-  /**
-   * Khởi tạo ván đấu mới
-   */
   async startGame(userId, gameData) {
-    // Check for existing active session to prevent duplicates
+    // Check for existing active session
     const activeSession = await gameRepository.findActiveSessionByPlayer(userId);
     if (activeSession) {
-      return GameDTO.transformGameSession(activeSession, userId);
+      await gameRepository.completeGame(activeSession._id, {
+        status: 'ABORTED',
+        winnerId: null
+      });
     }
 
-    // Fetch player 1 info via AuthService (Decoupled Approach)
     const p1 = await authService.getUserById(userId);
 
-    // Defensive Coding: Input Sanitization
     const boardSizeRaw = parseInt(gameData.boardSize) || 10;
-    const size = Math.max(3, Math.min(boardSizeRaw, 20)); // Limit 3 to 20
+    const size = Math.max(3, Math.min(boardSizeRaw, 20));
 
     const difficultyRaw = (gameData.difficulty || 'MEDIUM').toUpperCase();
     const difficulty = ['EASY', 'MEDIUM', 'HARD'].includes(difficultyRaw) ? difficultyRaw : 'MEDIUM';
@@ -33,7 +31,7 @@ class GameService {
     const initialMoves = [];
     let currentTurn = 'PLAYER1';
 
-    // Handle "Bot moves first" logic (Atomic Initialization)
+    // AI moves first
     if (moveFirst === 'bot') {
       const bestMove = getBestMove(initialBoard, difficulty, player2Marker, player1Marker);
       initialBoard[bestMove.row][bestMove.col] = player2Marker;
@@ -92,7 +90,6 @@ class GameService {
     const board = [...session.boardState.map(row => [...row])];
     board[y][x] = playerMarker;
 
-    // Explicitly update session object for Mongoose tracking (if not using lean)
     session.boardState = board;
 
     const playerMove = {
