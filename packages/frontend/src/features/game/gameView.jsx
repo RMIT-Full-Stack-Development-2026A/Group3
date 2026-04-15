@@ -4,7 +4,7 @@ import { X, Circle, Trophy, ArrowLeft, RotateCcw } from 'lucide-react';
 import { Navigation } from '../../components/Navigation.jsx';
 import { Avatar } from '../../components/Avatar.jsx';
 import { Button } from '../../components/Button.jsx';
-import { useGameLogic } from './game.hook.js';
+import { useGameLogic } from './gameHook.js';
 import { useAuthStore } from '../../store/authStore.js';
 import { motion, AnimatePresence } from 'motion/react';
 

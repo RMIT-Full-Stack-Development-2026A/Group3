@@ -4,9 +4,7 @@ import { X, Circle, Triangle, Square, Diamond, Star, X as XIcon } from 'lucide-r
 import { Navigation } from '../../components/Navigation.jsx';
 import { Card } from '../../components/Card.jsx';
 import { Button } from '../../components/Button.jsx';
-import { Badge } from '../../components/Badge.jsx';
 import { useAuthStore } from '../../store/authStore.js';
-import GameService from '../game/gameService.js';
 
 /**
  * GameSetupView - Unified Game Configuration.
@@ -52,7 +50,7 @@ export default function GameSetupView() {
 
           <h2 className="text-3xl font-orbitron mb-2 text-gold">Arena Setup</h2>
           <p className="text-text-secondary mb-8">
-            Greetings, <span className="text-white font-bold">{user?.username}</span>. Co nfigure your {mode === 'local' ? 'local spar' : 'AI duel'}.
+            Greetings, <span className="text-white font-bold">{user?.username}</span>. Configure your {mode === 'local' ? 'local spar' : 'AI duel'}.
           </p>
 
           <div className="mb-8">
