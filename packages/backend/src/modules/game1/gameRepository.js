@@ -13,20 +13,6 @@ class GameRepository {
       .lean();
   }
 
-  async recordMove(sessionId, { move, nextBoard, nextTurn }) {
-    return await GameSession.findByIdAndUpdate(
-      sessionId,
-      {
-        $push: { moves: move },
-        $set: { 
-          boardState: nextBoard,
-          currentTurn: nextTurn 
-        }
-      },
-      { new: true }
-    );
-  }
-
   async recordMoves(sessionId, { moves, nextBoard, nextTurn }) {
     return await GameSession.findByIdAndUpdate(
       sessionId,

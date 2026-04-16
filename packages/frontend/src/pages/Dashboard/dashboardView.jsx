@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore.js';
-import GameService from '../game/gameService.js';
+import GameService from '../../features/game/gameService.js';
 
 // Layout & Components
 import Header from '../../components/layout/Header.jsx';
@@ -47,14 +47,14 @@ export default function DashboardView() {
             TicTacToang
           </h2>
           <p className="text-on-surface-variant max-w-xl mx-auto text-lg md:text-xl font-light tracking-wide">
-            Welcome back, <span className="text-primary font-bold">{user?.username || 'Player'}</span>. 
+            Welcome back, <span className="text-primary font-bold">{user?.username || 'Player'}</span>.
             Experience the classic game evolved through an ethereal digital landscape.
           </p>
         </section>
 
         {/* Mode Grid */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 w-full max-w-6xl relative z-10 mb-12">
-          <ModeCard 
+          <ModeCard
             title="Local Mode"
             description="Battle a friend side-by-side. 2 players, same device, infinite rivalry."
             icon="group"
@@ -63,7 +63,7 @@ export default function DashboardView() {
             onClick={() => navigate('/game-setup?mode=local')}
           />
 
-          <ModeCard 
+          <ModeCard
             isFeatured={true}
             spanCols="md:col-span-4"
             title="AI Mode"
@@ -74,7 +74,7 @@ export default function DashboardView() {
             onClick={() => setIsSetupModalOpen(true)}
           />
 
-          <ModeCard 
+          <ModeCard
             title="Online Lobby"
             description="Enter the global arena. Match with legends from around the world."
             icon="public"
@@ -82,37 +82,37 @@ export default function DashboardView() {
             actionIcon="public"
             onClick={() => navigate('/arena')}
           >
-             <div className="mt-4 flex -space-x-3 mb-4">
-               {[1, 2].map(i => (
-                 <div key={i} className="w-8 h-8 rounded-full border-2 border-surface bg-surface-container-highest overflow-hidden">
-                   <img alt="Portrait" src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i * 123}`} />
-                 </div>
-               ))}
-               <div className="w-8 h-8 rounded-full border-2 border-surface bg-surface-container-highest flex items-center justify-center text-[10px] font-bold text-primary">
-                 +14k
-               </div>
-             </div>
+            <div className="mt-4 flex -space-x-3 mb-4">
+              {[1, 2].map(i => (
+                <div key={i} className="w-8 h-8 rounded-full border-2 border-surface bg-surface-container-highest overflow-hidden">
+                  <img alt="Portrait" src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i * 123}`} />
+                </div>
+              ))}
+              <div className="w-8 h-8 rounded-full border-2 border-surface bg-surface-container-highest flex items-center justify-center text-[10px] font-bold text-primary">
+                +14k
+              </div>
+            </div>
           </ModeCard>
         </div>
 
         {/* Stats Section */}
         <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
-          <StatCard 
+          <StatCard
             icon="emoji_events"
             label="Total Wins"
-            value={recentGames.length} 
+            value={recentGames.length}
           />
-          <StatCard 
+          <StatCard
             icon="military_tech"
             label="ELO Rating"
             value="1200"
           />
-          <StatCard 
+          <StatCard
             icon="schedule"
             label="Daily Streak"
             value="14 Days"
           >
-             <div className="flex gap-1">
+            <div className="flex gap-1">
               {[1, 2, 3].map(i => <div key={i} className="w-2 h-6 bg-primary rounded-full"></div>)}
               {[1, 2].map(i => <div key={i} className="w-2 h-6 bg-primary/20 rounded-full"></div>)}
             </div>
@@ -123,9 +123,9 @@ export default function DashboardView() {
       <BottomDock />
 
       {/* AI Setup Modal */}
-      <GameSetupModal 
-        isOpen={isSetupModalOpen} 
-        onClose={() => setIsSetupModalOpen(false)} 
+      <GameSetupModal
+        isOpen={isSetupModalOpen}
+        onClose={() => setIsSetupModalOpen(false)}
       />
     </div>
   );

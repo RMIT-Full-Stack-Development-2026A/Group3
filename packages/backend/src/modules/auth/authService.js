@@ -13,8 +13,8 @@ class AuthService {
     const { authData, profileData } = data; // Dữ liệu đã được tách từ DTO
 
     // 1. Kiểm tra trùng lặp trước khi Hash (Tối ưu CPU)
-    const existingUser = await authRepository.findByEmailOrUsername(authData.email) || 
-                         await authRepository.findByUsername(authData.username);
+    const existingUser = await authRepository.findByEmailOrUsername(authData.email) ||
+      await authRepository.findByUsername(authData.username);
     if (existingUser) {
       throw new Error('Username or Email already exists');
     }

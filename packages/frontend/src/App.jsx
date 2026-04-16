@@ -1,14 +1,14 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import DashboardView from './features/dashboard/dashboardView.jsx';
-import GameSetupView from './features/game/gameSetupView.jsx';
-import GameView from './features/game/gameView.jsx';
+import DashboardView from './pages/Dashboard/dashboardView.jsx';
+import GameSetupView from './pages/GameSetup/gameSetupView.jsx';
+import GameView from './pages/GameBoard/gameView.js';
 import ProfileView from './features/profile/profileView.jsx';
 import { LoginView } from './features/auth/authLoginView.jsx';
 import { RegisterView } from './features/auth/authRegisterView.jsx';
-import DashboardView from './features/dashboard/dashboardView.jsx';
-import GameSetupView from './features/game/gameSetupView.jsx';
-import GameView from './features/game/gameView.jsx';
+import DashboardView from './pages/Dashboard/dashboardView.jsx';
+import GameSetupView from './pages/GameSetup/gameSetupView.jsx';
+import GameView from './pages/GameBoard/gameView.js';
 import MatchHistoryView from './features/matchHistory/matchHistoryView.jsx';
 import { RouteGuard } from './components/RouteGuard.jsx';
 
@@ -24,40 +24,40 @@ function App() {
         <Route path="/register" element={<AuthRegisterView />} />
 
         {/* Protected Routes */}
-        <Route 
-          path="/dashboard" 
+        <Route
+          path="/dashboard"
           element={
             <RouteGuard allowedRoles={['PLAYER', 'ADMIN']}>
               <DashboardView />
             </RouteGuard>
-          } 
+          }
         />
-        
-        <Route 
-          path="/game-setup" 
+
+        <Route
+          path="/game-setup"
           element={
             <RouteGuard allowedRoles={['PLAYER', 'ADMIN']}>
               <GameSetupView />
             </RouteGuard>
-          } 
+          }
         />
-        
-        <Route 
-          path="/game/offline/:sessionId?" 
+
+        <Route
+          path="/game/offline/:sessionId?"
           element={
             <RouteGuard allowedRoles={['PLAYER', 'ADMIN']}>
               <GameView />
             </RouteGuard>
-          } 
+          }
         />
-        
-        <Route 
-          path="/game/ai/:sessionId?" 
+
+        <Route
+          path="/game/ai/:sessionId?"
           element={
             <RouteGuard allowedRoles={['PLAYER', 'ADMIN']}>
               <GameView />
             </RouteGuard>
-          } 
+          }
         />
 
         <Route
@@ -70,22 +70,22 @@ function App() {
         />
 
         {/* Level HD: RoleGuard for Admin Specific Pages */}
-        <Route 
-          path="/admin/*" 
+        <Route
+          path="/admin/*"
           element={
             <RouteGuard allowedRoles={['ADMIN']}>
               <div className="p-8 text-white font-headline">Admin Control Panel (Authorized Only)</div>
             </RouteGuard>
-          } 
+          }
         />
 
-        <Route 
-          path="/profile" 
+        <Route
+          path="/profile"
           element={
             <RouteGuard allowedRoles={['PLAYER', 'ADMIN']}>
               <ProfileView />
             </RouteGuard>
-          } 
+          }
         />
       </Routes>
     </Router>

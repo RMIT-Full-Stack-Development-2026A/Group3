@@ -45,9 +45,6 @@ const gameSessionSchema = new mongoose.Schema({
     versionKey: false
  });
 
-gameSessionSchema.index({ player1Id: 1, createdAt: -1 });
-gameSessionSchema.index({ player2Id: 1, createdAt: -1 });
-
 gameSessionSchema.index({ player1Id: 1, updatedAt: -1 });
 gameSessionSchema.index({ player2Id: 1, updatedAt: -1 });
 gameSessionSchema.index({ status: 1, updatedAt: -1 });
