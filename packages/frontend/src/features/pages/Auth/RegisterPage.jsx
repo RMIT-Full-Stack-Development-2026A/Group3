@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import countryList from "react-select-country-list";
-import SubmitButton from "../../components/form/SubmitButton";
-import TextInput from "../../components/form/TextInput";
-import DropdownInput from "../../components/form/DropdownInput";
-import PasswordInput from "../../components/form/PasswordInput";
+import SubmitButton from "../../../../../../frontend/src/components/form/SubmitButton";
+import TextInput from "../../../../../../frontend/src/components/form/TextInput";
+import DropdownInput from "../../../../../../frontend/src/components/form/DropdownInput";
+import PasswordInput from "../../../../../../frontend/src/components/form/PasswordInput";
 
 export default function RegisterPage() {
     const [formData, setFormData] = useState({
