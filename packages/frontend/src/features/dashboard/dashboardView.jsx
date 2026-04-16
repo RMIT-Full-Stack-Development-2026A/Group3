@@ -20,8 +20,8 @@ export default function DashboardView() {
   const fetchHistory = async () => {
     setLoadingHistory(true);
     try {
-      const data = await GameService.getMatchHistory();
-      setRecentGames(Array.isArray(data) ? data : []);
+      const result = await GameService.getMatchHistory({ page: 1, limit: 5 });
+      setRecentGames(Array.isArray(result.items) ? result.items : []);
     } catch (err) {
       console.error('Error fetching history:', err);
     } finally {

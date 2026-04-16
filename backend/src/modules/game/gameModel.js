@@ -26,7 +26,7 @@ const gameSessionSchema = new mongoose.Schema({
     currentTurn: { type: String, enum: ['PLAYER1', 'PLAYER2'], required: true },
     boardState: { type: [[String]], default: [] },
     difficulty: { type: String, enum: ['EASY', 'MEDIUM', 'HARD'], default: null }, 
-    status: { type: String, enum: ['ACTIVE', 'ABORTED', 'COMPLETED'], default: 'ACTIVE' },
+    status: { type: String, enum: ['ACTIVE', 'WIN', 'LOSS', 'DRAW', 'ABORTED'], default: 'ACTIVE' },
     winnerId: { type: mongoose.Schema.Types.ObjectId, ref: 'user', default: null },
     winLine: {
         type: [{
@@ -48,4 +48,12 @@ const gameSessionSchema = new mongoose.Schema({
 gameSessionSchema.index({ player1Id: 1, createdAt: -1 });
 gameSessionSchema.index({ player2Id: 1, createdAt: -1 });
 
-export const GameSession = mongoose.model('game_session', gameSessionSchema);
+gameSessionSchema.index({ player1Id: 1, updatedAt: -1 });
+gameSessionSchema.index({ player2Id: 1, updatedAt: -1 });
+gameSessionSchema.index({ status: 1, updatedAt: -1 });
+
+const GameSession = mongoose.models.game_session || mongoose.model('game_session', gameSessionSchema);
+
+export {
+    GameSession
+};

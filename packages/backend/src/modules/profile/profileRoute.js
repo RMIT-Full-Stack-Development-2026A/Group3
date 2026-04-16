@@ -12,4 +12,6 @@ router.get('/me', profileController.getProfile);
 // Endpoint cập nhật thông tin hồ sơ
 router.put('/me', profileController.updateProfile);
 
+router.get('/matches', profileController.getMatchHistory);
+
 export default router;

@@ -5,12 +5,42 @@ import GameModel from './gameModel';
  * GameService - Minimal Data Access Layer.
  */
 const GameService = {
-    getMatchHistory: async () => {
+    getMatchHistory: async (params = {}) => {
         try {
-            return await httpUtil.get('/game/history/me');
+            const response = await httpUtil.get('/game/history', { params });
+
+            // Supports legacy array payloads and envelope payloads.
+            if (Array.isArray(response)) {
+                return {
+                    items: response,
+                    pagination: null
+                };
+            }
+
+            if (Array.isArray(response?.data?.items)) {
+                return {
+                    items: response.data.items,
+                    pagination: response.data.pagination || null
+                };
+            }
+
+            if (Array.isArray(response?.data)) {
+                return {
+                    items: response.data,
+                    pagination: null
+                };
+            }
+
+            return {
+                items: [],
+                pagination: null
+            };
         } catch (error) {
             console.error('Failed to fetch match history:', error);
-            return [];
+            return {
+                items: [],
+                pagination: null
+            };
         }
     },
 

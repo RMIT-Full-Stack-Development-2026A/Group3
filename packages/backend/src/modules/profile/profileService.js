@@ -52,6 +52,13 @@ class ProfileService {
 
     return this.getProfileData(userId);
   }
+
+  async createProfileService (repository = profileRepository) {
+    return {
+      getMatchHistory: async (query) => {
+        return repository.getPaginatedMatchHistory(query);
+      }
+    };
+  }
 }
 
-export default new ProfileService();

@@ -18,7 +18,35 @@ export const useGameLogic = (
         setIsLoading(false);
     }, []);
 
-    // Load session
+    /**
+     * Synchronize the completed match to the Backend
+     */
+    const syncMatchToBackend = async (finalWinner, finalWinLine, finalMoves) => {
+        const shouldSync = (gameType === 'LOCAL' || (gameType === 'SINGLE' && difficulty === 'HARD')) && p1Id;
+        
+        if (shouldSync) {
+            try {
+                const matchData = {
+                    gameType,
+                    boardSize,
+                    p1Id,
+                    p1Name,
+                    p2Name: gameType === 'LOCAL' ? 'Guest' : `AI (${difficulty})`,
+                    winnerId: finalWinner === 'X' ? p1Id : null,
+                    winLine: finalWinLine,
+                    moves: finalMoves
+                };
+                await GameService.syncMatchResults(matchData);
+                console.log('Match history successfully archived to backend.');
+            } catch (error) {
+                console.error('Failed to archive match history:', error);
+            }
+        }
+    };
+
+    /**
+     * Handle AI Move calculation via Backend
+     */
     useEffect(() => {
         const loadGame = async () => {
             if (!sessionId || !p1Id) return;
