@@ -1,2 +1,0 @@
-/** arena controller */
-module.exports = {};

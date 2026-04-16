@@ -1,2 +1,0 @@
-/** users route */
-module.exports = {};

@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+    --color-inverse-primary: #634ac1;
+    --color-tertiary-container: #ded5fd;
+    --color-outline: #79728b;
+    --color-on-secondary-fixed-variant: #5c4777;
+    --color-secondary: #d6bcf4;
+    --color-on-tertiary-container: #4e4869;
+    --color-tertiary-fixed-dim: #d0c7ee;
+    --color-secondary-fixed-dim: #d3b9f1;
+    --color-primary-fixed: #a690ff;
+    --color-surface: #100b1f;
+    --color-on-error-container: #ffb2b9;
+    --color-on-surface-variant: #afa7c2;
+    --color-on-primary-container: #250074;
+    --color-on-tertiary-fixed: #3b3655;
+    --color-surface-bright: #2f2747;
+    --color-error: #ff6e84;
+    --color-primary-dim: #a38dff;
+    --color-on-secondary-container: #e0c5fe;
+    --color-inverse-on-surface: #585269;
+    --color-on-tertiary-fixed-variant: #585273;
+    --color-inverse-surface: #fdf7ff;
+    --color-on-primary-fixed: #000000;
+    --color-primary-fixed-dim: #9981fa;
+    --color-primary: #b3a1ff;
+    --color-tertiary: #ece4ff;
+    --color-on-error: #490013;
+    --color-on-tertiary: #575172;
+    --color-surface-dim: #100b1f;
+    --color-on-secondary: #4b3765;
+    --color-secondary-container: #523d6c;
+    --color-tertiary-fixed: #ded5fd;
+    --color-surface-container: #1c162e;
+    --color-surface-container-high: #221b36;
+    --color-secondary-fixed: #e1c7ff;
+    --color-error-dim: #d73357;
+    --color-on-secondary-fixed: #3f2b58;
+    --color-on-primary-fixed-variant: #2f008d;
+    --color-surface-tint: #b3a1ff;
+    --color-primary-container: #a690ff;
+    --color-outline-variant: #4b455c;
+    --color-on-surface: #ebe1fe;
+    --color-surface-container-highest: #28213e;
+    --color-surface-container-low: #151026;
+    --color-surface-container-lowest: #000000;
+    --color-secondary-dim: #c8aee5;
+    --color-surface-variant: #28213e;
+    --color-tertiary-dim: #d0c7ee;
+    --color-on-primary: #31068f;
+    --color-error-container: #a70138;
+    --color-background: #100b1f;
+    --color-on-background: #ebe1fe;
+
+    --radius: 0.25rem;
+    --radius-lg: 0.5rem;
+    --radius-xl: 0.75rem;
+    --radius-full: 9999px;
+
+    --font-headline: Manrope, sans-serif;
+    --font-body: Inter, sans-serif;
+    --font-label: Inter, sans-serif;
+}
+
+.glass-effect {
+    background: rgba(40, 33, 62, 0.4);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+}
+.glow-hover:hover {
+    box-shadow: 0 0 20px rgba(179, 161, 255, 0.3);
+}
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
