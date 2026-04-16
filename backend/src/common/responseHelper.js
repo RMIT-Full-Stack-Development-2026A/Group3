@@ -2,7 +2,7 @@
  * Response Helper
  * Exports sendSuccess and sendError functions.
  */
-const responseHelper = {
+export const responseHelper = {
   /**
    * Send a successful response to the client
    * @param {Object} res - Express response object
@@ -33,5 +33,3 @@ const responseHelper = {
     });
   }
 };
-
-module.exports = responseHelper;

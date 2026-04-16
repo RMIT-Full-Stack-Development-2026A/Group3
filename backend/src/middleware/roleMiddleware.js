@@ -8,7 +8,7 @@
  * @param {...string} allowedRoles - Allowed role values
  * @returns {Function} Middleware function
  */
-const roleMiddleware = (...allowedRoles) => {
+export const roleMiddleware = (...allowedRoles) => {
   return (req, res, next) => {
     // Assumes authMiddleware has already verified token and populated req.user
     if (!req.user) {
@@ -34,5 +34,3 @@ const roleMiddleware = (...allowedRoles) => {
     next();
   };
 };
-
-module.exports = roleMiddleware;
