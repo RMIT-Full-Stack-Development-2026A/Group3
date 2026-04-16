@@ -6,12 +6,10 @@ const router = express.Router();
 
 router.use(authMiddleware);
 
-router.post('/start', gameController.startGame);
-
-router.get('/history/me', gameController.getMyHistory);
+router.post('/create', gameController.startGame);
 
 router.get('/:sessionId', gameController.getGame);
 
-router.post('/move/:sessionId', gameController.makeMove);
+router.post('/:sessionId/move', gameController.makeMove);
 
 export default router;

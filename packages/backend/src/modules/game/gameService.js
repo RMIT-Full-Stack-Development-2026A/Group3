@@ -175,12 +175,6 @@ class GameService {
 
     return GameDTO.transformGameSession(session, userId);
   }
-
-  async getPlayerHistory(userId, limit) {
-    const safeLimit = Math.min(limit, 50);
-    const sessions = await gameRepository.findPlayerHistory(userId, safeLimit);
-    return GameDTO.transformHistoryList(sessions, userId);
-  }
 }
 
 export default new GameService();

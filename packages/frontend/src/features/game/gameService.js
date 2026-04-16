@@ -7,7 +7,7 @@ import GameModel from './gameModel';
 const GameService = {
     getMatchHistory: async () => {
         try {
-            return await httpUtil.get('/game/history/me');
+            return await httpUtil.get('/profile/me/history');
         } catch (error) {
             console.error('Failed to fetch match history:', error);
             return [];
@@ -15,7 +15,7 @@ const GameService = {
     },
 
     startGame: async (config, currentUserId) => {
-        const response = await httpUtil.post('/game/start', config);
+        const response = await httpUtil.post('/game/create', config);
         if (response.success) {
             response.data = GameModel.createGameSessionModel(response.data, currentUserId);
         }
@@ -31,7 +31,7 @@ const GameService = {
     },
 
     makeMove: async (sessionId, { x, y, userId }) => {
-        const response = await httpUtil.post(`/game/move/${sessionId}`, { x, y });
+        const response = await httpUtil.post(`/game/${sessionId}/move`, { x, y });
         if (response.success) {
             response.data = GameModel.createGameSessionModel(response.data, userId);
         }
