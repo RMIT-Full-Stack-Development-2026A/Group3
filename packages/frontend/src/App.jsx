@@ -1,10 +1,11 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { LoginView } from './features/auth/auth.login.view.jsx';
-import { RegisterView } from './features/auth/auth.register.view.jsx';
-import DashboardView from './features/dashboard/dashboard.view.jsx';
+import { LoginView } from './features/auth/authLoginView.jsx';
+import { RegisterView } from './features/auth/authRegisterView.jsx';
+import DashboardView from './features/dashboard/dashboardView.jsx';
 import GameSetupView from './features/game/gameSetupView.jsx';
 import GameView from './features/game/gameView.jsx';
+import MatchHistoryView from './features/matchHistory/matchHistoryView.jsx';
 import { RouteGuard } from './components/RouteGuard.jsx';
 
 /**
@@ -54,6 +55,15 @@ function App() {
               <GameView />
             </RouteGuard>
           } 
+        />
+
+        <Route
+          path="/match-history"
+          element={
+            <RouteGuard allowedRoles={['PLAYER', 'ADMIN']}>
+              <MatchHistoryView />
+            </RouteGuard>
+          }
         />
 
         {/* Level HD: RoleGuard for Admin Specific Pages */}

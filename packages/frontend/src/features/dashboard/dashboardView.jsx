@@ -4,6 +4,7 @@ import { Users, Bot, Globe, Calendar, RefreshCcw } from 'lucide-react';
 import { Navigation } from '../../components/Navigation.jsx';
 import { Card } from '../../components/Card.jsx';
 import { Button } from '../../components/Button.jsx';
+import { Badge } from '../../components/Badge.jsx';
 import { useAuthStore } from '../../store/authStore.js';
 import GameService from '../game/gameService.js';
 
@@ -21,8 +22,8 @@ export default function DashboardView() {
   const fetchHistory = async () => {
     setLoadingHistory(true);
     try {
-      const data = await GameService.getMatchHistory();
-      setRecentGames(Array.isArray(data) ? data : []);
+      const result = await GameService.getMatchHistory({ page: 1, limit: 5 });
+      setRecentGames(Array.isArray(result.items) ? result.items : []);
     } catch (err) {
       console.error('Error fetching history:', err);
     } finally {
@@ -97,13 +98,23 @@ export default function DashboardView() {
         <div>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-orbitron">Recent Games</h2>
-            <button 
-              onClick={fetchHistory}
-              className="p-2 text-text-secondary hover:text-gold transition-colors"
-              title="Refresh"
-            >
-              <RefreshCcw size={18} className={loadingHistory ? 'animate-spin' : ''} />
-            </button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={() => navigate('/match-history')}
+                className="border-border text-text-secondary"
+              >
+                View all
+              </Button>
+
+              <button 
+                onClick={fetchHistory}
+                className="p-2 text-text-secondary hover:text-gold transition-colors"
+                title="Refresh"
+              >
+                <RefreshCcw size={18} className={loadingHistory ? 'animate-spin' : ''} />
+              </button>
+            </div>
           </div>
 
           {loadingHistory ? (
@@ -124,15 +135,19 @@ export default function DashboardView() {
                     <div className="flex items-center gap-4">
                       <Calendar size={20} className="text-text-secondary" />
                       <div>
-                        <p className="text-text-primary font-semibold">vs {game.opponent || 'Unknown'}</p>
-                        <p className="text-text-secondary text-sm">{game.createdAt || game.date}</p>
+                        <p className="text-text-primary font-semibold">vs {game.opponentName || game.opponent || 'Unknown'}</p>
+                        <p className="text-text-secondary text-sm">
+                          {game.playedAt ? new Date(game.playedAt).toLocaleString() : game.createdAt || game.date || 'Unknown date'}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
-                      <Badge variant={game.result === 'win' ? 'success' : game.result === 'lose' ? 'danger' : 'secondary'}>
-                        {game.result.toUpperCase()}
+                      <Badge variant={game.result === 'WIN' ? 'success' : game.result === 'LOSS' ? 'danger' : 'secondary'}>
+                        {(game.result || 'DRAW').toUpperCase()}
                       </Badge>
-                      <span className="text-text-secondary text-sm font-mono">{game.boardSize || '10x10'}</span>
+                      <span className="text-text-secondary text-sm font-mono">
+                        {typeof game.boardSize === 'number' ? `${game.boardSize}x${game.boardSize}` : '10x10'}
+                      </span>
                     </div>
                   </div>
                 </Card>

@@ -57,7 +57,7 @@ export const useGameLogic = (
                     winLine: finalWinLine,
                     moves: finalMoves
                 };
-                await GameService.syncMatch(matchData);
+                await GameService.syncMatchResults(matchData);
                 console.log('Match history successfully archived to backend.');
             } catch (error) {
                 console.error('Failed to archive match history:', error);
