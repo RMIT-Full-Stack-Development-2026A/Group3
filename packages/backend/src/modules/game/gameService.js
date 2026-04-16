@@ -69,10 +69,18 @@ const saveMatchResult = async (matchData) => {
   return await GameRepository.createSession(matchData);
 };
 
+/**
+ * Fetch authenticated user's match history with filters and pagination
+ */
+const getMatchHistory = async (historyQuery) => {
+  return await GameRepository.getPaginatedHistory(historyQuery);
+};
+
 export default {
   initGame,
   processAIMove,
   saveMatchResult,
+  getMatchHistory,
   shouldStoreReplay
 };
 

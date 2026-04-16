@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const moveSchema = new mongoose.Schema({
     step: { type: Number, required: true },
@@ -21,11 +21,11 @@ const gameSessionSchema = new mongoose.Schema({
     player2Name: { type: String, required: true },
     player2Avatar: { type: String, default: '' },
     
-    currentTurn: { type: String, enum: ['PLAYER1', 'PLAYER2'], required: true },
+    currentTurn: { type: String, enum: ['PLAYER1', 'PLAYER2'], default: 'PLAYER1' },
     // boardState: [[{ type: mongoose.Schema.Types.Mixed, default: null }]], 
     boardState: { type: [[String]], default: [] },
     
-    status: { type: String, enum: ['ACTIVE', 'ABORTED'], default: 'ACTIVE' },
+    status: { type: String, enum: ['ACTIVE', 'WIN', 'LOSS', 'DRAW', 'ABORTED'], default: 'ACTIVE' },
     winnerId: { type: mongoose.Schema.Types.ObjectId, ref: 'user', default: null },
     winLine: {
         type: [{
@@ -42,8 +42,12 @@ const gameSessionSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
+gameSessionSchema.index({ player1Id: 1, updatedAt: -1 });
+gameSessionSchema.index({ player2Id: 1, updatedAt: -1 });
+gameSessionSchema.index({ status: 1, updatedAt: -1 });
+
 const GameSession = mongoose.models.game_session || mongoose.model('game_session', gameSessionSchema);
 
-module.exports = {
+export {
     GameSession
 };

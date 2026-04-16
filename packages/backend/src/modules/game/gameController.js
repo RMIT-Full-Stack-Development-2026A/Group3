@@ -1,5 +1,6 @@
 import GameService from './gameService.js';
 import GameDTO from './gameDto.js';
+import { responseHelper } from '../../common/responseHelper.js';
 
 /**
  * Game Controller - Handles HTTP request/response for the Game module.
@@ -60,6 +61,27 @@ const GameController = {
       });
     } catch (error) {
       res.status(400).json({ success: false, message: error.message });
+    }
+  },
+
+  /**
+   * Get authenticated user's match history
+   */
+  async getMatchHistory(req, res) {
+    try {
+      const query = GameDTO.toHistoryQuery(req.user?.id, req.query);
+      const payload = await GameService.getMatchHistory(query);
+
+      return responseHelper.sendSuccess(
+        res,
+        200,
+        GameDTO.toHistoryResponse(payload),
+        'Match history fetched successfully.'
+      );
+    } catch (error) {
+      const statusCode = error.message.includes('Authenticated user context') ? 401 : 400;
+      const errorCode = statusCode === 401 ? 'UNAUTHORIZED' : 'BAD_HISTORY_QUERY';
+      return responseHelper.sendError(res, statusCode, errorCode, error.message);
     }
   }
 };
