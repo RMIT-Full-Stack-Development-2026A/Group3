@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+@theme {
+  /* TicTacToang Premium Theme - Handcrafted for a Dark Gaming Aesthetic */
+  
+  --color-page: #0D1B2A;
+  --color-surface: #1A2B3C;
+  --color-surface-elevated: #223347;
+  
+  /* Gold: The Primary Accent */
+  --color-gold: #F4AB00;
+  --color-gold-light: #FFD060;
+  
+  /* Teal: Player 2 / Success / Online */
+  --color-teal: #00C9B1;
+  --color-teal-light: #44FFD2;
+  
+  /* Coral: Player 1 / Danger / Errors */
+  --color-coral: #FF6B6B;
+  --color-danger: #FF4757;
+  
+  /* Text & Borders */
+  --color-text-primary: #E8EDF2;
+  --color-text-secondary: #7A8FA6;
+  --color-border: #2A3F54;
+
+  /* Typography */
+  --font-orbitron: "Orbitron", sans-serif;
+  --font-inter: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  /* Animation Overrides */
+  --animate-pulse-gold: pulse-gold 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@layer base {
+  body {
+    @apply bg-page text-text-primary font-inter;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-orbitron;
+  }
+}
+
+@keyframes pulse-gold {
+  0%, 100% { opacity: 1; text-shadow: 0 0 10px rgba(244, 171, 0, 0.5); }
+  50% { opacity: 0.8; text-shadow: 0 0 20px rgba(244, 171, 0, 0.8); }
+}
+
+/* Custom Gradients */
+.bg-gold-gradient {
+  background: linear-gradient(135deg, #F4AB00 0%, #FFD060 100%);
+}
+
+.text-gold-glow {
+  text-shadow: 0 0 30px rgba(244, 171, 0, 0.5);
+}

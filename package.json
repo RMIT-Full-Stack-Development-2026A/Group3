@@ -1,0 +1,13 @@
+{
+  "name": "tictactoang-monorepo",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:backend": "npm run dev --workspace=@tictactoang/backend",
+    "dev:frontend": "npm run dev --workspace=@tictactoang/frontend",
+    "install:all": "npm install"
+  }
+}
