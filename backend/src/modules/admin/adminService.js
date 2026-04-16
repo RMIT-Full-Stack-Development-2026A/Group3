@@ -1,2 +1,2 @@
 /** admin service */
-module.exports = {};
+export const adminService = {};

@@ -1,2 +1,2 @@
 /** subscription repository */
-module.exports = {};
+export const subscriptionRepository = {};

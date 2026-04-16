@@ -1,2 +1,2 @@
 /** arena service */
-module.exports = {};
+export const arenaService = {};

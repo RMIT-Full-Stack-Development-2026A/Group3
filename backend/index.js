@@ -4,6 +4,8 @@ import cors from 'cors';
 import connectDB from './src/configs/db.js';
 import gameRouter from './src/modules/game/gameRoute.js';
 import authRouter from './src/modules/auth/authRoute.js';
+import usersRouter from './src/modules/users/usersRoute.js';
+import profileRouter from './src/modules/profile/profileRoute.js';
 
 const app = express();
 
@@ -22,6 +24,12 @@ app.use('/api/v1/auth', authRouter);
 
 // Game Module
 app.use('/api/v1/game', gameRouter);
+
+// Users module
+app.use('/api/v1/users', usersRouter);
+
+// Profile module
+app.use('/api/v1/profile', profileRouter);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

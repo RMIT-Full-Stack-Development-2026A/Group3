@@ -1,2 +1,2 @@
 /** admin repository */
-module.exports = {};
+export const adminRepository = {};

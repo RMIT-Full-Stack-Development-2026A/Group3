@@ -1,2 +1,2 @@
 /** arena controller */
-module.exports = {};
+export const arenaController = {};

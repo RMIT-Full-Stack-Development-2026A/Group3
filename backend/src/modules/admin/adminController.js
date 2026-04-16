@@ -1,2 +1,2 @@
 /** admin controller */
-module.exports = {};
+export const adminController = {};

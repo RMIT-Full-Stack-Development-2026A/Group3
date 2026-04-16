@@ -1,2 +1,2 @@
 /** arena repository */
-module.exports = {};
+export const arenaRepository = {};
