@@ -93,7 +93,8 @@ export const loginResponseDTO = {
       username: user.username,
       email: user.email,
       role: user.role,
-      isPremium: user.isPremium,
+      isPremium: user.isPremium === true,
+      avatarUrl: user.avatarUrl || '',
       token: token
     };
   }

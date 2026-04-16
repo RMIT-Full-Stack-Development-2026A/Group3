@@ -18,4 +18,4 @@ const premiumMiddleware = (req, res, next) => {
 	next();
 };
 
-module.exports = premiumMiddleware;
+export default premiumMiddleware;

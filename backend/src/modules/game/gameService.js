@@ -1,9 +1,62 @@
-import { getBestMove, checkWin, isBoardFull } from '@tictactoang/shared';
 import GameRepository from './gameRepository.js';
 
 /**
  * Game Service - Handles game logic, AI turns, and Session persistence
  */
+
+const directions = [
+  [1, 0],
+  [0, 1],
+  [1, 1],
+  [1, -1]
+];
+
+const isWithinBounds = (board, row, col) => {
+  return row >= 0 && col >= 0 && row < board.length && col < board.length;
+};
+
+const isBoardFull = (board) => {
+  return board.every((r) => r.every((cell) => cell !== null));
+};
+
+const checkWin = (board, row, col, marker) => {
+  for (const [dr, dc] of directions) {
+    const line = [{ x: col, y: row }];
+
+    let r = row + dr;
+    let c = col + dc;
+    while (isWithinBounds(board, r, c) && board[r][c] === marker) {
+      line.push({ x: c, y: r });
+      r += dr;
+      c += dc;
+    }
+
+    r = row - dr;
+    c = col - dc;
+    while (isWithinBounds(board, r, c) && board[r][c] === marker) {
+      line.unshift({ x: c, y: r });
+      r -= dr;
+      c -= dc;
+    }
+
+    if (line.length >= 5) {
+      return { win: true, winLine: line.slice(0, 5) };
+    }
+  }
+
+  return { win: false, winLine: [] };
+};
+
+const getBestMove = (board) => {
+  for (let row = 0; row < board.length; row += 1) {
+    for (let col = 0; col < board[row].length; col += 1) {
+      if (board[row][col] === null) {
+        return { row, col };
+      }
+    }
+  }
+  return null;
+};
 
 /**
  * Determines if a game session should be stored as a replay based on policy
@@ -32,6 +85,7 @@ const initGame = async (gameData) => {
       player1Id: p1Id,
       player1Name: p1Name,
       player2Name: gameType === 'SINGLE' ? `Bot ${difficulty}` : 'Guest',
+      currentTurn: 'PLAYER1',
       boardState: board,
       status: 'ACTIVE'
     });

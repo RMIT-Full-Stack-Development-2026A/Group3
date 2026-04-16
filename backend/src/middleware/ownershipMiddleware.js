@@ -25,4 +25,4 @@ const ownershipMiddleware = (paramName = 'id') => {
 	};
 };
 
-module.exports = ownershipMiddleware;
+export default ownershipMiddleware;
