@@ -52,10 +52,6 @@ class ProfileService {
 
     return this.getProfileData(userId);
   }
-
-  async getMatchHistory(userId) {
-    return await gameService.getMatchHistory(userId);
-  }
 }
 
 export default new ProfileService();

@@ -10,7 +10,7 @@ class ProfileRepository {
     return await Profile.findOneAndUpdate(
       { userId },
       { $set: updateData },
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     ).lean();
   }
 

@@ -1,6 +1,6 @@
 export class ProfileDTO {    
     static transformUpdateReq(body = {}) {
-        const { country, username } = body;
+        const { country, username, avatarUrl } = body;
         const validatedData = {};
 
 
@@ -19,9 +19,16 @@ export class ProfileDTO {
             validatedData.username = username.trim();
         }
 
+        if (avatarUrl) {
+            if (typeof avatarUrl !== 'string' || !avatarUrl.startsWith('http')) {
+                throw new Error('Invalid avatar URL');
+            }
+            validatedData.avatarUrl = avatarUrl.trim();
+        }
+
 
         if (Object.keys(validatedData).length === 0) {
-            throw new Error('At least one field (country or username) must be provided for update');
+            throw new Error('At least one field (country, username, or avatarUrl) must be provided for update');
         }
 
 

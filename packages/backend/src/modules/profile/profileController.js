@@ -30,17 +30,6 @@ class ProfileController {
       return sendError(res, 400, 'UPDATE_PROFILE_FAILED', error.message);
     }
   }
-
-  async getMatchHistory(req, res) {
-    try {
-      const userId = req.user.id;
-      const history = await profileService.getMatchHistory(userId);
-
-      return sendSuccess(res, 200, history, 'Fetch match history successful');
-    } catch (error) {
-      return sendError(res, 400, 'FETCH_HISTORY_FAILED', error.message);
-    }
-  }
 }
 
 export default new ProfileController();

@@ -37,7 +37,7 @@ class AuthRepository {
     return await User.findByIdAndUpdate(
       userId,
       { $set: updateData },
-      { new: true }
+      { returnDocument: 'after' }
     ).lean();
   }
 

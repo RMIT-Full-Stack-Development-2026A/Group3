@@ -12,7 +12,4 @@ router.get('/me', profileController.getProfile);
 // Endpoint cập nhật thông tin hồ sơ
 router.put('/me', profileController.updateProfile);
 
-// Endpoint lấy lịch sử trận đấu
-router.get('/me/history', profileController.getMatchHistory);
-
 export default router;
