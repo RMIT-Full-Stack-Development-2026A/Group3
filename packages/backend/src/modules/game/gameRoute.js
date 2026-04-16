@@ -4,17 +4,13 @@ import authMiddleware from '../../middleware/authMiddleware.js';
 
 const router = express.Router();
 
+router.use(authMiddleware);
+
 /**
  * Game Routes - Defines endpoints for the Tic-Tac-Toe engine
  */
 
-// 1. Initialize a new game session
-// POST /api/v1/game/start
-router.post('/start', GameController.startGame);
-
-// 2. Handle a player's move in AI Mode
-// POST /api/v1/game/move
-router.post('/move', GameController.makeMove);
+router.post('/create', GameController.startGame);
 
 // 3. Sync finished local match results
 // POST /api/v1/game/sync-local
@@ -22,7 +18,8 @@ router.post('/sync-local', GameController.syncLocalMatch);
 
 // 4. Match history list with search/filter/sort/pagination
 // GET /api/v1/game/history
-router.get('/history', authMiddleware, GameController.getMatchHistory);
+router.get('/history', GameController.getMatchHistory);
+router.post('/:sessionId/move', GameController.makeMove);
 
 export default router;
 
