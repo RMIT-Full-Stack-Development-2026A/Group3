@@ -4,10 +4,7 @@ import cors from 'cors';
 import connectDB from './src/configs/db.js';
 import gameRouter from './src/modules/game/gameRoute.js';
 import authRouter from './src/modules/auth/authRoute.js';
-<<<<<<< HEAD:packages/backend/index.js
-=======
 import usersRouter from './src/modules/users/usersRoute.js';
->>>>>>> origin/merge/login-register:backend/index.js
 import profileRouter from './src/modules/profile/profileRoute.js';
 
 const app = express();
