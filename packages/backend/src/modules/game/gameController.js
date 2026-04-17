@@ -1,0 +1,68 @@
+import gameService from './gameService.js';
+import GameDTO from './gameDto.js';
+import { responseHelper } from '../../common/responseHelper.js';
+
+const { sendSuccess, sendError } = responseHelper;
+
+class GameController {
+  async startGame(req, res) {
+    try {
+      const userId = req.user.id;
+      const gameData = req.body;
+
+      const session = await gameService.startGame(userId, gameData);
+      const data = GameDTO.formatGameSession(session, userId);
+      
+      return sendSuccess(res, 201, data, 'Match is ready!');
+    } catch (error) {
+      return sendError(res, 400, 'GAME_START_FAILED', error.message);
+    }
+  }
+
+  async makeMove(req, res) {
+    try {
+      const { sessionId } = req.params;
+      const userId = req.user.id;
+      const moveData = GameDTO.transformMoveReq(req.body);
+
+      const session = await gameService.makeMove(sessionId, userId, moveData);
+      const data = GameDTO.formatGameSession(session, userId);
+
+      return sendSuccess(res, 200, data, 'Move recorded');
+    } catch (error) {
+      const statusCode = error.message.includes('not found') ? 404 : 400;
+      return sendError(res, statusCode, 'INVALID_MOVE', error.message);
+    }
+  }
+
+  async getGame(req, res) {
+    try {
+      const { sessionId } = req.params;
+      const userId = req.user.id;
+
+      const session = await gameService.getGameById(sessionId, userId);
+      const data = GameDTO.formatGameSession(session, userId);
+
+      return sendSuccess(res, 200, data, 'Game fetched successfully');
+    } catch (error) {
+      const statusCode = error.message.includes('permission') ? 403 : 404;
+      return sendError(res, statusCode, 'GAME_FETCH_FAILED', error.message);
+    }
+  }
+
+  async syncLocalMatch(req, res) {
+    try {
+      const userId = req.user.id;
+      const syncData = GameDTO.transformSyncLocalReq({ ...req.body, p1Id: userId });
+
+      const session = await gameService.syncLocalMatch(syncData);
+      const data = GameDTO.formatGameSession(session, userId);
+
+      return sendSuccess(res, 201, data, 'Offline match synced successfully');
+    } catch (error) {
+      return sendError(res, 400, 'SYNC_FAILED', error.message);
+    }
+  }
+}
+
+export default new GameController();

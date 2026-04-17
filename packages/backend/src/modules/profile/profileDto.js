@@ -1,3 +1,5 @@
+import GameDTO from "../game/gameDto.js";
+
 export class ProfileDTO {    
     static transformUpdateReq(body = {}) {
         const { country, username, avatarUrl } = body;
@@ -67,5 +69,13 @@ export class ProfileDTO {
                 winRate: `${winRate}%`
             }
         };
+    }
+
+    static transformMatchHistoryQuery(userId, query = {}) {
+        return GameDTO.transformHistoryQuery(userId, query);
+    }
+
+    static formatMatchHistoryResponse(payload) {
+        return GameDTO.formatHistoryResponse(payload);
     }
 }

@@ -1,30 +1,10 @@
-import { getBestMove, checkWin, isBoardFull } from '@tictactoang/shared';
-import GameRepository from './gameRepository.js';
+import gameRepository from './gameRepository.js';
+import authService from '../auth/authService.js';
+import { getBestMove } from '@tictactoang/shared/utils/aiLogicUtil.js';
+import { checkWin, isValidMove, isBoardFull } from '@tictactoang/shared/utils/gameLogicUtil.js';
 
-// /**
-//  * Game Service - Handles game logic, AI turns, and Session persistence
-//  */
-
-// /**
-//  * Determines if a game session should be stored as a replay based on policy
-//  */
-// const shouldStoreReplay = (gameType, difficulty) => {
-//   if (gameType === 'ONLINE' || gameType === 'LOCAL') return true;
-//   if (gameType === 'SINGLE' && difficulty === 'HARD') return true;
-//   return false;
-// };
-
-// /**
-//  * Initialize a new game session
-//  */
-// const initGame = async (gameData) => {
-//   const { gameType, boardSize, p1Id, p1Name, difficulty } = gameData;
-  
-//   const board = Array(boardSize || 10).fill(null).map(() => Array(boardSize || 10).fill(null));
-//   const shouldSave = shouldStoreReplay(gameType, difficulty);
 class GameService {
   async startGame(userId, gameData) {
-    // Check for existing active session
     const activeSession = await gameRepository.findActiveSessionByPlayer(userId);
     if (activeSession) {
       await gameRepository.completeGame(activeSession._id, {
@@ -38,16 +18,9 @@ class GameService {
     const boardSizeRaw = parseInt(gameData.boardSize) || 10;
     const size = Math.max(3, Math.min(boardSizeRaw, 20));
 
-  // let sessionId = 'SESSION-GUEST-' + Date.now();
+    const difficultyRaw = (gameData.difficulty || 'MEDIUM').toUpperCase();
+    const difficulty = ['EASY', 'MEDIUM', 'HARD'].includes(difficultyRaw) ? difficultyRaw : 'MEDIUM';
 
-  // if (shouldSave) {
-  //   const session = await GameRepository.createSession({
-  //     gameType,
-  //     boardSize: boardSize || 10,
-  //     player1Id: p1Id,
-  //     player1Name: p1Name,
-  //     player2Name: gameType === 'SINGLE' ? `Bot ${difficulty}` : 'Guest',
-  //     boardState: board,
     const player1Marker = gameData.player1Marker || 'CROSS';
     const player2Marker = gameData.player2Marker || 'CIRCLE';
     const moveFirst = (gameData.moveFirst || 'player').toLowerCase();
@@ -90,124 +63,124 @@ class GameService {
       currentTurn: currentTurn,
       status: 'ACTIVE'
     });
-    sessionId = session._id;
+
+    return newSession;
   }
 
-//   return { sessionId, board, isReplayable: shouldSave };
-// };
+  async makeMove(sessionId, userId, { x, y }) {
+    const session = await gameRepository.findById(sessionId);
+    if (!session || session.status !== 'ACTIVE') {
+      throw new Error('Game not found or game has ended');
+    }
 
-/**
- * Process an AI move for a given game state
- * @returns {Object} { row, col, isWin, isDraw, winLine }
- */
-// const processAIMove = async (board, difficulty, aiMarker, playerMarker) => {
-//   const bestMove = getBestMove(board, difficulty, aiMarker, playerMarker);
-//   if (!bestMove) throw new Error('AI could not find a valid move');
+    const isP1 = session.player1Id._id.toString() === userId.toString();
+    const currentTurnLabel = isP1 ? 'PLAYER1' : 'PLAYER2';
 
-//   const { row, col } = bestMove;
-//   const winResult = checkWin(board, row, col, aiMarker);
-//   const isDraw = !winResult.win && isBoardFull(board);
+    if (session.currentTurn !== currentTurnLabel) {
+      throw new Error('It\'s not your turn');
+    }
 
-//   return {
-//     row,
-//     col,
-//     isWin: winResult.win,
-//     winLine: winResult.winLine,
-//     isDraw
-//   };
-// };
+    if (!isValidMove(session.boardState, y, x)) {
+      throw new Error('Invalid move');
+    }
 
-/**
- * Sync a completed local match result to the database
- */
-// const saveMatchResult = async (matchData) => {
-//   return await GameRepository.createSession(matchData);
-// };
+    const playerMarker = isP1 ? session.player1Marker : session.player2Marker;
+    const board = [...session.boardState.map(row => [...row])];
+    board[y][x] = playerMarker;
 
-/**
- * Fetch authenticated user's match history with filters and pagination
- */
-    async getMatchHistory (historyQuery) {
-      return await GameRepository.getPaginatedHistory(historyQuery);
+    session.boardState = board;
+
+    const playerMove = {
+      step: session.moves.length + 1,
+      pId: userId,
+      x, y,
+      marker: playerMarker,
+      time: new Date()
     };
 
+    const playerWin = checkWin(board, y, x, playerMarker);
+    if (playerWin.win) {
+      await gameRepository.recordMoves(sessionId, { moves: [playerMove], nextBoard: board, nextTurn: currentTurnLabel });
+      const finalSession = await gameRepository.completeGame(sessionId, {
+        status: 'COMPLETED',
+        winnerId: userId,
+        winLine: playerWin.winLine
+      });
+      return finalSession;
+    }
 
-  //   session.boardState = board;
-  //   const playerWin = checkWin(board, y, x, playerMarker);
-  //   if (playerWin.win) {
-  //     await gameRepository.recordMove(sessionId, { move: playerMove, nextBoard: board, nextTurn: currentTurnLabel });
-  //     const finalSession = await gameRepository.completeGame(sessionId, {
-  //       status: 'COMPLETED',
-  //       winnerId: userId,
-  //       winLine: playerWin.winLine
-  //     });
-  //     return GameDTO.transformGameSession(finalSession, userId);
-  //   }
+    if (isBoardFull(board)) {
+      await gameRepository.recordMoves(sessionId, { moves: [playerMove], nextBoard: board, nextTurn: currentTurnLabel });
+      const finalSession = await gameRepository.completeGame(sessionId, { status: 'COMPLETED', winnerId: null, winLine: [] });
+      return finalSession;
+    }
 
-  //   if (isBoardFull(board)) {
-  //     await gameRepository.recordMove(sessionId, { move: playerMove, nextBoard: board, nextTurn: currentTurnLabel });
-  //     const finalSession = await gameRepository.completeGame(sessionId, { status: 'COMPLETED', winnerId: null, winLine: [] });
-  //     return GameDTO.transformGameSession(finalSession, userId);
-  //   }
+    if (session.gameType === 'SINGLE') {
+      const aiMarker = isP1 ? session.player2Marker : session.player1Marker;
+      const bestMove = getBestMove(board, session.difficulty, aiMarker, playerMarker);
 
-  //   if (session.gameType === 'SINGLE') {
-  //     const aiMarker = isP1 ? session.player2Marker : session.player1Marker;
-  //     const bestMove = getBestMove(board, session.difficulty, aiMarker, playerMarker);
+      board[bestMove.row][bestMove.col] = aiMarker;
+      const aiMove = {
+        step: session.moves.length + 2,
+        pId: null,
+        x: bestMove.col,
+        y: bestMove.row,
+        marker: aiMarker,
+        time: new Date()
+      };
 
-  //     board[bestMove.row][bestMove.col] = aiMarker;
-  //     const aiMove = {
-  //       step: session.moves.length + 2,
-  //       pId: null,
-  //       x: bestMove.col,
-  //       y: bestMove.row,
-  //       marker: aiMarker,
-  //       time: new Date()
-  //     };
+      const aiWin = checkWin(board, bestMove.row, bestMove.col, aiMarker);
 
-  //     const aiWin = checkWin(board, bestMove.row, bestMove.col, aiMarker);
+      const updatedSession = await gameRepository.recordMoves(sessionId, {
+        moves: [playerMove, aiMove],
+        nextBoard: board,
+        nextTurn: 'PLAYER1'
+      });
 
-  //     const updatedSession = await gameRepository.recordMoves(sessionId, {
-  //       moves: [playerMove, aiMove],
-  //       nextBoard: board,
-  //       nextTurn: 'PLAYER1'
-  //     });
+      if (aiWin.win) {
+        const finalSession = await gameRepository.completeGame(sessionId, {
+          status: 'COMPLETED',
+          winnerId: null, // AI win
+          winLine: aiWin.winLine
+        });
+        return finalSession;
+      }
 
-  //     if (aiWin.win) {
-  //       const finalSession = await gameRepository.completeGame(sessionId, {
-  //         status: 'COMPLETED',
-  //         winnerId: null, // AI win
-  //         winLine: aiWin.winLine
-  //       });
-  //       return GameDTO.transformGameSession(finalSession, userId);
-  //     }
+      if (isBoardFull(board)) {
+        const finalSession = await gameRepository.completeGame(sessionId, { status: 'COMPLETED', winnerId: null, winLine: [] });
+        return finalSession;
+      }
 
-  //     if (isBoardFull(board)) {
-  //       const finalSession = await gameRepository.completeGame(sessionId, { status: 'COMPLETED', winnerId: null, winLine: [] });
-  //       return GameDTO.transformGameSession(finalSession, userId);
-  //     }
+      return updatedSession;
+    }
 
-  //     return GameDTO.transformGameSession(updatedSession, userId);
-  //   }
+    const nextTurn = isP1 ? 'PLAYER2' : 'PLAYER1';
+    const updatedSession = await gameRepository.recordMoves(sessionId, { moves: [playerMove], nextBoard: board, nextTurn: nextTurn });
+    return updatedSession;
+  }
 
-  //   const nextTurn = isP1 ? 'PLAYER2' : 'PLAYER1';
-  //   const updatedSession = await gameRepository.recordMove(sessionId, { move: playerMove, nextBoard: board, nextTurn: nextTurn });
-  //   return GameDTO.transformGameSession(updatedSession, userId);
-  // }
+  async getGameById(sessionId, userId) {
+    const session = await gameRepository.findById(sessionId);
+    if (!session) throw new Error('Game not found');
 
-  // async getGameById(sessionId, userId) {
-  //   const session = await gameRepository.findById(sessionId);
-  //   if (!session) throw new Error('Game not found');
+    const p1Id = session.player1Id?._id?.toString() || session.player1Id?.toString();
+    const p2Id = session.player2Id?._id?.toString() || session.player2Id?.toString();
+    const currentUserId = userId.toString();
 
-  //   const p1Id = session.player1Id?._id?.toString() || session.player1Id?.toString();
-  //   const p2Id = session.player2Id?._id?.toString() || session.player2Id?.toString();
-  //   const currentUserId = userId.toString();
+    if (p1Id !== currentUserId && p2Id !== currentUserId) {
+      throw new Error('You do not have permission to access this match');
+    }
 
-  //   if (p1Id !== currentUserId && p2Id !== currentUserId) {
-  //     throw new Error('You do not have permission to access this match');
-  //   }
+    return session;
+  }
 
-  //   return GameDTO.transformGameSession(session, userId);
-  // }
+  async getMatchHistory (historyQuery) {
+      return await gameRepository.getPaginatedMatchHistory(historyQuery);
+    }
+  
+  async syncLocalMatch(syncData) {
+    return await gameRepository.createSession(syncData);
+  }
 }
 
 export default new GameService();

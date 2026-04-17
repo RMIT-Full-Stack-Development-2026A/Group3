@@ -1,7 +1,7 @@
 /**
  * Global Error Handler
  */
-const responseHelper = require('./responseHelper');
+import { responseHelper } from './responseHelper.js';
 
 const errorHandler = (err, req, res, next) => {
 	const statusCode = Number.isInteger(err?.statusCode)

@@ -1,34 +1,25 @@
 import profileRepository from './profileRepository.js';
 import authRepository from '../auth/authRepository.js';
-import sharp from 'sharp';
-import fs from 'fs/promises';
-import path from 'path';
+import gameService from '../game/gameService.js';
 
 class ProfileService {
   async getProfileData(userId) {
     let [user, profile, stats] = await Promise.all([
       authRepository.findById(userId),
-      profileRepository.findByUserId(userId),
-      profileRepository.getStatsByUserId(userId)
+      profileRepository.findProfileByUserId(userId),
+      profileRepository.findStatsByUserId(userId)
     ]);
 
 
     if (!user) throw new Error('User not found');
-
-
-    if (!profile) {
-      profile = await profileRepository.createProfile({
-        userId,
-        country: 'Vietnam',
-        avatarUrl: `https://api.dicebear.com/7.x/bottts/svg?seed=${user.username}`
-      });
+    
+    if (!profile || !stats) {
+      [profile, stats] = await profileRepository.initUserProfile(
+        userId, 
+        'Vietnam', 
+        `https://api.dicebear.com/7.x/bottts/svg?seed=${user.username}`
+      );
     }
-
-
-    if (!stats) {
-      stats = await profileRepository.createStats({ userId });
-    }
-
 
     return { user, profile, stats };
   }
@@ -36,29 +27,25 @@ class ProfileService {
   async updateProfile(userId, updateData) {
     const { username, country, avatarUrl } = updateData;
 
-
+    // 1. Update Auth info if username changed
     if (username) {
-    const existingUser = await authRepository.findByUsername(username);
-      if (existingUser && existingUser._id.toString() !== userId) throw new Error('Username already taken');
+      const existingUser = await authRepository.findByUsername(username);
+      if (existingUser && existingUser._id.toString() !== userId.toString()) throw new Error('Username already taken');
       await authRepository.updateUserInfo(userId, { username });
     }
 
-
+    // 2. Update Profile info if any
     const profileUpdates = {};
     if (country) profileUpdates.country = country;
     if (avatarUrl) profileUpdates.avatarUrl = avatarUrl;
-    if (Object.keys(profileUpdates).length > 0) await profileRepository.updateByUserId(userId, profileUpdates);
-
+    if (Object.keys(profileUpdates).length > 0) await profileRepository.updateProfileByUserId(userId, profileUpdates);
 
     return this.getProfileData(userId);
   }
 
-  async createProfileService (repository = profileRepository) {
-    return {
-      getMatchHistory: async (query) => {
-        return repository.getPaginatedMatchHistory(query);
-      }
-    };
+  async getMatchHistory (queryParams) {
+      return await gameService.getMatchHistory(queryParams);
   }
 }
 
+export default new ProfileService();
