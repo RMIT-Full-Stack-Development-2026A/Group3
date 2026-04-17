@@ -1,8 +1,3 @@
-/**
- * Auth Request DTOs
- * Validation and sanitization for auth endpoints
- */
-
 class AuthDTO {
   /**
    * Validate Register Request

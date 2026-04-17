@@ -1,15 +1,15 @@
 import express from 'express';
-import profileController from './profileController.js';
-import authMiddleware from '../../middleware/authMiddleware.js';
+import ProfileController from './profileController.js';
+import AuthMiddleware from '../../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.use(authMiddleware);
+router.use(AuthMiddleware);
 
-router.get('/me', profileController.getProfile);
+router.get('/me', ProfileController.getProfile);
 
-router.put('/me', profileController.updateProfile);
+router.put('/me', ProfileController.updateProfile);
 
-router.get('/me/matches', profileController.getMatchHistory);
+router.get('/me/matches', ProfileController.getMatchHistory);
 
 export default router;

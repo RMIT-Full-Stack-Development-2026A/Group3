@@ -1,16 +1,16 @@
 import express from 'express';
-import authMiddleware from '../../middleware/authMiddleware.js';
-import authController from './authController.js';
-import usersController from './usersController.js';
+import AuthMiddleware from '../../middleware/authMiddleware.js';
+import AuthController from './authController.js';
+import UsersController from './usersController.js';
 
 const router = express.Router();
 
 // Authentication Routes
-router.post('/register', authController.register);
-router.post('/login', authController.login);
-router.post('/logout', authController.logout);
+router.post('/register', AuthController.register);
+router.post('/login', AuthController.login);
+router.post('/logout', AuthController.logout);
 
 // Identity Routes
-router.get('/me', authMiddleware, usersController.getMe);
+router.get('/me', AuthMiddleware, UsersController.getMe);
 
 export default router;

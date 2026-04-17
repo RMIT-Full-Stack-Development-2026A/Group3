@@ -1,5 +1,5 @@
 import gameRepository from './gameRepository.js';
-import authService from '../auth/authService.js';
+import AuthService from '../auth/authService.js';
 import { getBestMove } from '@tictactoang/shared/utils/aiLogicUtil.js';
 import { checkWin, isValidMove, isBoardFull } from '@tictactoang/shared/utils/gameLogicUtil.js';
 
@@ -13,7 +13,7 @@ class GameService {
       });
     }
 
-    const p1 = await authService.getUserById(userId);
+    const p1 = await AuthService.getUserById(userId);
 
     const boardSizeRaw = parseInt(gameData.boardSize) || 10;
     const size = Math.max(3, Math.min(boardSizeRaw, 20));

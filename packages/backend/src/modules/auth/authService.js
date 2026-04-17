@@ -1,8 +1,8 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import UsersRepository from './usersRepository.js';
+import UsersService from '../users/usersService.js';
 import ProfileRepository from '../profile/profileRepository.js';
-import { env } from '../../configs/env.js';
+import env from '../../configs/env.js';
 
 class AuthService {
   /**
@@ -12,8 +12,8 @@ class AuthService {
     const { authData, profileData } = data;
 
     // 1. Kiểm tra trùng lặp
-    const existingUser = await UsersRepository.findByEmailOrUsername(authData.email) ||
-      await UsersRepository.findByUsername(authData.username);
+    const existingUser = await UsersService.findByEmailOrUsername(authData.email) ||
+      await UsersService.findByUsername(authData.username);
     
     if (existingUser) {
       throw new Error('Username or Email already exists');
@@ -23,7 +23,7 @@ class AuthService {
     const passwordHash = await bcrypt.hash(authData.password, 10);
 
     // 3. Tạo User
-    const newUser = await UsersRepository.create({
+    const newUser = await UsersService.create({
       username: authData.username,
       email: authData.email,
       passwordHash: passwordHash,
@@ -46,7 +46,7 @@ class AuthService {
    */
   async login(identifier, password) {
     // 1. Tìm User
-    const user = await UsersRepository.findByEmailOrUsername(identifier);
+    const user = await UsersService.findByEmailOrUsername(identifier);
     if (!user || !user.isActive) {
       throw new Error('Invalid credentials or account is disabled');
     }
@@ -70,7 +70,7 @@ class AuthService {
    * Lấy thông tin người dùng theo ID
    */
   async getUserById(userId) {
-    const user = await UsersRepository.findById(userId);
+    const user = await UsersService.getPublicById(userId);
     if (!user) {
       throw new Error('User not found');
     }
@@ -78,14 +78,14 @@ class AuthService {
   }
 
   /**
-   * Tạo JWT Token (Hỗ trợ ELO/Rank sau này nếu cần)
+   * Tạo JWT Token
    */
   _generateToken(user, profile) {
     const isPremium = profile?.isPremium === true;
     
     return jwt.sign(
       {
-        id: user._id.toString(),
+        id: (user._id || user.id).toString(),
         role: user.role,
         isPremium: isPremium
       },

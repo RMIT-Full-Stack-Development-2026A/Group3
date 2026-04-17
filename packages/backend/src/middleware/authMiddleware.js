@@ -1,11 +1,7 @@
-/**
- * Auth Middleware
- * Verifies JWS token and attaches decoded user context to request
- */
-
 import jwt from 'jsonwebtoken';
+import env from '../config/env.js';
 
-const authMiddleware = (req, res, next) => {
+const AuthMiddleware = (req, res, next) => {
   try {
     // Extract token from Authorization header
     const authHeader = req.headers.authorization;
@@ -20,7 +16,7 @@ const authMiddleware = (req, res, next) => {
     const token = authHeader.slice(7);
 
     // Verify token signature and expiry
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, env.JWT_SECRET);
 
     // Attach decoded payload to request context
     req.user = {
@@ -52,4 +48,4 @@ const authMiddleware = (req, res, next) => {
   }
 };
 
-export default authMiddleware;
+export default AuthMiddleware;

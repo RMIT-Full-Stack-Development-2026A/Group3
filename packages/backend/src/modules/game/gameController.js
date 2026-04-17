@@ -1,4 +1,4 @@
-import gameService from './gameService.js';
+import GameService from './gameService.js';
 import GameDTO from './gameDto.js';
 import { responseHelper } from '../../common/responseHelper.js';
 
@@ -10,7 +10,7 @@ class GameController {
       const userId = req.user.id;
       const gameData = req.body;
 
-      const session = await gameService.startGame(userId, gameData);
+      const session = await GameService.startGame(userId, gameData);
       const data = GameDTO.formatGameSession(session, userId);
       
       return sendSuccess(res, 201, data, 'Match is ready!');
@@ -25,7 +25,7 @@ class GameController {
       const userId = req.user.id;
       const moveData = GameDTO.transformMoveReq(req.body);
 
-      const session = await gameService.makeMove(sessionId, userId, moveData);
+      const session = await GameService.makeMove(sessionId, userId, moveData);
       const data = GameDTO.formatGameSession(session, userId);
 
       return sendSuccess(res, 200, data, 'Move recorded');
@@ -40,7 +40,7 @@ class GameController {
       const { sessionId } = req.params;
       const userId = req.user.id;
 
-      const session = await gameService.getGameById(sessionId, userId);
+      const session = await GameService.getGameById(sessionId, userId);
       const data = GameDTO.formatGameSession(session, userId);
 
       return sendSuccess(res, 200, data, 'Game fetched successfully');
@@ -55,7 +55,7 @@ class GameController {
       const userId = req.user.id;
       const syncData = GameDTO.transformSyncLocalReq({ ...req.body, p1Id: userId });
 
-      const session = await gameService.syncLocalMatch(syncData);
+      const session = await GameService.syncLocalMatch(syncData);
       const data = GameDTO.formatGameSession(session, userId);
 
       return sendSuccess(res, 201, data, 'Offline match synced successfully');

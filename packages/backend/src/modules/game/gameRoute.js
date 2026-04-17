@@ -1,17 +1,17 @@
 import express from 'express';
-import gameController from './gameController.js';
-import authMiddleware from '../../middleware/authMiddleware.js';
+import GameController from './gameController.js';
+import AuthMiddleware from '../../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.use(authMiddleware);
+router.use(AuthMiddleware);
 
-router.post('/start', gameController.startGame);
+router.post('/start', GameController.startGame);
 
-router.get('/:sessionId', gameController.getGame);
+router.get('/:sessionId', GameController.getGame);
 
-router.post('/sync-local', gameController.syncLocalMatch);
+router.post('/sync-local', GameController.syncLocalMatch);
 
-router.post('/:sessionId/move', gameController.makeMove);
+router.post('/:sessionId/move', GameController.makeMove);
 
 export default router;
