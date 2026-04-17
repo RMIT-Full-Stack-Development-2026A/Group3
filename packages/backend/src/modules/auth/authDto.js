@@ -3,14 +3,14 @@
  * Validation and sanitization for auth endpoints
  */
 
+class AuthDTO {
+  /**
+   * Validate Register Request
+   */
+  static transformRegisterReq(body = {}) {
+    const { username, email, password, confirmPassword, country, avatarUrl } = body;
 
-export const registerRequestDTO = {
-
-  validate: (body = {}) => {
-    const safeBody = body && typeof body === 'object' ? body : {};
-
-    const { username, email, password, confirmPassword, country, avatarUrl } = safeBody;
-
+    // Basic Validation
     if (!username || typeof username !== 'string') {
       throw new Error('username is required and must be a string');
     }
@@ -50,36 +50,31 @@ export const registerRequestDTO = {
       throw new Error('country is required');
     }
 
-    const finalAvatar = (avatarUrl && typeof avatarUrl === 'string') 
-  ? avatarUrl.trim() 
-  : "https://api.dicebear.com/7.x/bottts/svg?seed=" + username;
-
     return {
       authData: {
-        username: body.username.trim(),
-        email: body.email.trim(),
-        password: body.password,
+        username: username.trim(),
+        email: email.trim(),
+        password: password,
       },
       profileData: {
-        country: body.country,
-        avatarUrl: body.avatarUrl ? body.avatarUrl.trim() : ''
+        country: country,
+        avatarUrl: avatarUrl ? avatarUrl.trim() : ''
       }
     };
   }
-};
 
-export const loginRequestDTO = {
-
-  validate: (body = {}) => {
-    const safeBody = body && typeof body === 'object' ? body : {};
-    const { identifier, password } = safeBody;
+  /**
+   * Validate Login Request
+   */
+  static transformLoginReq(body = {}) {
+    const { identifier, password } = body;
 
     if (!identifier || typeof identifier !== 'string') {
-      throw new Error('identifier is required and must be a string (username or email)');
+      throw new Error('identifier is required (username or email)');
     }
 
     if (!password || typeof password !== 'string') {
-      throw new Error('password is required and must be a string');
+      throw new Error('password is required');
     }
 
     return {
@@ -87,21 +82,44 @@ export const loginRequestDTO = {
       password: password
     };
   }
-};
 
-export const loginResponseDTO = {
-
-  build: (user, profile, token) => {
+  /**
+   * Format Auth Success Response
+   * Merges data from User document and Profile document
+   */
+  static formatAuthResponse(user, profile, token) {
     if (!user) return null;
 
     return {
-      id: user._id.toString(),
-      username: user.username,
-      email: user.email,
-      role: user.role,
-      isPremium: user.isPremium === true,
-      avatarUrl: user.avatarUrl || '',
+      user: {
+        id: user._id.toString(),
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        isPremium: profile?.isPremium === true,
+        avatarUrl: profile?.avatarUrl || '',
+      },
       token: token
     };
   }
-};
+
+  /**
+   * Format Single User Response
+   * Standardizes ID to 'id' for frontend consistency
+   */
+  static formatUserResponse(user) {
+    if (!user) return null;
+    
+    return {
+      id: user._id?.toString() || user.id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      isActive: user.isActive,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt
+    };
+  }
+}
+
+export default AuthDTO;

@@ -1,11 +1,11 @@
 import profileRepository from './profileRepository.js';
-import authRepository from '../auth/authRepository.js';
+import UsersRepository from '../auth/usersRepository.js';
 import gameService from '../game/gameService.js';
 
 class ProfileService {
   async getProfileData(userId) {
     let [user, profile, stats] = await Promise.all([
-      authRepository.findById(userId),
+      UsersRepository.findById(userId),
       profileRepository.findProfileByUserId(userId),
       profileRepository.findStatsByUserId(userId)
     ]);
@@ -29,9 +29,9 @@ class ProfileService {
 
     // 1. Update Auth info if username changed
     if (username) {
-      const existingUser = await authRepository.findByUsername(username);
+      const existingUser = await UsersRepository.findByUsername(username);
       if (existingUser && existingUser._id.toString() !== userId.toString()) throw new Error('Username already taken');
-      await authRepository.updateUserInfo(userId, { username });
+      await UsersRepository.updateUserInfo(userId, { username });
     }
 
     // 2. Update Profile info if any

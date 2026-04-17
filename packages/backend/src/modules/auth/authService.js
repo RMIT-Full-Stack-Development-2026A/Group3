@@ -1,20 +1,20 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { authRepository } from './authRepository.js';
-import { User } from '../users/usersModel.js';
-import { Profile, UserStatistic } from '../profile/profileModel.js';
+import UsersRepository from './usersRepository.js';
+import ProfileRepository from '../profile/profileRepository.js';
 import { env } from '../../configs/env.js';
 
 class AuthService {
   /**
-   * Đăng ký: Tạo User (Auth) + Khởi tạo Profile
+   * Đăng ký: Tạo User + Khởi tạo Profile
    */
   async register(data) {
-    const { authData, profileData } = data; // Dữ liệu đã được tách từ DTO
+    const { authData, profileData } = data;
 
-    // 1. Kiểm tra trùng lặp trước khi Hash (Tối ưu CPU)
-    const existingUser = await authRepository.findByEmailOrUsername(authData.email) ||
-      await authRepository.findByUsername(authData.username);
+    // 1. Kiểm tra trùng lặp
+    const existingUser = await UsersRepository.findByEmailOrUsername(authData.email) ||
+      await UsersRepository.findByUsername(authData.username);
+    
     if (existingUser) {
       throw new Error('Username or Email already exists');
     }
@@ -22,8 +22,8 @@ class AuthService {
     // 2. Hash mật khẩu
     const passwordHash = await bcrypt.hash(authData.password, 10);
 
-    // 3. Tạo User trong bảng Auth
-    const newUser = await authRepository.create({
+    // 3. Tạo User
+    const newUser = await UsersRepository.create({
       username: authData.username,
       email: authData.email,
       passwordHash: passwordHash,
@@ -31,24 +31,22 @@ class AuthService {
       isActive: true
     });
 
-    // 4. Khởi tạo Profile rỗng cho User mới
-    // Lưu ý: Nếu có profileRepository, hãy gọi ở đây
-    /* await profileRepository.create({
-      userId: newUser._id,
-      country: profileData.country,
-      avatarUrl: profileData.avatarUrl
-    }); 
-    */
+    // 4. Khởi tạo Profile & Stats
+    await ProfileRepository.initUserProfile(
+      newUser._id,
+      profileData.country || 'Vietnam',
+      profileData.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${newUser.username}`
+    );
 
     return newUser;
   }
 
   /**
-   * Đăng nhập: Kiểm tra Auth + Lấy thông tin Profile
+   * Đăng nhập: Kiểm tra Auth + Lấy thông tin Profile cho Token
    */
   async login(identifier, password) {
-    // 1. Tìm User (Dùng hàm mới findByEmailOrUsername)
-    const user = await authRepository.findByEmailOrUsername(identifier);
+    // 1. Tìm User
+    const user = await UsersRepository.findByEmailOrUsername(identifier);
     if (!user || !user.isActive) {
       throw new Error('Invalid credentials or account is disabled');
     }
@@ -59,26 +57,20 @@ class AuthService {
       throw new Error('Invalid credentials');
     }
 
-    const profile = await Profile.findOne({ userId: user._id }).select('isPremium avatarUrl');
-    const isPremium = profile?.isPremium === true;
+    // 3. Lấy Profile để lấy isPremium và avatarUrl
+    const profile = await ProfileRepository.findProfileByUserId(user._id);
 
-    const tokenExpiresIn = env.JWT_EXPIRES_IN || '24h';
+    // 4. Tạo token
+    const token = this._generateToken(user, profile);
 
-    // 4. Tạo JWT Token
-    const token = this._generateToken(user, null); // Thay null bằng profile nếu có
-
-    return {
-      user,
-      profile: null, // Thay null bằng profile nếu đã gọi Repo
-      token
-    };
+    return { user, profile, token };
   }
 
   /**
    * Lấy thông tin người dùng theo ID
    */
   async getUserById(userId) {
-    const user = await authRepository.findById(userId);
+    const user = await UsersRepository.findById(userId);
     if (!user) {
       throw new Error('User not found');
     }
@@ -86,28 +78,20 @@ class AuthService {
   }
 
   /**
-   * Hàm hỗ trợ tạo Token (Private)
+   * Tạo JWT Token (Hỗ trợ ELO/Rank sau này nếu cần)
    */
   _generateToken(user, profile) {
+    const isPremium = profile?.isPremium === true;
+    
     return jwt.sign(
       {
         id: user._id.toString(),
         role: user.role,
-        isPremium
+        isPremium: isPremium
       },
       env.JWT_SECRET,
       { expiresIn: env.JWT_EXPIRES_IN || '24h' }
     );
-
-
-    return {
-      token,
-      user: {
-        ...user.toObject(),
-        isPremium,
-        avatarUrl: profile?.avatarUrl || ''
-      }
-    };
   }
 }
 
