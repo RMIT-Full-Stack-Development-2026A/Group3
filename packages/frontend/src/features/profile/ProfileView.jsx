@@ -1,19 +1,17 @@
-import React, { useRef, useState } from 'react';
+import  React, { useRef, useState } from 'react';
 import { useProfile } from './profileHook';
-import { useMatchHistory } from '../MatchHistory/matchHistoryHook';
+import { useMatchHistory } from '../matchHistory/matchHistoryHook';
 import Header from '../../shared/components/layout/Header';
 import BottomDock from '../../shared/components/layout/BottomDock';
-import profileService from './profileService';
+import profileModel from './profileModel';
 import { useAuthStore } from '../../app/store/authStore';
-import { API_CONFIG } from '../../configs/apiConfig';
 import EditProfileModal from './components/EditProfileModal';
 import { countries } from '../../shared/utils/countries';
 
 const ProfileView = () => {
-  const { profileData, loading, error, refresh } = useProfile();
+  const { profileData, loading, updating, error, refresh, updateAvatar, updateProfileInfo } = useProfile();
   const { history, loading: historyLoading } = useMatchHistory();
   const fileInputRef = useRef(null);
-  const [uploading, setUploading] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { updateUser } = useAuthStore();
 
@@ -21,31 +19,19 @@ const ProfileView = () => {
     fileInputRef.current?.click();
   };
 
-  const getFullAvatarUrl = (url) => {
-    if (!url) return "https://api.dicebear.com/7.x/avataaars/svg?seed=Kaelen";
-    if (url.startsWith('http')) return url;
-    const serverBase = API_CONFIG.BASE_URL.replace('/api/v1', '');
-    return `${serverBase}${url}`;
-  };
-
   const handleFileChange = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     try {
-      setUploading(true);
-      const response = await profileService.uploadAvatar(file);
-      const newAvatarUrl = response.data.profile.avatarUrl;
+      const updatedData = await updateAvatar(file);
       
       // Update global auth state with the new avatar URL
-      updateUser({ avatarUrl: newAvatarUrl });
-      
-      // Refresh local profile page data
-      refresh();
+      if (updatedData?.profile?.avatarUrl) {
+        updateUser({ avatarUrl: updatedData.profile.avatarUrl });
+      }
     } catch (err) {
       alert('Failed to upload avatar: ' + err.message);
-    } finally {
-      setUploading(false);
     }
   };
 
@@ -71,13 +57,13 @@ const ProfileView = () => {
             <div className="flex flex-col md:flex-row items-start gap-8">
               {/* Large Avatar */}
               <div className="relative group/avatar cursor-pointer" onClick={handleAvatarClick}>
-                <div className={`w-32 h-32 md:w-40 md:h-40 rounded-3xl overflow-hidden border-4 border-primary/20 shadow-2xl transition-all ${uploading ? 'opacity-50' : 'group-hover/avatar:border-primary/50'}`}>
-                  <img 
-                    alt="User" 
-                    className="w-full h-full object-cover" 
-                    src={getFullAvatarUrl(profile?.avatarUrl)} 
+                <div className={`w-32 h-32 md:w-40 md:h-40 rounded-3xl overflow-hidden border-4 border-primary/20 shadow-2xl transition-all ${updating ? 'opacity-50' : 'group-hover/avatar:border-primary/50'}`}>
+                  <img
+                    alt="User"
+                    className="w-full h-full object-cover"
+                    src={profileModel.getAvatarUrl(profile?.avatarUrl, 400)}
                   />
-                  {uploading && (
+                  {updating && (
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
                     </div>
@@ -86,14 +72,11 @@ const ProfileView = () => {
                     <span className="material-symbols-outlined text-white text-3xl">cloud_upload</span>
                   </div>
                 </div>
-                <div className="absolute -bottom-2 -right-2 bg-primary text-on-primary px-3 py-1 rounded-full text-xs font-bold shadow-lg">
-                  LVL {stats?.level || 1}
-                </div>
-                <input 
-                  type="file" 
-                  ref={fileInputRef} 
-                  onChange={handleFileChange} 
-                  className="hidden" 
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  className="hidden"
                   accept="image/*"
                 />
               </div>
@@ -133,7 +116,7 @@ const ProfileView = () => {
             </div>
             {/* Action Button */}
             <div className="w-full md:w-auto">
-              <button 
+              <button
                 onClick={() => setIsEditModalOpen(true)}
                 className="w-full md:w-auto px-8 py-4 rounded-lg bg-surface-container-high border border-outline-variant text-on-surface font-bold headline-font flex items-center justify-center gap-2 hover:bg-surface-bright transition-colors active:scale-95 duration-200"
               >
@@ -167,16 +150,16 @@ const ProfileView = () => {
               <div className="w-24 h-24 rounded-full border-4 border-primary/20 flex items-center justify-center relative">
                 <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100">
                   <circle className="text-white/5" cx="50" cy="50" fill="transparent" r="40" stroke="currentColor" strokeWidth="8"></circle>
-                  <circle 
-                    className="text-primary transition-all duration-1000" 
-                    cx="50" 
-                    cy="50" 
-                    fill="transparent" 
-                    r="40" 
-                    stroke="currentColor" 
+                  <circle
+                    className="text-primary transition-all duration-1000"
+                    cx="50"
+                    cy="50"
+                    fill="transparent"
+                    r="40"
+                    stroke="currentColor"
                     strokeWidth="8"
                     strokeDasharray="251.2"
-                    strokeDashoffset={251.2 - (251.2 * (parseFloat(stats?.winRate) || 0)) / 100}
+                    strokeDashoffset={251.2 - (251.2 * (stats?.winRateNumber || 0)) / 100}
                   ></circle>
                 </svg>
                 <span className="text-2xl font-bold headline-font">{stats?.winRate || '0%'}</span>
@@ -242,11 +225,13 @@ const ProfileView = () => {
         </section>
       </main>
 
-      <EditProfileModal 
+      <EditProfileModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         currentData={profileData}
         onUpdate={refresh}
+        onSave={updateProfileInfo}
+        loading={updating}
       />
 
       <BottomDock />

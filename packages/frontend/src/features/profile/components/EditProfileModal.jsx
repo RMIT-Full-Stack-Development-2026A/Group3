@@ -3,12 +3,11 @@ import profileService from '../profileService';
 import { useAuthStore } from '../../../app/store/authStore';
 import { countries } from '../../../shared/utils/countries';
 
-const EditProfileModal = ({ isOpen, onClose, currentData, onUpdate }) => {
+const EditProfileModal = ({ isOpen, onClose, currentData, onUpdate, onSave, loading }) => {
   const [username, setUsername] = useState('');
   const [country, setCountry] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
   const { updateUser } = useAuthStore();
   const dropdownRef = useRef(null);
 
@@ -44,19 +43,20 @@ const EditProfileModal = ({ isOpen, onClose, currentData, onUpdate }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     try {
-      const response = await profileService.updateProfile({ username, country });
-      updateUser({ 
-        username: response.data.user.username,
-        country: response.data.profile.country 
-      });
-      onUpdate();
+      const response = await onSave({ username, country });
+      
+      // Update global auth state
+      if (response?.user) {
+        updateUser({ 
+          username: response.user.username,
+          country: response.profile?.country 
+        });
+      }
+      
       onClose();
     } catch (err) {
       alert('Failed to update profile: ' + err.message);
-    } finally {
-      setLoading(false);
     }
   };
 

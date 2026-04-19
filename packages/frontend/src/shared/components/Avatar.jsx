@@ -1,5 +1,4 @@
 import { User } from 'lucide-react';
-// Update import path: from ../lib/utils.js to ../lib/utils.js
 import { cn } from '../lib/utils.js';
 
 const sizeMap = {
