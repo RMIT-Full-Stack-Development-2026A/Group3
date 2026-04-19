@@ -1,8 +1,6 @@
 import { LayoutDashboard, History, Settings, LogOut } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
-// Update import path: from ../store/authStore.js to ../../../store/authStore.js
 import { useAuthStore } from '../../../app/store/authStore.js';
-// Update import path: from ../lib/utils.js to ../../../lib/utils.js
 import { cn } from '../../lib/utils.js';
 
 const links = [

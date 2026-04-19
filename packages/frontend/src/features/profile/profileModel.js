@@ -1,4 +1,4 @@
-import { API_CONFIG } from '../../configs/apiConfig';
+import { getAvatarUrl } from '../../shared/utils/avatarUtil';
 
 const profileModel = {
   formatProfile: (data) => {
@@ -13,8 +13,8 @@ const profileModel = {
       profile: {
         ...profile,
         country: profile?.country,
-        displayAvatarUrl: profileModel.getAvatarUrl(profile?.avatarUrl, 400),
-        iconAvatarUrl: profileModel.getAvatarUrl(profile?.avatarUrl, 100)
+        displayAvatarUrl: getAvatarUrl(profile?.avatarUrl, 400),
+        iconAvatarUrl: getAvatarUrl(profile?.avatarUrl, 100)
       },
       stats: {
         ...statistics,
@@ -22,18 +22,6 @@ const profileModel = {
         winRateNumber: parseFloat(statistics?.winRate) || 0
       }
     };
-  },
-  getAvatarUrl: (url, size = 200) => {
-    if (!url) return `https://api.dicebear.com/7.x/avataaars/svg?seed=Kaelen`;
-    
-    if (url.includes('res.cloudinary.com')) {
-      return url.replace('/upload/', `/upload/w_${size},h_${size},c_fill,g_face,q_auto,f_auto/`);
-    }
-    
-    if (url.startsWith('http')) return url;
-    
-    const serverBase = API_CONFIG.BASE_URL.replace('/api/v1', '');
-    return `${serverBase}${url}`;
   }
 };
 

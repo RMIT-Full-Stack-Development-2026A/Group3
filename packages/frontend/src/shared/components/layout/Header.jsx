@@ -1,8 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-// Update import path: from ../../store/authStore to ../../../store/authStore (assuming store is in src/store)
-import { API_CONFIG } from '../../../configs/apiConfig';
 import { useAuthStore } from '../../../app/store/authStore';
+import { getAvatarUrl } from '../../../shared/utils/avatarUtil';
 
 const Header = ({ user }) => {
   const navigate = useNavigate();
@@ -11,13 +10,6 @@ const Header = ({ user }) => {
   const handleLogout = () => {
     logout();
     navigate('/');
-  };
-
-  const getAvatarUrl = (url) => {
-    if (!url) return "https://api.dicebear.com/7.x/bottts/svg?seed=default";
-    if (url.startsWith('http')) return url;
-    const serverBase = API_CONFIG.BASE_URL.replace('/api/v1', '');
-    return `${serverBase}${url}`;
   };
 
   return (
@@ -35,7 +27,7 @@ const Header = ({ user }) => {
           <img 
             alt="User Avatar" 
             className="w-full h-full object-cover" 
-            src={getAvatarUrl(user?.avatarUrl)} 
+            src={getAvatarUrl(user?.avatarUrl, 100)} 
           />
         </Link>
         
