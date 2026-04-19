@@ -1,15 +1,9 @@
-import GameService from '../game/gameService.js';
-import { toMatchHistoryRow } from './matchHistoryModel.js';
+import httpUtil from '../../shared/utils/httpUtil';
 
-const MatchHistoryService = {
-  async getHistory(params = {}) {
-    const payload = await GameService.getMatchHistory(params);
-
-    return {
-      items: (payload.items || []).map(toMatchHistoryRow),
-      pagination: payload.pagination || null
-    };
+const matchHistoryService = {
+  getHistory: async () => {
+    return await httpUtil.get('/game/history');
   }
 };
 
-export default MatchHistoryService;
+export default matchHistoryService;

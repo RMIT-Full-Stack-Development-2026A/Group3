@@ -1,95 +1,47 @@
 import { useState, useEffect, useCallback } from 'react';
-import GameService from './gameService.js';
+import gameService from './gameService';
+import gameModel from './gameModel';
 
-/**
- * useGameLogic - Simplified Core Hook.
- */
-export const useGameLogic = (
-    initialSize = 10, 
-    p1Id = null, 
-    sessionId = null
-) => {
-    const [gameState, setGameState] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isProcessingAI, setIsProcessingAI] = useState(false);
+export function useGame(sessionId) {
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-    const updateFromDTO = useCallback((dto) => {
-        setGameState(dto);
-        setIsLoading(false);
-    }, []);
+  const fetchSession = useCallback(async () => {
+    if (!sessionId) return;
+    try {
+      // Don't set loading to true for every refresh to avoid flickering
+      const data = await gameService.getSession(sessionId);
+      setSession(gameModel.formatSession(data.data));
+    } catch (err) {
+      setError(err.message || 'Failed to fetch game session');
+    } finally {
+      setLoading(false);
+    }
+  }, [sessionId]);
 
-    /**
-     * Synchronize the completed match to the Backend
-     */
-    const syncMatchToBackend = async (finalWinner, finalWinLine, finalMoves) => {
-        const shouldSync = (gameType === 'LOCAL' || (gameType === 'SINGLE' && difficulty === 'HARD')) && p1Id;
-        
-        if (shouldSync) {
-            try {
-                const matchData = {
-                    gameType,
-                    boardSize,
-                    p1Id,
-                    p1Name,
-                    p2Name: gameType === 'LOCAL' ? 'Guest' : `AI (${difficulty})`,
-                    winnerId: finalWinner === 'X' ? p1Id : null,
-                    winLine: finalWinLine,
-                    moves: finalMoves
-                };
-                await GameService.syncMatchResults(matchData);
-                console.log('Match history successfully archived to backend.');
-            } catch (error) {
-                console.error('Failed to archive match history:', error);
-            }
-        }
-    };
+  useEffect(() => {
+    fetchSession();
+    
+    // Polling for AI move if it's not our turn
+    let interval;
+    if (session && session.status === 'ACTIVE' && session.currentTurn === 'PLAYER2') {
+      interval = setInterval(fetchSession, 2000);
+    }
+    
+    return () => clearInterval(interval);
+  }, [fetchSession, session?.status, session?.currentTurn]);
 
-    /**
-     * Handle AI Move calculation via Backend
-     */
-    useEffect(() => {
-        const loadGame = async () => {
-            if (!sessionId || !p1Id) return;
-            setIsLoading(true);
-            try {
-                const response = await GameService.getGame(sessionId, p1Id);
-                if (response.success) {
-                    updateFromDTO(response.data);
-                }
-            } catch (error) {
-                console.error('Game Load Error:', error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        loadGame();
-    }, [sessionId, p1Id, updateFromDTO]);
+  const makeMove = async (row, col) => {
+    if (!session || session.status !== 'ACTIVE') return;
+    
+    try {
+      const data = await gameService.makeMove(sessionId, { row, col, marker: session.p1.marker });
+      setSession(gameModel.formatSession(data.data));
+    } catch (err) {
+      setError(err.message || 'Failed to make move');
+    }
+  };
 
-    // Move logic
-    const makeMove = async (x, y) => {
-        if (!gameState || !sessionId || gameState.status !== 'ACTIVE' || isProcessingAI) return;
-
-        setIsProcessingAI(true);
-        try {
-            const response = await GameService.makeMove(sessionId, { x, y, userId: p1Id });
-            if (response.success) {
-                updateFromDTO(response.data);
-            }
-        } catch (error) {
-            console.error('Move Error:', error);
-        } finally {
-            setIsProcessingAI(false);
-        }
-    };
-
-    return { 
-      board: gameState?.board || Array(initialSize).fill(null).map(() => Array(initialSize).fill(null)),
-      currentTurn: gameState?.currentTurn || 'X',
-      winner: gameState?.winnerMarker || null,
-      winLine: gameState?.winLine || [],
-      isLoading,
-      isProcessingAI,
-      makeMove,
-      sessionInfo: gameState
-    };
-};
+  return { session, loading, error, makeMove, refresh: fetchSession };
+}

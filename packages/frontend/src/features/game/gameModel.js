@@ -1,39 +1,29 @@
-/**
- * GameModel - Minimalist DTO Layer.
- */
-const GameModel = {
-    createGameSessionModel: (session, currentUserId) => {
-        if (!session) return null;
-        
-        const players = session.players || {};
-        const gameState = session.gameState || {};
-        const result = session.result || {};
+const gameModel = {
+  formatSession: (data) => {
+    if (!data) return null;
+    
+    // Support both old and new data structures during transition
+    const gameState = data.gameState || {};
+    const players = data.players || {};
+    const result = data.result || {};
 
-        // Primary Marker Mapping
-        const p1Id = players.p1?.id?.toString();
-        const curIdStr = currentUserId?.toString();
-        const isPlayer1 = curIdStr === p1Id;
-
-        return {
-            id: session.sessionId,
-            board: gameState.board,
-            boardSize: session.boardSize,
-            gameType: session.gameType,
-            
-            player1Marker: players.p1?.marker || 'CROSS',
-            player2Marker: players.p2?.marker || 'CIRCLE',
-            
-            currentTurn: gameState.currentTurn === 'PLAYER1' ? 'X' : 'O',
-            isUserTurn: gameState.currentTurn === (isPlayer1 ? 'PLAYER1' : 'PLAYER2'),
-            
-            status: session.status,
-            winnerMarker: result.winnerId ? (result.winnerId.toString() === p1Id ? 'X' : 'O') : null,
-            winLine: result.winLine || [],
-            
-            p1Name: players.p1?.name || 'You',
-            p2Name: players.p2?.name || 'AI'
-        };
-    }
+    return {
+      id: data.sessionId || data.id || data._id,
+      board: gameState.board || data.board || [],
+      currentTurn: gameState.currentTurn || data.currentPlayer,
+      status: data.status,
+      boardSize: data.boardSize || 10,
+      
+      p1: players.p1 || (data.players ? data.players[0] : null),
+      p2: players.p2 || (data.players ? data.players[1] : null),
+      
+      winnerId: result.winnerId || data.winner,
+      winLine: result.winLine || [],
+      matchOutcome: result.matchOutcome,
+      
+      lastMove: gameState.lastMove || data.lastMove
+    };
+  }
 };
 
-export default GameModel;
+export default gameModel;

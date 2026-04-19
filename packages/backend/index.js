@@ -16,7 +16,7 @@ app.use(cors());
 app.use(express.json());
 
 // Serve static files (avatars)
-app.use('/uploads', express.static('uploads'));
+app.use('/public', express.static('public'));
 
 app.get('/api/v1/health', (req, res) => {
     res.status(200).json({ success: true, message: 'Server is running' });

@@ -1,35 +1,25 @@
-const ProfileModel = {
-  formatProfileData: (data) => {
+const profileModel = {
+  formatProfile: (data) => {
     if (!data) return null;
-
-    const { user, profile, statistics } = data;
-
     return {
-      user: {
-        id: user.id || user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        joinedAt: user.joinedAt || user.createdAt
-      },
+      user: data.user,
       profile: {
-        country: profile.country || 'Global Player',
-        avatarUrl: profile.avatarUrl || '',
-        isPremium: profile.isPremium || false,
-        walletBalance: profile.walletBalance || 0,
-        premiumExpiry: profile.premiumExpiry
+        country: data.profile?.country || 'Global Player',
+        avatarUrl: data.profile?.avatarUrl,
+        isPremium: data.profile?.isPremium || false,
+        walletBalance: data.profile?.walletBalance || 0
       },
       stats: {
-        totalGames: statistics.totalGames || 0,
-        wins: statistics.wins || 0,
-        losses: statistics.losses || 0,
-        draws: statistics.draws || 0,
-        eloRating: statistics.eloRating || 1000,
-        winRate: statistics.winRate || '0%',
-        level: Math.floor((statistics.totalGames || 0) / 10) + 1
+        totalGames: data.statistics?.totalGames || 0,
+        wins: data.statistics?.wins || 0,
+        losses: data.statistics?.losses || 0,
+        draws: data.statistics?.draws || 0,
+        eloRating: data.statistics?.eloRating || 1000,
+        winRate: data.statistics?.winRate || '0%',
+        level: Math.floor((data.statistics?.totalGames || 0) / 10) + 1
       }
     };
   }
 };
 
-export default ProfileModel;
+export default profileModel;

@@ -63,6 +63,20 @@ class GameController {
       return sendError(res, 400, 'SYNC_FAILED', error.message);
     }
   }
+
+  async getMatchHistory(req, res) {
+    try {
+      const userId = req.user.id;
+      const query = GameDTO.transformHistoryQuery(userId, req.query);
+      
+      const history = await GameService.getMatchHistory(query);
+      const data = GameDTO.formatHistoryResponse(history);
+      
+      return sendSuccess(res, 200, data, 'History fetched successfully');
+    } catch (error) {
+      return sendError(res, 400, 'HISTORY_FETCH_FAILED', error.message);
+    }
+  }
 }
 
 export default new GameController();

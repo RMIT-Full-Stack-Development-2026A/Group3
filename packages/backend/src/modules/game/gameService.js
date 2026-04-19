@@ -67,7 +67,9 @@ class GameService {
     return newSession;
   }
 
-  async makeMove(sessionId, userId, { x, y }) {
+  async makeMove(sessionId, userId, { row, col }) {
+    const x = col;
+    const y = row;
     const session = await gameRepository.findById(sessionId);
     if (!session || session.status !== 'ACTIVE') {
       throw new Error('Game not found or game has ended');
