@@ -1,6 +1,5 @@
 import ProfileRepository from './profileRepository.js';
 import UsersService from '../users/usersService.js';
-import gameService from '../game/gameService.js';
 
 class ProfileService {
   async getProfileData(userId) {
@@ -41,10 +40,6 @@ class ProfileService {
     if (Object.keys(profileUpdates).length > 0) await ProfileRepository.updateProfileByUserId(userId, profileUpdates);
 
     return this.getProfileData(userId);
-  }
-
-  async getMatchHistory (queryParams) {
-      return await gameService.getMatchHistory(queryParams);
   }
 }
 

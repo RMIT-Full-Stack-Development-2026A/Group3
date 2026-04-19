@@ -1,13 +1,13 @@
-import gameRepository from './gameRepository.js';
+import GameRepository from './gameRepository.js';
 import AuthService from '../auth/authService.js';
 import { getBestMove } from '@tictactoang/shared/utils/aiLogicUtil.js';
 import { checkWin, isValidMove, isBoardFull } from '@tictactoang/shared/utils/gameLogicUtil.js';
 
 class GameService {
   async startGame(userId, gameData) {
-    const activeSession = await gameRepository.findActiveSessionByPlayer(userId);
+    const activeSession = await GameRepository.findActiveSessionByPlayer(userId);
     if (activeSession) {
-      await gameRepository.completeGame(activeSession._id, {
+      await GameRepository.completeGame(activeSession._id, {
         status: 'ABORTED',
         winnerId: null
       });
@@ -46,7 +46,7 @@ class GameService {
       currentTurn = 'PLAYER1';
     }
 
-    const newSession = await gameRepository.createSession({
+    const newSession = await GameRepository.createSession({
       gameType: gameData.gameType || 'SINGLE',
       boardSize: size,
       difficulty: difficulty,
@@ -67,10 +67,8 @@ class GameService {
     return newSession;
   }
 
-  async makeMove(sessionId, userId, { row, col }) {
-    const x = col;
-    const y = row;
-    const session = await gameRepository.findById(sessionId);
+  async makeMove(sessionId, userId, { x, y }) {
+    const session = await GameRepository.findById(sessionId);
     if (!session || session.status !== 'ACTIVE') {
       throw new Error('Game not found or game has ended');
     }
@@ -102,8 +100,8 @@ class GameService {
 
     const playerWin = checkWin(board, y, x, playerMarker);
     if (playerWin.win) {
-      await gameRepository.recordMoves(sessionId, { moves: [playerMove], nextBoard: board, nextTurn: currentTurnLabel });
-      const finalSession = await gameRepository.completeGame(sessionId, {
+      await GameRepository.recordMoves(sessionId, { moves: [playerMove], nextBoard: board, nextTurn: session.currentTurn });
+      const finalSession = await GameRepository.completeGame(sessionId, {
         status: 'COMPLETED',
         winnerId: userId,
         winLine: playerWin.winLine
@@ -112,8 +110,8 @@ class GameService {
     }
 
     if (isBoardFull(board)) {
-      await gameRepository.recordMoves(sessionId, { moves: [playerMove], nextBoard: board, nextTurn: currentTurnLabel });
-      const finalSession = await gameRepository.completeGame(sessionId, { status: 'COMPLETED', winnerId: null, winLine: [] });
+      await GameRepository.recordMoves(sessionId, { moves: [playerMove], nextBoard: board, nextTurn: currentTurnLabel });
+      const finalSession = await GameRepository.completeGame(sessionId, { status: 'COMPLETED', winnerId: null, winLine: [] });
       return finalSession;
     }
 
@@ -133,14 +131,14 @@ class GameService {
 
       const aiWin = checkWin(board, bestMove.row, bestMove.col, aiMarker);
 
-      const updatedSession = await gameRepository.recordMoves(sessionId, {
+      const updatedSession = await GameRepository.recordMoves(sessionId, {
         moves: [playerMove, aiMove],
         nextBoard: board,
         nextTurn: 'PLAYER1'
       });
 
       if (aiWin.win) {
-        const finalSession = await gameRepository.completeGame(sessionId, {
+        const finalSession = await GameRepository.completeGame(sessionId, {
           status: 'COMPLETED',
           winnerId: null, // AI win
           winLine: aiWin.winLine
@@ -149,7 +147,7 @@ class GameService {
       }
 
       if (isBoardFull(board)) {
-        const finalSession = await gameRepository.completeGame(sessionId, { status: 'COMPLETED', winnerId: null, winLine: [] });
+        const finalSession = await GameRepository.completeGame(sessionId, { status: 'COMPLETED', winnerId: null, winLine: [] });
         return finalSession;
       }
 
@@ -157,12 +155,12 @@ class GameService {
     }
 
     const nextTurn = isP1 ? 'PLAYER2' : 'PLAYER1';
-    const updatedSession = await gameRepository.recordMoves(sessionId, { moves: [playerMove], nextBoard: board, nextTurn: nextTurn });
+    const updatedSession = await GameRepository.recordMoves(sessionId, { moves: [playerMove], nextBoard: board, nextTurn: nextTurn });
     return updatedSession;
   }
 
   async getGameById(sessionId, userId) {
-    const session = await gameRepository.findById(sessionId);
+    const session = await GameRepository.findById(sessionId);
     if (!session) throw new Error('Game not found');
 
     const p1Id = session.player1Id?._id?.toString() || session.player1Id?.toString();
@@ -177,11 +175,11 @@ class GameService {
   }
 
   async getMatchHistory (historyQuery) {
-      return await gameRepository.getPaginatedMatchHistory(historyQuery);
-    }
-  
+    return await GameRepository.getPaginatedMatchHistory(historyQuery);
+  }
+
   async syncLocalMatch(syncData) {
-    return await gameRepository.createSession(syncData);
+    return await GameRepository.createSession(syncData);
   }
 }
 

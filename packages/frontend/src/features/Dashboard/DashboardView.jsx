@@ -2,37 +2,16 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 // Update import paths
 import { useAuthStore } from '../../app/store/authStore.js';
-import GameService from '../Game/gameService.js';
-
-// Layout & Components
 import Header from '../../shared/components/layout/Header.jsx';
 import BottomDock from '../../shared/components/layout/BottomDock.jsx';
 import ModeCard from './components/ModeCard.jsx';
-import StatCard from './components/StatCard.jsx';
-import GameSetupModal from '../Game/components/GameSetupModal.jsx';
+import GameSetupModal from '../game/components/GameSetupModal.jsx';
 
 export default function DashboardView() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const [recentGames, setRecentGames] = useState([]);
-  const [loadingHistory, setLoadingHistory] = useState(true);
   const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
-
-  const fetchHistory = async () => {
-    setLoadingHistory(true);
-    try {
-      const result = await GameService.getMatchHistory({ page: 1, limit: 5 });
-      setRecentGames(Array.isArray(result.items) ? result.items : []);
-    } catch (err) {
-      console.error('Error fetching history:', err);
-    } finally {
-      setLoadingHistory(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchHistory();
-  }, []);
+  const [setupMode, setSetupMode] = useState('AI');
 
   return (
     <div className={`min-h-screen bg-surface text-on-surface font-body selection:bg-primary selection:text-on-primary ${isSetupModalOpen ? 'overflow-hidden' : ''}`}>
@@ -61,7 +40,10 @@ export default function DashboardView() {
             icon="group"
             actionLabel="Start Duel"
             actionIcon="arrow_forward"
-            onClick={() => navigate('/game-setup?mode=local')}
+            onClick={() => {
+              setSetupMode('LOCAL');
+              setIsSetupModalOpen(true);
+            }}
           />
 
           <ModeCard
@@ -72,7 +54,10 @@ export default function DashboardView() {
             icon="smart_toy"
             actionLabel="Initialize AI"
             actionIcon="memory"
-            onClick={() => setIsSetupModalOpen(true)}
+            onClick={() => {
+              setSetupMode('AI');
+              setIsSetupModalOpen(true);
+            }}
           />
 
           <ModeCard
@@ -95,30 +80,6 @@ export default function DashboardView() {
             </div>
           </ModeCard>
         </div>
-
-        {/* Stats Section */}
-        <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
-          <StatCard
-            icon="emoji_events"
-            label="Total Wins"
-            value={recentGames.length}
-          />
-          <StatCard
-            icon="military_tech"
-            label="ELO Rating"
-            value="1200"
-          />
-          <StatCard
-            icon="schedule"
-            label="Daily Streak"
-            value="14 Days"
-          >
-            <div className="flex gap-1">
-              {[1, 2, 3].map(i => <div key={i} className="w-2 h-6 bg-primary rounded-full"></div>)}
-              {[1, 2].map(i => <div key={i} className="w-2 h-6 bg-primary/20 rounded-full"></div>)}
-            </div>
-          </StatCard>
-        </div>
       </main>
 
       <BottomDock />
@@ -126,6 +87,7 @@ export default function DashboardView() {
       {/* AI Setup Modal */}
       <GameSetupModal
         isOpen={isSetupModalOpen}
+        mode={setupMode}
         onClose={() => setIsSetupModalOpen(false)}
       />
     </div>

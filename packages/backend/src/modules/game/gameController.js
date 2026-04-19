@@ -11,7 +11,7 @@ class GameController {
       const gameData = req.body;
 
       const session = await GameService.startGame(userId, gameData);
-      const data = GameDTO.formatGameSession(session, userId);
+      const data = GameDTO.toGameSession(session, userId);
       
       return sendSuccess(res, 201, data, 'Match is ready!');
     } catch (error) {
@@ -23,10 +23,10 @@ class GameController {
     try {
       const { sessionId } = req.params;
       const userId = req.user.id;
-      const moveData = GameDTO.transformMoveReq(req.body);
+      const moveData = GameDTO.toMoveReq(req.body);
 
       const session = await GameService.makeMove(sessionId, userId, moveData);
-      const data = GameDTO.formatGameSession(session, userId);
+      const data = GameDTO.toGameSession(session, userId);
 
       return sendSuccess(res, 200, data, 'Move recorded');
     } catch (error) {
@@ -41,7 +41,7 @@ class GameController {
       const userId = req.user.id;
 
       const session = await GameService.getGameById(sessionId, userId);
-      const data = GameDTO.formatGameSession(session, userId);
+      const data = GameDTO.toGameSession(session, userId);
 
       return sendSuccess(res, 200, data, 'Game fetched successfully');
     } catch (error) {
@@ -53,10 +53,10 @@ class GameController {
   async syncLocalMatch(req, res) {
     try {
       const userId = req.user.id;
-      const syncData = GameDTO.transformSyncLocalReq({ ...req.body, p1Id: userId });
+      const syncData = GameDTO.toLocalReq({ ...req.body, p1Id: userId });
 
       const session = await GameService.syncLocalMatch(syncData);
-      const data = GameDTO.formatGameSession(session, userId);
+      const data = GameDTO.toGameSession(session, userId);
 
       return sendSuccess(res, 201, data, 'Offline match synced successfully');
     } catch (error) {
@@ -67,10 +67,10 @@ class GameController {
   async getMatchHistory(req, res) {
     try {
       const userId = req.user.id;
-      const query = GameDTO.transformHistoryQuery(userId, req.query);
+      const query = GameDTO.toHistoryQuery(userId, req.query);
       
       const history = await GameService.getMatchHistory(query);
-      const data = GameDTO.formatHistoryResponse(history);
+      const data = GameDTO.toHistoryRes(history);
       
       return sendSuccess(res, 200, data, 'History fetched successfully');
     } catch (error) {
