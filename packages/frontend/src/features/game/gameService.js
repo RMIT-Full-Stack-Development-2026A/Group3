@@ -12,6 +12,9 @@ const gameService = {
   },
   getMatchHistory: async () => {
     return await httpUtil.get('/game/history');
+  },
+  syncLocalMatch: async (gameData) => {
+    return await httpUtil.post('/game/local', gameData);
   }
 };
 

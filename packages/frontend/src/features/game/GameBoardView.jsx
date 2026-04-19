@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useGame } from './gameHook';
+import { useGame } from '../game/gameHook';
 import Header from '../../shared/components/layout/Header';
 import { useAuthStore } from '../../app/store/authStore';
 import gameService from './gameService';
@@ -40,7 +40,8 @@ const GameBoardView = () => {
       
       const res = await gameService.createSession(config);
       const newSessionId = res.data.sessionId || res.data._id || res.data.id;
-      navigate(`/game/ai/${newSessionId}`);
+      const path = session.gameType === 'SINGLE' ? `/game/ai/${newSessionId}` : `/game/local/${newSessionId}`;
+      navigate(path);
       // The navigate might not trigger a re-mount if it's the same route pattern, 
       // so refresh is called just in case
       refresh();
@@ -133,17 +134,22 @@ const GameBoardView = () => {
               {session?.status === 'ACTIVE' ? (
                 <div className="text-center animate-fade-in">
                   <p className="text-[10px] uppercase font-black tracking-[0.2em] text-primary/60 mb-1">
-                    {session.currentTurn === 'PLAYER1' ? 'Your Turn' : "AI's Turn"}
+                    {session.gameType === 'SINGLE' 
+                      ? (session.currentTurn === 'PLAYER1' ? 'Your Turn' : "AI's Turn")
+                      : (session.currentTurn === 'PLAYER1' ? "Player 1's Turn" : "Player 2's Turn")}
                   </p>
                   <p className="text-2xl font-headline font-black text-primary tracking-tight">
-                    {session.currentTurn === 'PLAYER1' ? 'AWAITING INPUT' : 'THINKING...'}
+                    {session.gameType === 'SINGLE' && session.currentTurn === 'PLAYER2' ? 'THINKING...' : 'AWAITING INPUT'}
                   </p>
                 </div>
               ) : (
                 <div className="text-center animate-bounce">
                   <p className="text-[10px] uppercase font-black tracking-[0.2em] text-primary/60 mb-1">Status</p>
                   <p className="text-3xl font-headline font-black text-primary tracking-tight">
-                    {session?.matchOutcome === 'WIN' ? 'VICTORY!' : session?.matchOutcome === 'LOSS' ? 'DEFEAT' : 'DRAW'}
+                    {session?.gameType === 'SINGLE' 
+                      ? (session?.matchOutcome === 'WIN' ? 'VICTORY!' : session?.matchOutcome === 'LOSS' ? 'DEFEAT' : 'DRAW')
+                      : (session?.matchOutcome === 'WIN' ? 'P1 VICTORIOUS' : session?.matchOutcome === 'LOSS' ? 'P2 VICTORIOUS' : 'DRAW')
+                    }
                   </p>
                 </div>
               )}
@@ -161,7 +167,7 @@ const GameBoardView = () => {
                   row.map((cell, x) => (
                     <div 
                       key={`${y}-${x}`}
-                      onClick={() => !cell && session?.status === 'ACTIVE' && session?.currentTurn === 'PLAYER1' && makeMove(y, x)}
+                      onClick={() => !cell && session?.status === 'ACTIVE' && makeMove(y, x)}
                       className={`aspect-square bg-surface-container-low transition-all rounded-sm flex items-center justify-center text-sm md:text-lg lg:text-xl font-black relative overflow-hidden cursor-pointer hover:bg-surface-container-high active:scale-95 group ${isWinCell(y, x) ? 'bg-primary/20' : ''}`}
                     >
                       {cell && (
@@ -180,7 +186,9 @@ const GameBoardView = () => {
                 <span className="text-xs font-bold text-violet-400 uppercase tracking-widest">Match ID: #{session?.id?.slice(-8).toUpperCase()}</span>
               </div>
               <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full border border-primary/20">
-                <span className="text-xs font-bold text-primary uppercase tracking-widest">Difficulty: {session?.difficulty || 'MEDIUM'}</span>
+                <span className="text-xs font-bold text-primary uppercase tracking-widest">
+                  {session?.gameType === 'SINGLE' ? `Difficulty: ${session?.difficulty || 'MEDIUM'}` : 'Local Match'}
+                </span>
               </div>
             </div>
           </div>
@@ -198,8 +206,10 @@ const GameBoardView = () => {
                   <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-surface"></div>
                 </div>
                 <div>
-                  <h3 className="font-headline font-bold text-lg text-on-surface-variant">{session?.p2?.name || 'Void_Walker'}</h3>
-                  <p className="text-xs text-violet-400/70 font-semibold tracking-tighter uppercase">Rating: 2310 Elo</p>
+                  <h3 className="font-headline font-bold text-lg text-on-surface-variant">
+                    {session?.gameType === 'SINGLE' ? (session?.p2?.name || 'Aetheris') : 'Player 2'}
+                  </h3>
+                  <p className="text-xs text-violet-400/70 font-semibold tracking-tighter uppercase">Rating: {session?.gameType === 'SINGLE' ? '2310 Elo' : 'N/A'}</p>
                 </div>
               </div>
               <div className="flex justify-between items-end">

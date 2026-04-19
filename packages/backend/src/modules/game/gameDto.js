@@ -29,7 +29,7 @@ class GameDTO {
         return session.winnerId.toString() === userId?.toString() ? 'WIN' : 'LOSS';
     }
 
-    static transformHistoryQuery(userId, query = {}) {
+    static toHistoryQuery(userId, query = {}) {
         if (!userId) throw new Error('Authenticated user context is required');
 
         const page = parsePositiveInteger(query.page, 1);
@@ -55,15 +55,15 @@ class GameDTO {
         };
     }
 
-    static transformMoveReq(body) {
+    static toMoveReq(body) {
         const { row, col, marker } = body;
         if (row === undefined || col === undefined || !marker) {
             throw new Error('Invalid move coordinates or marker');
         }
-        return { row: parseInt(row), col: parseInt(col), marker: marker.toUpperCase() };
+        return {y: parseInt(row), x: parseInt(col), marker: marker.toUpperCase()};
     }
 
-    static formatHistoryResponse(payload) {
+    static toHistoryRes(payload) {
         return {
             items: (payload.items || []).map((item) => ({
                 matchId: item.matchId,
@@ -78,7 +78,7 @@ class GameDTO {
         };
     }
 
-    static formatGameSession(session, currentUserId) {
+    static toGameSession(session, currentUserId) {
         if (!session) return null;
         const serializeId = (val) => val?._id?.toString() || val?.toString() || null;
 
@@ -117,24 +117,42 @@ class GameDTO {
         };
     }
 
-    static transformSyncLocalReq(body = {}) {
-        const { gameType, boardSize, p1Id, p1Name, p2Name, winnerId, winLine, moves } = body;
+    static toLocalReq(body = {}) {
+        const { 
+            gameType, boardSize, 
+            p1Id, p1Name, p1Marker,
+            p2Name, p2Marker, 
+            winnerId, winLine, moves,
+            status: bodyStatus,
+            currentTurn,
+            boardState 
+        } = body;
 
         if (!moves || !Array.isArray(moves)) {
             throw new Error('Moves history must be a valid array');
         }
 
-        const status = winnerId ? 'COMPLETED' : 'DRAW';
+        const isP1 = (id) => id === p1Id || id === 'p1-local';
+        const sanitizeId = (id) => isP1(id) ? p1Id : null;
+
+        const status = bodyStatus || (winnerId ? 'COMPLETED' : 'DRAW');
 
         return {
-            gameType: gameType || 'LOCAL',
+            gameType: gameType,
             boardSize: boardSize === 15 ? 15 : 10,
             
             player1Id: p1Id,
-            player1Name: p1Name || 'Player 1',
-            player2Name: p2Name || 'Player 2',
+            player1Name: p1Name,
+            player1Marker: p1Marker,
+            
+            player2Name: p2Name,
+            player2Marker: p2Marker,
+
+            currentTurn: currentTurn,
+            boardState: boardState,
+
             status: status,
-            winnerId: winnerId || null,
+            winnerId: winnerId ? sanitizeId(winnerId) : null,
             winLine: winLine || [],
             
             endTime: new Date(), 
@@ -145,7 +163,7 @@ class GameDTO {
                 }
                 return {
                     step: idx + 1,
-                    pId: m.pId || null,
+                    pId: sanitizeId(m.pId),
                     x: parseInt(m.x),
                     y: parseInt(m.y),
                     marker: String(m.marker || '').toUpperCase(),

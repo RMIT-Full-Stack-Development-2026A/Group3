@@ -5,10 +5,9 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import LoginView from '../../features/Auth/LoginView';
 import RegisterView from '../../features/Auth/RegisterView';
 import DashboardView from '../../features/Dashboard/DashboardView';
-import GameBoardView from '../../features/Game/GameBoardView';
-import GameSetupView from '../../features/Game/GameSetupView';
-import MatchHistoryView from '../../features/MatchHistory/MatchHistoryView';
-import ProfileView from '../../features/Profile/ProfileView';
+import GameBoardView from '../../features/game/GameBoardView';
+import MatchHistoryView from '../../features/matchHistory/MatchHistoryView';
+import ProfileView from '../../features/profile/ProfileView';
 
 // Shared
 import { RouteGuard } from '../../shared/components/RouteGuard';
@@ -35,14 +34,6 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/game-setup',
-    element: (
-      <RouteGuard allowedRoles={['PLAYER', 'ADMIN']}>
-        <GameSetupView />
-      </RouteGuard>
-    ),
-  },
-  {
     path: '/game/ai/:sessionId',
     element: (
       <RouteGuard allowedRoles={['PLAYER', 'ADMIN']}>
@@ -51,7 +42,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/game/offline/:sessionId',
+    path: '/game/local/:sessionId',
     element: (
       <RouteGuard allowedRoles={['PLAYER', 'ADMIN']}>
         <GameBoardView />
