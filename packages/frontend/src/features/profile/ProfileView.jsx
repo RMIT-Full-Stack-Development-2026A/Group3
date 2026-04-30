@@ -1,6 +1,6 @@
 import  React, { useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useProfile } from './profileHook';
-import { useMatchHistory } from '../matchHistory/matchHistoryHook';
 import Header from '../../shared/components/layout/Header';
 import BottomDock from '../../shared/components/layout/BottomDock';
 import profileModel from './profileModel';
@@ -10,7 +10,6 @@ import { countries } from '../../shared/utils/countries';
 
 const ProfileView = () => {
   const { profileData, loading, updating, error, refresh, updateAvatar, updateProfileInfo } = useProfile();
-  const { history, loading: historyLoading } = useMatchHistory();
   const fileInputRef = useRef(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { updateUser } = useAuthStore();
@@ -187,41 +186,22 @@ const ProfileView = () => {
           </div>
         </section>
 
-        {/* Match History */}
-        <section className="space-y-6">
-          <h3 className="text-2xl font-bold headline-font">Match History</h3>
-          <div className="overflow-x-auto rounded-2xl bg-surface-container-low/60 border border-white/5">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-white/5 bg-white/5">
-                  <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Match ID</th>
-                  <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Opponent</th>
-                  <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Result</th>
-                  <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Date</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {historyLoading ? (
-                  <tr><td colSpan="4" className="px-6 py-10 text-center">Loading...</td></tr>
-                ) : history.length === 0 ? (
-                  <tr><td colSpan="4" className="px-6 py-10 text-center">No matches found.</td></tr>
-                ) : (
-                  history.slice(0, 5).map((match) => (
-                    <tr key={match.id} className="hover:bg-white/5 transition-colors">
-                      <td className="px-6 py-5 text-sm font-mono text-violet-300">#{match.id.slice(-8).toUpperCase()}</td>
-                      <td className="px-6 py-5 text-sm">{match.opponent}</td>
-                      <td className="px-6 py-5">
-                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${match.result === 'Victory' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : match.result === 'Defeat' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 'bg-white/5 text-on-surface-variant border-white/10'}`}>
-                          {match.result}
-                        </span>
-                      </td>
-                      <td className="px-6 py-5 text-sm text-on-surface-variant">{new Date(match.date).toLocaleDateString()}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+        {/* Match History CTA */}
+        <section className="relative overflow-hidden p-8 rounded-2xl bg-surface-container-high/60 border border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 group hover:border-primary/20 transition-all">
+          <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+            <span className="material-symbols-outlined text-8xl">history</span>
           </div>
+          <div>
+            <h3 className="text-2xl font-bold headline-font mb-1">Battle Records</h3>
+            <p className="text-on-surface-variant text-sm">View your full match history, search opponents, and analyze your battles.</p>
+          </div>
+          <Link
+            to="/match-history"
+            className="flex-shrink-0 px-6 py-3 rounded-xl bg-primary/15 border border-primary/20 text-primary font-bold text-sm flex items-center gap-2 hover:bg-primary/25 transition-all active:scale-95"
+          >
+            <span className="material-symbols-outlined text-lg">arrow_forward</span>
+            View History
+          </Link>
         </section>
       </main>
 
