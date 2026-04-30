@@ -16,6 +16,17 @@ class ProfileRepository {
     ).lean();
   }
 
+  /**
+   * Atomically increment the wallet balance (for top-up deposits).
+   */
+  async incrementWalletBalance(userId, amount) {
+    return await Profile.findOneAndUpdate(
+      { userId },
+      { $inc: { walletBalance: amount } },
+      { returnDocument: 'after', runValidators: true }
+    ).lean();
+  }
+
   async updateStatsByUserId(userId, updateData) {
     return await UserStatistic.findOneAndUpdate(
       { userId },
