@@ -18,9 +18,9 @@ const BottomDock = () => {
         <span className="material-symbols-outlined">leaderboard</span>
       </button>
       
-      <button className="p-3 text-on-surface/70 hover:text-primary transition-colors">
-        <span className="material-symbols-outlined">history</span>
-      </button>
+      <Link to="/match-history" className={`p-3 rounded-xl transition-all active:scale-90 ${isActive('/match-history') ? 'bg-primary text-on-primary shadow-lg' : 'text-on-surface/70 hover:text-primary'}`}>
+        <span className="material-symbols-outlined" style={{ fontVariationSettings: isActive('/match-history') ? "'FILL' 1" : "''" }}>history</span>
+      </Link>
       
       <Link to="/profile" className={`p-3 rounded-xl transition-all active:scale-90 ${isActive('/profile') ? 'bg-primary text-on-primary shadow-lg' : 'text-on-surface/70 hover:text-primary'}`}>
         <span className="material-symbols-outlined" style={{ fontVariationSettings: isActive('/profile') ? "'FILL' 1" : "''" }}>person</span>
