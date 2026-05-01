@@ -37,7 +37,7 @@
 
 @layer utilities {
   .glass-panel {
-    background: rgba(40, 33, 62, 0.4);
+    background: rgba(40, 33, 62, 0.6);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
   }

@@ -1,6 +1,7 @@
 import { getAvatarUrl } from '../../shared/utils/avatarUtil';
 
 const profileModel = {
+  getAvatarUrl, 
   formatProfile: (data) => {
     if (!data) return null;
     const { user, profile, statistics } = data;

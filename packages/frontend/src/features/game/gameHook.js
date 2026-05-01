@@ -38,7 +38,7 @@ export function useGame(sessionId) {
         ...config,
         id: 'local-session',
         board: Array(size).fill(null).map(() => Array(size).fill(null)),
-        currentTurn: 'PLAYER1',
+        currentTurn: config.currentTurn || 'PLAYER1',
         p1: { ...config.players.p1, id: user?.id || 'p1-local' },
         p2: { ...config.players.p2, id: null },
         status: 'ACTIVE'
