@@ -3,20 +3,20 @@ import { useLogin } from './authHooks';
 import { Link } from 'react-router-dom';
 
 export default function LoginView() {
-  const { formData, errors, message, isSuccess, handleChange, handleSubmit } = useLogin();
+  const { formData, errors, message, isSuccess, isLoading, handleChange, handleSubmit } = useLogin();
 
   return (
     <main className="flex-1 relative flex items-center justify-center p-6 min-h-[calc(100vh-80px)]">
       {/* Ambient Background Aesthetic */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[120px]"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-secondary-container/20 rounded-full blur-[160px]"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-125 h-125 bg-secondary-container/20 rounded-full blur-[160px]"></div>
       </div>
 
       {/* Login Modal */}
       <section className="relative z-10 w-full max-w-md">
         {/* Decorative Accent Element */}
-        <div className="absolute -top-12 -right-8 w-24 h-24 bg-gradient-to-br from-primary to-primary-container rounded-lg rotate-12 opacity-50 blur-sm hidden sm:block"></div>
+        <div className="absolute -top-12 -right-8 w-24 h-24 bg-linear-to-br from-primary to-primary-container rounded-lg rotate-12 opacity-50 blur-sm hidden sm:block"></div>
         
         <div className="glass-panel rounded-2xl p-10 border border-outline-variant/15 shadow-2xl shadow-indigo-950/50">
           <div className="mb-8">
@@ -79,10 +79,12 @@ export default function LoginView() {
 
             {/* Login Button */}
             <button 
-              className="w-full py-4 bg-gradient-to-r from-primary to-primary-container text-on-primary font-headline font-extrabold text-lg rounded-xl shadow-lg shadow-primary/10 hover:shadow-primary/30 transform transition-all active:scale-[0.98] duration-200 mt-4" 
+              className="w-full py-4 bg-linear-to-r from-primary to-primary-container text-on-primary font-headline font-extrabold text-lg rounded-xl shadow-lg shadow-primary/10 hover:shadow-primary/30 transform transition-all active:scale-[0.98] duration-200 mt-4 disabled:opacity-60 disabled:cursor-not-allowed" 
               type="submit"
+              disabled={isLoading}
+              aria-busy={isLoading}
             >
-              Login
+              {isLoading ? 'Logging in...' : 'Login'}
             </button>
           </form>
 
