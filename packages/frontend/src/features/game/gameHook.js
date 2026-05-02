@@ -109,5 +109,14 @@ export function useGame(sessionId) {
     }
   };
 
-  return { session, loading, error, makeMove, refresh: fetchSession };
+  const reset = useCallback(() => {
+    setSession(null);
+    setLocalMoves([]);
+    setError(null);
+    if (sessionId && sessionId !== 'new') {
+      fetchSession();
+    }
+  }, [sessionId, fetchSession]);
+
+  return { session, loading, error, makeMove, refresh: reset };
 }
