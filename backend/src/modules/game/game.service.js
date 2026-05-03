@@ -1,5 +1,6 @@
 const { getBestMove } = require('./helpers/aiLogic.helper');
 const { checkWin, isValidMove, isBoardFull } = require('./helpers/gameLogic.helper');
+const gameRepository = require('./game.repository');
 
 /**
  * Game Service - Handles game logic and AI turns
@@ -36,6 +37,20 @@ const processAIMove = async (board, difficulty, aiMarker, playerMarker) => {
   };
 };
 
+const getReplaySession = async (sessionId) => {
+  const session = await gameRepository.findSessionById(sessionId);
+
+  if (!session) {
+    const error = new Error('Game session not found.');
+    error.statusCode = 404;
+    error.errorCode = 'GAME_SESSION_NOT_FOUND';
+    throw error;
+  }
+
+  return session;
+};
+
 module.exports = {
-  processAIMove
+  processAIMove,
+  getReplaySession
 };
