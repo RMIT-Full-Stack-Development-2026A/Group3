@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import gameService from '../gameService';
 
-const GameSetupModal = ({ isOpen, mode = 'AI', onClose }) => {
+const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
   if (!isOpen) return null;
   const navigate = useNavigate();
   const [boardSize, setBoardSize] = useState(10);
@@ -83,6 +83,24 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose }) => {
         return;
       }
 
+      if (mode === 'ONLINE') {
+        const onlineSession = {
+          gameType: 'ONLINE',
+          boardSize,
+          players: {
+            p1: { name: 'Player 1', marker: p1 },
+            p2: { name: 'Player 2', marker: p2 }
+          },
+          status: 'ACTIVE',
+          currentTurn: moveFirst === 1 ? 'PLAYER1' : 'PLAYER2'
+        };
+        if (onStartOnline) {
+          await onStartOnline(onlineSession);
+        }
+        onClose();
+        return;
+      }
+
       const res = await gameService.createSession(config);
       const sessionId = res.data.sessionId || res.data._id || res.data.id;
       
@@ -97,7 +115,7 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
       {/* Backdrop Dimmer */}
       <div className="absolute inset-0 bg-[#000000]/70 backdrop-blur-sm" onClick={onClose}></div>
       
@@ -139,12 +157,13 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose }) => {
           </div>
 
           {/* Section 2: Select Marker */}
+          {(mode === 'AI' || mode === 'LOCAL' || mode === 'ONLINE') && (
           <div className="mb-7">
             <div className="flex justify-between items-center mb-4">
               <label className="block text-xs font-bold uppercase tracking-widest text-primary">Select Marker</label>
               
-              {/* Local Mode: Player Selector Tabs */}
-              {mode === 'LOCAL' && (
+              {/* Player Selector Tabs */}
+              {(mode === 'LOCAL' || mode === 'ONLINE') && (
                 <div className="flex p-1 bg-surface-container-highest/50 rounded-lg border border-white/5">
                   <button 
                     onClick={() => setActiveSelector('P1')}
@@ -172,10 +191,10 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose }) => {
             <div className="grid grid-cols-3 gap-4">
               {markers.map((marker) => {
                 const isP1 = p1Marker === marker.id;
-                const isP2 = p2Marker === marker.id && mode === 'LOCAL';
+                const isP2 = p2Marker === marker.id;
                 const isActive = (mode === 'AI' && isP1) || 
-                                 (mode === 'LOCAL' && ((activeSelector === 'P1' && isP1) || (activeSelector === 'P2' && isP2)));
-                const isDisabled = mode === 'LOCAL' && ((activeSelector === 'P1' && isP2) || (activeSelector === 'P2' && isP1));
+                                 ((mode === 'LOCAL' || mode === 'ONLINE') && ((activeSelector === 'P1' && isP1) || (activeSelector === 'P2' && isP2)));
+                const isDisabled = (mode === 'LOCAL' || mode === 'ONLINE') && ((activeSelector === 'P1' && isP2) || (activeSelector === 'P2' && isP1));
                 
                 return (
                   <button
@@ -184,14 +203,14 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose }) => {
                     onClick={() => handleMarkerSelect(marker.id)}
                     className={`aspect-square flex items-center justify-center rounded-xl transition-all active:scale-95 group relative border ${
                       isActive 
-                      ? 'bg-gradient-to-br from-primary to-primary-container border-transparent text-on-primary marker-glow' 
+                      ? 'bg-linear-to-br from-primary to-primary-container border-transparent text-on-primary marker-glow' 
                       : 'bg-surface-container-highest border border-outline-variant/30 text-on-surface-variant hover:text-primary'
                     } ${isDisabled ? 'opacity-20 cursor-not-allowed grayscale' : ''}`}
                   >
                     <span className="material-symbols-outlined text-4xl group-hover:scale-110 transition-transform">
                       {marker.icon}
                     </span>
-                    {mode === 'LOCAL' && (
+                    {(mode === 'LOCAL' || mode === 'ONLINE') && (
                       <>
                         {isP1 && <div className="absolute top-2 left-2 bg-primary text-[8px] font-black px-1.5 py-0.5 rounded shadow-sm text-on-primary">P1</div>}
                         {isP2 && <div className="absolute top-2 right-2 bg-cyan-500 text-[8px] font-black px-1.5 py-0.5 rounded shadow-sm text-white">P2</div>}
@@ -202,6 +221,7 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose }) => {
               })}
             </div>
           </div>
+          )}
 
           {/* Section: Select Difficulty (AI Only) */}
           {mode === 'AI' && (
@@ -226,6 +246,7 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose }) => {
           )}
 
           {/* Section 3: Move First */}
+          {(mode === 'AI' || mode === 'LOCAL' || mode === 'ONLINE') && (
           <div className="mb-8">
             <label className="block text-xs font-bold uppercase tracking-widest text-primary mb-4">Move First</label>
             <div className="grid grid-cols-2 gap-4">
@@ -256,19 +277,20 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose }) => {
               })}
             </div>
           </div>
+          )}
 
           {/* Start Action */}
           <button
             onClick={handleStart}
             disabled={loading}
-            className="w-full py-5 rounded-xl bg-gradient-to-br from-primary to-primary-container text-on-primary font-headline font-extrabold text-xl tracking-tight shadow-[0_8px_24px_rgba(179,161,255,0.3)] hover:shadow-[0_12px_32px_rgba(179,161,255,0.5)] active:scale-[0.98] transition-all disabled:opacity-50"
+            className="w-full py-5 rounded-xl bg-linear-to-br from-primary to-primary-container text-on-primary font-headline font-extrabold text-xl tracking-tight shadow-[0_8px_24px_rgba(179,161,255,0.3)] hover:shadow-[0_12px_32px_rgba(179,161,255,0.5)] active:scale-[0.98] transition-all disabled:opacity-50"
           >
-            {loading ? 'Initializing...' : 'Start Game'}
+            {loading ? 'Initializing...' : (mode === 'ONLINE' ? 'Create Room' : 'Start Game')}
           </button>
         </div>
 
         {/* Bottom decorative glass accent */}
-        <div className="h-1.5 w-full bg-gradient-to-r from-transparent via-primary/40 to-transparent"></div>
+        <div className="h-1.5 w-full bg-linear-to-r from-transparent via-primary/40 to-transparent"></div>
       </div>
     </div>
   );
