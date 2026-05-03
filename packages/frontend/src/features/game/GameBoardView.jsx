@@ -9,7 +9,7 @@ const GameBoardView = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { session, loading, error, makeMove, refresh } = useGame(sessionId);
+  const { session, loading, error, moveError, makeMove, refresh } = useGame(sessionId);
 
   if (loading) return (
     <div className="min-h-screen bg-surface flex flex-col items-center justify-center text-white gap-4">
@@ -69,7 +69,7 @@ const GameBoardView = () => {
       <Header user={user} />
 
       <main className="pt-24 pb-10 px-4 lg:px-8">
-        <div className="max-w-[1600px] mx-auto grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+        <div className="max-w-400 mx-auto grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
           
           {/* Player 1 Stats Section (Left) */}
           <div className="xl:col-span-3 space-y-6">
@@ -136,7 +136,7 @@ const GameBoardView = () => {
                   <p className="text-[10px] uppercase font-black tracking-[0.2em] text-primary/60 mb-1">
                     {session.gameType === 'SINGLE' 
                       ? (session.currentTurn === 'PLAYER1' ? 'Your Turn' : "AI's Turn")
-                      : (session.currentTurn === 'PLAYER1' ? "Player 1's Turn" : "Player 2's Turn")}
+                      : (session.currentTurn === 'PLAYER1' ? `${session?.p1?.name || 'Player 1'}'s Turn` : `${session?.p2?.name || 'Player 2'}'s Turn`)}
                   </p>
                   <p className="text-2xl font-headline font-black text-primary tracking-tight">
                     {session.gameType === 'SINGLE' && session.currentTurn === 'PLAYER2' ? 'THINKING...' : 'AWAITING INPUT'}
@@ -148,15 +148,23 @@ const GameBoardView = () => {
                   <p className="text-3xl font-headline font-black text-primary tracking-tight">
                     {session?.gameType === 'SINGLE' 
                       ? (session?.matchOutcome === 'WIN' ? 'VICTORY!' : session?.matchOutcome === 'LOSS' ? 'DEFEAT' : 'DRAW')
-                      : (session?.matchOutcome === 'WIN' ? 'P1 VICTORIOUS' : session?.matchOutcome === 'LOSS' ? 'P2 VICTORIOUS' : 'DRAW')
+                      : (session?.matchOutcome === 'WIN' ? `${session?.p1?.name || 'Player 1'} WINS` : session?.matchOutcome === 'LOSS' ? `${session?.p2?.name || 'Player 2'} WINS` : 'DRAW')
                     }
                   </p>
+                </div>
+              )}
+
+              {moveError && (
+                <div className="mt-4 w-full max-w-175 mx-auto text-center">
+                  <div className="inline-block rounded px-4 py-2 bg-rose-600/10 text-rose-400 border border-rose-600/20">
+                    <span className="text-sm font-medium">{moveError}</span>
+                  </div>
                 </div>
               )}
             </div>
 
             {/* Board Container */}
-            <div className="glass-panel p-2 lg:p-4 rounded-2xl border border-outline-variant/10 shadow-[0_0_80px_rgba(0,0,0,0.5)] w-full max-w-[700px] relative">
+            <div className="glass-panel p-2 lg:p-4 rounded-2xl border border-outline-variant/10 shadow-[0_0_80px_rgba(0,0,0,0.5)] w-full max-w-175 relative">
               <div 
                 className="grid gap-1 bg-outline-variant/10 p-1 rounded-lg"
                 style={{ 
@@ -187,7 +195,7 @@ const GameBoardView = () => {
               </div>
               <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full border border-primary/20">
                 <span className="text-xs font-bold text-primary uppercase tracking-widest">
-                  {session?.gameType === 'SINGLE' ? `Difficulty: ${session?.difficulty || 'MEDIUM'}` : 'Local Match'}
+                  {session?.gameType === 'SINGLE' ? `Difficulty: ${session?.difficulty || 'MEDIUM'}` : session?.gameType === 'ONLINE' ? 'Online Match' : 'Local Match'}
                 </span>
               </div>
             </div>
@@ -207,7 +215,7 @@ const GameBoardView = () => {
                 </div>
                 <div>
                   <h3 className="font-headline font-bold text-lg text-on-surface-variant">
-                    {session?.gameType === 'SINGLE' ? (session?.p2?.name || 'Aetheris') : 'Player 2'}
+                    {session?.gameType === 'SINGLE' ? (session?.p2?.name || 'Aetheris') : (session?.p2?.name || 'Player 2')}
                   </h3>
                   <p className="text-xs text-violet-400/70 font-semibold tracking-tighter uppercase">Rating: {session?.gameType === 'SINGLE' ? '2310 Elo' : 'N/A'}</p>
                 </div>
