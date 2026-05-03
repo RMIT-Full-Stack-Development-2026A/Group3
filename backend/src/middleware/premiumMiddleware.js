@@ -2,6 +2,12 @@
 const responseHelper = require('../common/responseHelper');
 
 const premiumMiddleware = (req, res, next) => {
+	const role = String((req.user && req.user.role) || '').toUpperCase();
+
+	if (role === 'ADMIN') {
+		return next();
+	}
+
 	const isPremium = Boolean(req.user && req.user.isPremium);
 
 	if (!isPremium) {
