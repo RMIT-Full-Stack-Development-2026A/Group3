@@ -1,0 +1,262 @@
+{
+  "info": {
+    "name": "Replay Endpoint",
+    "description": "Replay endpoint validation for success, forbidden, and not found scenarios.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "premiumToken",
+      "value": "<JWT_FOR_PREMIUM_PLAYER_OR_ADMIN>"
+    },
+    {
+      "key": "standardToken",
+      "value": "<JWT_FOR_NON_PREMIUM_PLAYER>"
+    },
+    {
+      "key": "ownedReplayGameId",
+      "value": "<EXISTING_GAME_ID_OWNED_BY_PREMIUM_USER>"
+    },
+    {
+      "key": "missingReplayGameId",
+      "value": "507f1f77bcf86cd799439011"
+    }
+  ],
+  "item": [
+    {
+      "name": "Replay - Success (200)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{premiumToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/game/{{ownedReplayGameId}}/replay",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "game",
+            "{{ownedReplayGameId}}",
+            "replay"
+          ]
+        },
+        "description": "Expected: 200 with replay payload containing game info and moves list."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const body = pm.response.json();",
+              "pm.test('response has replay data and moves', function () {",
+              "  pm.expect(body.success).to.eql(true);",
+              "  pm.expect(body.data).to.have.property('id');",
+              "  pm.expect(body.data).to.have.property('boardSize');",
+              "  pm.expect(body.data).to.have.property('status');",
+              "  pm.expect(body.data.moves).to.be.an('array');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": [
+        {
+          "name": "Success Example",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{premiumToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/game/{{ownedReplayGameId}}/replay",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "game",
+                "{{ownedReplayGameId}}",
+                "replay"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "body": "{\n  \"success\": true,\n  \"message\": \"Replay session loaded\",\n  \"data\": {\n    \"id\": \"6643f2fcbe93f32a5d0b1fcb\",\n    \"gameType\": \"ONLINE\",\n    \"boardSize\": 15,\n    \"status\": \"WIN\",\n    \"winnerId\": \"6643f19fbe93f32a5d0b1f9a\",\n    \"winLine\": [{ \"x\": 3, \"y\": 10 }],\n    \"players\": {\n      \"player1Id\": \"6643f19fbe93f32a5d0b1f9a\",\n      \"player1Name\": \"seed_premium\",\n      \"player2Id\": \"6643f1bcbe93f32a5d0b1fb7\",\n      \"player2Name\": \"seed_standard\"\n    },\n    \"moves\": [\n      {\n        \"step\": 1,\n        \"playerId\": \"6643f19fbe93f32a5d0b1f9a\",\n        \"x\": 7,\n        \"y\": 7,\n        \"marker\": \"X\",\n        \"time\": \"2026-05-03T06:00:01.000Z\"\n      }\n    ]\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Replay - Forbidden (403 Premium Required)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{standardToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/game/{{ownedReplayGameId}}/replay",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "game",
+            "{{ownedReplayGameId}}",
+            "replay"
+          ]
+        },
+        "description": "Expected: 403 when requester is non-premium player."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 403', function () {",
+              "  pm.response.to.have.status(403);",
+              "});",
+              "",
+              "const body = pm.response.json();",
+              "pm.test('error code is PREMIUM_REQUIRED', function () {",
+              "  pm.expect(body.success).to.eql(false);",
+              "  pm.expect(body.error.code).to.eql('PREMIUM_REQUIRED');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": [
+        {
+          "name": "Forbidden Example",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{standardToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/game/{{ownedReplayGameId}}/replay",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "game",
+                "{{ownedReplayGameId}}",
+                "replay"
+              ]
+            }
+          },
+          "status": "Forbidden",
+          "code": 403,
+          "_postman_previewlanguage": "json",
+          "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"PREMIUM_REQUIRED\",\n    \"message\": \"Premium subscription required to access replay.\"\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Replay - Not Found (404)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{premiumToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/game/{{missingReplayGameId}}/replay",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "game",
+            "{{missingReplayGameId}}",
+            "replay"
+          ]
+        },
+        "description": "Expected: 404 when game id format is valid but no session exists."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 404', function () {",
+              "  pm.response.to.have.status(404);",
+              "});",
+              "",
+              "const body = pm.response.json();",
+              "pm.test('error code is GAME_SESSION_NOT_FOUND', function () {",
+              "  pm.expect(body.success).to.eql(false);",
+              "  pm.expect(body.error.code).to.eql('GAME_SESSION_NOT_FOUND');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": [
+        {
+          "name": "Not Found Example",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{premiumToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/game/{{missingReplayGameId}}/replay",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "game",
+                "{{missingReplayGameId}}",
+                "replay"
+              ]
+            }
+          },
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"GAME_SESSION_NOT_FOUND\",\n    \"message\": \"Game session not found.\"\n  }\n}"
+        }
+      ]
+    }
+  ]
+}
