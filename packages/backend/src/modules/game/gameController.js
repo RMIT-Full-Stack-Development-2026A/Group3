@@ -1,6 +1,7 @@
 import GameService from './gameService.js';
 import GameDTO from './gameDto.js';
 import { responseHelper } from '../../common/responseHelper.js';
+import { getIO } from '@tictactoang/shared/utils/socketManager.js';
 
 const { sendSuccess, sendError } = responseHelper;
 
@@ -27,6 +28,15 @@ class GameController {
 
       const session = await GameService.makeMove(sessionId, userId, moveData);
       const data = GameDTO.toGameSession(session, userId);
+
+      try {
+        const io = getIO();
+        if (io) {
+          io.emit('game:move', { session: data });
+        }
+      } catch (emitErr) {
+        console.error('Failed to emit game move event:', emitErr);
+      }
 
       return sendSuccess(res, 200, data, 'Move recorded');
     } catch (error) {

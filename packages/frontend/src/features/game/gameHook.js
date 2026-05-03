@@ -4,6 +4,7 @@ import gameService from './gameService';
 import gameModel from './gameModel';
 import { useAuthStore } from '../../app/store/authStore';
 import { processLocalMove } from './localGameLogic';
+import { getSocket } from '../Arena/arenaHook';
 
 export function useGame(sessionId) {
   const location = useLocation();
@@ -11,6 +12,7 @@ export function useGame(sessionId) {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [moveError, setMoveError] = useState(null);
   
   // Local game state history
   const [localMoves, setLocalMoves] = useState([]);
@@ -61,6 +63,31 @@ export function useGame(sessionId) {
     return () => clearInterval(interval);
   }, [fetchSession, isLocalNew, session?.id, session?.status, session?.currentTurn, session?.gameType, sessionId]);
 
+  useEffect(() => {
+    if (!sessionId) return;
+    const socket = getSocket();
+    if (!socket) return;
+
+    if (!socket.connected) {
+      const token = useAuthStore.getState().token;
+      socket.auth = { token };
+      socket.connect();
+    }
+
+    const handleGameMove = (payload) => {
+      if (!payload || !payload.session) return;
+      const incoming = payload.session;
+      if (incoming.sessionId !== sessionId) return;
+      setSession(gameModel.formatSession(incoming));
+    };
+
+    socket.on('game:move', handleGameMove);
+
+    return () => {
+      socket.off('game:move', handleGameMove);
+    };
+  }, [sessionId]);
+
   const makeMove = async (row, col) => {
     if (!session || session.status !== 'ACTIVE') return;
     
@@ -104,10 +131,12 @@ export function useGame(sessionId) {
       const currentMarker = session.currentTurn === 'PLAYER1' ? session.p1.marker : session.p2.marker;
       const data = await gameService.makeMove(sessionId, { row, col, marker: currentMarker });
       setSession(gameModel.formatSession(data.data));
+      setMoveError(null);
     } catch (err) {
-      setError(err.message || 'Failed to make move');
+      const msg = err?.response?.data?.message || err.message || 'Invalid move';
+      setMoveError(msg);
     }
   };
 
-  return { session, loading, error, makeMove, refresh: fetchSession };
+  return { session, loading, error, moveError, makeMove, refresh: fetchSession };
 }

@@ -8,6 +8,7 @@ import DashboardView from '../../features/Dashboard/DashboardView';
 import GameBoardView from '../../features/game/GameBoardView';
 import MatchHistoryView from '../../features/matchHistory/MatchHistoryView';
 import ProfileView from '../../features/profile/ProfileView';
+import ArenaView from '../../features/Arena/ArenaView';
 
 // Shared
 import { RouteGuard } from '../../shared/components/RouteGuard';
@@ -34,7 +35,23 @@ export const router = createBrowserRouter([
     ),
   },
   {
+    path: '/arena',
+    element: (
+      <RouteGuard allowedRoles={['PLAYER', 'ADMIN']}>
+        <ArenaView />
+      </RouteGuard>
+    ),
+  },
+  {
     path: '/game/ai/:sessionId',
+    element: (
+      <RouteGuard allowedRoles={['PLAYER', 'ADMIN']}>
+        <GameBoardView />
+      </RouteGuard>
+    ),
+  },
+  {
+    path: '/game/online/:sessionId',
     element: (
       <RouteGuard allowedRoles={['PLAYER', 'ADMIN']}>
         <GameBoardView />
