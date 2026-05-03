@@ -26,7 +26,7 @@ const gameSessionSchema = new mongoose.Schema({
     currentTurn: { type: String, enum: ['PLAYER1', 'PLAYER2'], required: true }, 
     boardState: { type: [[String]], default: [] },
     difficulty: { type: String, enum: ['EASY', 'MEDIUM', 'HARD'], default: null }, 
-    status: { type: String, enum: ['ACTIVE', 'DRAW', 'ABORTED', 'COMPLETED'], default: 'ACTIVE' },
+    status: { type: String, enum: ['WAITING', 'ACTIVE', 'DRAW', 'ABORTED', 'COMPLETED'], default: 'ACTIVE' },
     winnerId: { type: mongoose.Schema.Types.ObjectId, ref: 'user', default: null },
     winLine: {
         type: [{
