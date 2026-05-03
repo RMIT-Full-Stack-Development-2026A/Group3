@@ -1,7 +1,6 @@
 /** game repository */
-const { GameSession } = require('./game.model');
-
 const findSessionById = async (sessionId) => {
+	const { GameSession } = await import('./game.model.js');
 	return GameSession.findById(sessionId).lean();
 };
 

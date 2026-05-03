@@ -37,13 +37,37 @@ const processAIMove = async (board, difficulty, aiMarker, playerMarker) => {
   };
 };
 
-const getReplaySession = async (sessionId) => {
+const canViewReplay = (session, user) => {
+  const userId = String(user && user.id ? user.id : '');
+  const role = String(user && user.role ? user.role : '').toUpperCase();
+
+  if (!userId) {
+    return false;
+  }
+
+  if (role === 'ADMIN') {
+    return true;
+  }
+
+  return [session.player1Id, session.player2Id]
+    .filter(Boolean)
+    .some((playerId) => String(playerId) === userId);
+};
+
+const getReplaySession = async (sessionId, user) => {
   const session = await gameRepository.findSessionById(sessionId);
 
   if (!session) {
     const error = new Error('Game session not found.');
     error.statusCode = 404;
     error.errorCode = 'GAME_SESSION_NOT_FOUND';
+    throw error;
+  }
+
+  if (!canViewReplay(session, user)) {
+    const error = new Error('You are not allowed to view this replay.');
+    error.statusCode = 403;
+    error.errorCode = 'REPLAY_FORBIDDEN';
     throw error;
   }
 
