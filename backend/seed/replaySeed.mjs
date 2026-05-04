@@ -151,7 +151,7 @@ const seedReplaySessions = async () => {
 };
 
 const run = async () => {
-    const mongoUri = process.env.MONGO_URI;
+    const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI;
 
     if (!mongoUri) {
         console.error('Missing MONGO_URI in environment.');
