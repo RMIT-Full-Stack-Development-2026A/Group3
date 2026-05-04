@@ -7,6 +7,7 @@ import gameRouter from './src/modules/game/gameRoute.js';
 import authRouter from './src/modules/auth/authRoute.js';
 import profileRouter from './src/modules/profile/profileRoute.js';
 import subscriptionRouter from './src/modules/subscription/subscriptionRoute.js';
+import adminRouter from './src/modules/admin/adminRoute.js';
 
 const app = express();
 
@@ -34,6 +35,9 @@ app.use('/api/v1/profile', profileRouter);
 
 // Subscription module
 app.use('/api/v1/subscription', subscriptionRouter);
+
+// Admin module
+app.use('/api/v1/admin', adminRouter);
 
 const PORT = env.PORT;
 app.listen(PORT, () => {
