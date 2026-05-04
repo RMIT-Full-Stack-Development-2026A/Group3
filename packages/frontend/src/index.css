@@ -24,6 +24,18 @@
   --color-teal-light: #99f6e4;
   --color-coral: #fb7185;
 
+  /* Vietnam Theme Colors */
+  --color-vn-tertiary: #e7c365;
+  --color-vn-tertiary-container: #c9a74d;
+  --color-vn-on-tertiary: #3e2e00;
+  --color-vn-error: #93000a;
+  --color-vn-surface-dim: #141218;
+
+  /* Saigon Neon Theme */
+  --color-sg-cyan: #22d3ee;
+  --color-sg-magenta: #c026d1;
+  --color-sg-surface: #141218;
+
   --font-headline: "Manrope", "Outfit", sans-serif;
   --font-body: "Inter", sans-serif;
 }
@@ -89,7 +101,45 @@
     @apply focus-within:shadow-[0_0_15px_rgba(179,161,255,0.15)];
   }
 
+  /* Vietnam Theme Utilities */
+  .bamboo-grid {
+    background-image: 
+        linear-gradient(to right, rgba(217, 167, 77, 0.3) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(217, 167, 77, 0.3) 1px, transparent 1px);
+    background-size: 20% 20%;
+  }
+  .glass-panel-vn {
+    background: rgba(15, 13, 19, 0.4);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(231, 195, 101, 0.15);
+  }
+  .bamboo-border {
+    border-image: linear-gradient(to bottom, #c9a74d, #503d00) 1;
+    border-width: 2px;
+  }
+
   .scrollbar-ethereal::-webkit-scrollbar { width: 4px; }
   .scrollbar-ethereal::-webkit-scrollbar-track { background: transparent; }
   .scrollbar-ethereal::-webkit-scrollbar-thumb { background: #4b455c; border-radius: 10px; }
+
+  /* Saigon Neon Utilities */
+  .glass-panel-saigon {
+    background: rgba(20, 18, 24, 0.4);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .neon-grid-saigon {
+    box-shadow: 0 0 15px rgba(34, 211, 238, 0.6), 0 0 5px rgba(34, 211, 238, 0.4);
+  }
+
+  .neon-text-cyan {
+    text-shadow: 0 0 8px rgba(34, 211, 238, 0.8), 0 0 15px rgba(34, 211, 238, 0.4);
+  }
+
+  .neon-text-magenta {
+    text-shadow: 0 0 8px rgba(192, 38, 211, 0.8), 0 0 15px rgba(192, 38, 211, 0.4);
+  }
 }

@@ -49,6 +49,7 @@ class GameService {
     const newSession = await GameRepository.createSession({
       gameType: gameData.gameType || 'SINGLE',
       boardSize: size,
+      boardTheme: gameData.boardTheme || 'DEFAULT',
       difficulty: difficulty,
       player1Id: userId,
       player1Name: p1.username,

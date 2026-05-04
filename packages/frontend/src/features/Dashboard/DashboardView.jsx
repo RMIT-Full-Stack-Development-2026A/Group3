@@ -5,7 +5,7 @@ import { useAuthStore } from '../../app/store/authStore.js';
 import Header from '../../shared/components/layout/Header.jsx';
 import BottomDock from '../../shared/components/layout/BottomDock.jsx';
 import ModeCard from './components/ModeCard.jsx';
-import GameSetupModal from '../game/components/GameSetupModal.jsx';
+import GameSetupModal from '../../features/Game/components/GameSetupModal.jsx';
 
 export default function DashboardView() {
   const navigate = useNavigate();

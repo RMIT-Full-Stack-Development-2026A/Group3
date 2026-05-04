@@ -52,7 +52,7 @@ class UsersRepository {
         { email: normalizedIdentifier },
         { username: { $regex: new RegExp(`^${identifier.trim()}$`, 'i') } }
       ]
-    }).lean();
+    });
   }
 }
 
