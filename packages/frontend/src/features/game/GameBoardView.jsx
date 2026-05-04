@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useGame } from '../game/gameHook';
+import { useGame } from './gameHook';
 import Header from '../../shared/components/layout/Header';
 import { useAuthStore } from '../../app/store/authStore';
 import { getAvatarUrl } from '../../shared/utils/avatarUtil';

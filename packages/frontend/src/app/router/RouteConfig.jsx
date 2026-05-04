@@ -5,9 +5,9 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import LoginView from '../../features/Auth/LoginView';
 import RegisterView from '../../features/Auth/RegisterView';
 import DashboardView from '../../features/Dashboard/DashboardView';
-import GameBoardView from '../../features/game/GameBoardView';
-import MatchHistoryView from '../../features/matchHistory/MatchHistoryView';
-import ProfileView from '../../features/profile/ProfileView';
+import GameBoardView from '../../features/Game/GameBoardView';
+import MatchHistoryView from '../../features/MatchHistory/MatchHistoryView';
+import ProfileView from '../../features/Profile/ProfileView';
 
 // Shared
 import { RouteGuard } from '../../shared/components/RouteGuard';
