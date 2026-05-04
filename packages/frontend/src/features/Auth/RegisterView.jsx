@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { countries } from "../../shared/utils/countries";
 
 export default function RegisterView() {
-  const { formData, errors, message, isSuccess, handleChange, handleSubmit } = useRegister();
+  const { formData, errors, message, isSuccess, isLoading, handleChange, handleSubmit } = useRegister();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const dropdownRef = useRef(null);
@@ -38,12 +38,12 @@ export default function RegisterView() {
       {/* Ambient Background Aesthetic */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[120px]"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-secondary-container/20 rounded-full blur-[160px]"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-125 h-125 bg-secondary-container/20 rounded-full blur-[160px]"></div>
       </div>
 
       <section className="relative z-10 w-full max-w-lg">
         {/* Decorative Accent Element */}
-        <div className="absolute -top-12 -right-8 w-24 h-24 bg-gradient-to-br from-primary to-primary-container rounded-lg rotate-12 opacity-50 blur-sm hidden sm:block"></div>
+        <div className="absolute -top-12 -right-8 w-24 h-24 bg-linear-to-br from-primary to-primary-container rounded-lg rotate-12 opacity-50 blur-sm hidden sm:block"></div>
         
         <div className="glass-panel rounded-2xl p-8 md:p-12 border border-outline-variant/15 shadow-2xl shadow-indigo-950/50">
           <header className="mb-10">
@@ -122,7 +122,7 @@ export default function RegisterView() {
                 </div>
 
                 {isDropdownOpen && (
-                  <div className="absolute bottom-full mb-2 left-0 w-full bg-surface-container-high backdrop-blur-xl border border-outline-variant/20 rounded-xl overflow-hidden z-[100] shadow-2xl animate-in fade-in slide-in-from-bottom-2 duration-200">
+                  <div className="absolute bottom-full mb-2 left-0 w-full bg-surface-container-high backdrop-blur-xl border border-outline-variant/20 rounded-xl overflow-hidden z-100 shadow-2xl animate-in fade-in slide-in-from-bottom-2 duration-200">
                     <div className="p-3 border-b border-outline-variant/10">
                       <div className="relative">
                         <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
@@ -137,7 +137,7 @@ export default function RegisterView() {
                         />
                       </div>
                     </div>
-                    <div className="max-h-[300px] overflow-y-auto custom-scrollbar py-2">
+                    <div className="max-h-75 overflow-y-auto custom-scrollbar py-2">
                       {filteredCountries.length > 0 ? (
                         filteredCountries.map((c) => (
                           <div 
@@ -202,10 +202,12 @@ export default function RegisterView() {
 
             <div className="pt-4">
               <button 
-                className="w-full py-4 rounded-xl bg-gradient-to-br from-primary to-primary-container text-on-primary font-headline font-extrabold text-lg shadow-[0_0_20px_rgba(179,161,255,0.3)] hover:shadow-[0_0_30px_rgba(179,161,255,0.5)] transition-all transform active:scale-[0.98]" 
+                className="w-full py-4 rounded-xl bg-linear-to-br from-primary to-primary-container text-on-primary font-headline font-extrabold text-lg shadow-[0_0_20px_rgba(179,161,255,0.3)] hover:shadow-[0_0_30px_rgba(179,161,255,0.5)] transition-all transform active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed" 
                 type="submit"
+                disabled={isLoading}
+                aria-busy={isLoading}
               >
-                Register Account
+                {isLoading ? 'Registering...' : 'Register Account'}
               </button>
             </div>
             <p className="text-center text-on-surface-variant text-[11px] mt-6 leading-relaxed">
