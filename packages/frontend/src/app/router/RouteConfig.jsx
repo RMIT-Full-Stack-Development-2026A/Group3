@@ -2,12 +2,14 @@ import React from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 
 // Features
-import LoginView from '../../features/Auth/LoginView';
-import RegisterView from '../../features/Auth/RegisterView';
-import DashboardView from '../../features/Dashboard/DashboardView';
-import GameBoardView from '../../features/Game/GameBoardView';
-import MatchHistoryView from '../../features/MatchHistory/MatchHistoryView';
-import ProfileView from '../../features/Profile/ProfileView';
+import LoginView from '../../features/auth/LoginView';
+import RegisterView from '../../features/auth/RegisterView';
+import DashboardView from '../../features/dashboard/DashboardView';
+import GameBoardView from '../../features/game/GameBoardView';
+import MatchHistoryView from '../../features/matchHistory/MatchHistoryView';
+import ProfileView from '../../features/profile/ProfileView';
+import AdminDashboardView from '../../features/admin/AdminDashboardView';
+import AdminUserManagementView from '../../features/admin/AdminUserManagementView';
 
 // Shared
 import { RouteGuard } from '../../shared/components/RouteGuard';
@@ -65,11 +67,20 @@ export const router = createBrowserRouter([
       </RouteGuard>
     ),
   },
+
   {
     path: '/admin',
     element: (
       <RouteGuard allowedRoles={['ADMIN']}>
-        <div className="p-8 text-white font-headline">Admin Control Panel (Authorized Only)</div>
+        <AdminDashboardView />
+      </RouteGuard>
+    ),
+  },
+  {
+    path: '/admin/users',
+    element: (
+      <RouteGuard allowedRoles={['ADMIN']}>
+        <AdminUserManagementView />
       </RouteGuard>
     ),
   },
