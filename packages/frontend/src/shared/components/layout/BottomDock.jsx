@@ -1,11 +1,11 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
-import { useAuthStore } from '../../../app/store/authStore';
+import { useAuthUser } from '../../../app/store/authStore';
 
 const BottomDock = () => {
   const location = useLocation();
-  const { user } = useAuthStore();
+  const user = useAuthUser();
   
   const isActive = (path) => location.pathname === path;
 
