@@ -12,7 +12,7 @@ const adminModel = {
       country: userData.country,
       avatarUrl: getAvatarUrl(userData.avatarUrl, 100),
       isPremium: userData.isPremium || false,
-      status: userData.status || 'ACTIVE', // Assumes 'ACTIVE' or 'DEACTIVATED'
+      isActive: userData.isActive !== false,
     };
   },
   

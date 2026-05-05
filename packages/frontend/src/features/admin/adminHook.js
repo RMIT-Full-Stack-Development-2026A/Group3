@@ -24,10 +24,10 @@ export function useAdminUsers() {
     }
   }, []);
 
-  const toggleUserStatus = async (userId, currentStatus) => {
+  const toggleUserStatus = async (userId, currentIsActive) => {
     try {
       setIsToggling(true);
-      const newStatus = currentStatus === 'ACTIVE' ? 'DEACTIVATED' : 'ACTIVE';
+      const newStatus = !currentIsActive;
       
       const response = await adminService.updateUserStatus(userId, newStatus);
       
@@ -35,7 +35,7 @@ export function useAdminUsers() {
         // Optimistically update the UI to feel instant
         setUsers(prevUsers => 
           prevUsers.map(user => 
-            user.id === userId ? { ...user, status: newStatus } : user
+            user.id === userId ? { ...user, isActive: newStatus } : user
           )
         );
       }

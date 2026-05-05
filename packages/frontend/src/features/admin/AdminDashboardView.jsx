@@ -1,12 +1,9 @@
 import React from 'react';
-import { useAuthStore } from '../../app/store/authStore';
-import Header from '../../shared/components/layout/Header';
-import BottomDock from '../../shared/components/layout/BottomDock';
+
 import { Link } from 'react-router-dom';
 import { useAdminUsers } from './adminHook';
 
 const AdminDashboardView = () => {
-  const { user } = useAuthStore();
   const { users, loading } = useAdminUsers();
 
   return (
@@ -20,12 +17,10 @@ const AdminDashboardView = () => {
       {/* Hero Gradient Overlay */}
       <div className="fixed inset-0 z-[-1] bg-[radial-gradient(circle_at_top_center,rgba(84,64,111,0.4)_0%,rgba(21,16,36,1)_70%)] pointer-events-none"></div>
 
-      <Header user={user} />
-
       {/* Main Layout Grid */}
-      <main className="pt-24 pb-32 px-8 max-w-[1024px] mx-auto min-h-screen flex flex-col gap-8 relative z-10 w-full">
+      <main className="py-24 px-8 max-w-[1024px] mx-auto min-h-screen flex flex-col justify-center gap-8 relative z-10 w-full">
         {/* Top Management Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-component-gap w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
           {/* User Management Card */}
           <div className="bg-[linear-gradient(135deg,rgba(84,64,111,0.6)_0%,rgba(34,28,49,0.8)_100%)] backdrop-blur-2xl border border-white/10 rounded-[2rem] p-8 flex flex-col gap-6 relative overflow-hidden group shadow-[0_0_20px_rgba(179,161,255,0.15)]">
             <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl pointer-events-none group-hover:bg-primary/20 transition-colors duration-500"></div>
@@ -36,7 +31,7 @@ const AdminDashboardView = () => {
               <h2 className="font-h2 text-[18px] font-bold text-on-surface">User Management</h2>
             </div>
             <p className="text-on-surface-variant font-body-md max-w-sm">
-              Manage player accounts, handle suspensions, review activity logs, and oversee the entire user base.
+              Manage player accounts, handle suspensions
             </p>
             <div className="mt-auto pt-4">
               <Link to="/admin/users" className="bg-primary text-on-primary font-body-md font-bold px-6 py-3 rounded-full hover:bg-primary-fixed-dim transition-colors duration-200 active:scale-95 shadow-lg flex items-center justify-center gap-2 w-max">
@@ -56,7 +51,7 @@ const AdminDashboardView = () => {
               <h2 className="font-h2 text-[18px] font-bold text-on-surface">Room Management</h2>
             </div>
             <p className="text-on-surface-variant font-body-md max-w-sm">
-              Monitor active game sessions, close stale rooms, and view match history and statistics.
+              Monitor active game sessions
             </p>
             <div className="mt-auto pt-4">
               <Link to="/admin/rooms" className="bg-primary text-on-primary font-body-md font-bold px-6 py-3 rounded-full hover:bg-primary-fixed-dim transition-colors duration-200 active:scale-95 shadow-lg flex items-center justify-center gap-2 w-max">
@@ -70,7 +65,7 @@ const AdminDashboardView = () => {
         {/* Platform Overview Section */}
         <div className="mt-8 flex flex-col gap-6 w-full">
           <h3 className="font-h2 text-[18px] font-bold text-on-surface px-2">Platform Overview</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-component-gap">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Total Users Stat */}
             <div className="bg-surface-container-high/80 backdrop-blur-xl border border-white/5 rounded-[2rem] p-6 flex flex-col gap-2 hover:bg-surface-container-highest transition-colors duration-300 relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none"></div>
@@ -94,7 +89,6 @@ const AdminDashboardView = () => {
         </div>
       </main>
 
-      <BottomDock />
     </div>
   );
 };

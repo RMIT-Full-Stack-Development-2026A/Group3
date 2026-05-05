@@ -5,8 +5,8 @@ const adminService = {
     return await httpUtil.get('/admin/users');
   },
   
-  updateUserStatus: async (userId, status) => {
-    return await httpUtil.patch(`/admin/users/${userId}/status`, { status });
+  updateUserStatus: async (userId, isActive) => {
+    return await httpUtil.patch(`/admin/users/${userId}/status`, { isActive });
   }
 };
 

@@ -1,28 +1,25 @@
 import React, { useState } from 'react';
-import Header from '../../shared/components/layout/Header';
-import BottomDock from '../../shared/components/layout/BottomDock';
-import { useAuthStore } from '../../app/store/authStore';
 import { useAdminUsers } from './adminHook';
 
 const AdminUserManagementView = () => {
-  const { user } = useAuthStore();
+
   const { users, loading, error, toggleUserStatus, isToggling } = useAdminUsers();
   
   // Basic filtering state
-  const [filter, setFilter] = useState('ALL'); // 'ALL', 'ACTIVE', 'DEACTIVATED'
+  const [filter, setFilter] = useState('ALL'); 
   const [searchQuery, setSearchQuery] = useState('');
 
   // Filter logic
   const filteredUsers = users.filter(u => {
-    const matchesFilter = filter === 'ALL' || u.status === filter;
+    const matchesFilter = filter === 'ALL' || (filter === 'ACTIVE' && u.isActive) || (filter === 'DEACTIVATED' && !u.isActive);
     const matchesSearch = 
       u.username.toLowerCase().includes(searchQuery.toLowerCase()) || 
       u.email.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
-  const handleToggle = async (userId, currentStatus) => {
-    await toggleUserStatus(userId, currentStatus);
+  const handleToggle = async (userId, currentIsActive) => {
+    await toggleUserStatus(userId, currentIsActive);
   };
 
   return (
@@ -33,8 +30,6 @@ const AdminUserManagementView = () => {
         style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDPwUEIEHZKpOAI8_4n75KICFn0gM3ezhvwVDeAfXbYaPm9S4cbCBz5U5r9SaeDhVwaEcsvOrKhqNUurUARqBaKBY-0ztDsQzc1lbNfz_CSnwL0b-fNemCSaJZfz1NcoOp9DwP0WChCXCg3oZptCv_rISxQ2jX0Vssp_gPHDbq_fkn93Qb4OKQS2HlmymbCbUvLwWxt9XcMptOZiWreaaxp1RbNBKEYevxNHgN08uNce45fACGLSsubJX2KWGqyuIOgiUTMc4roVGk')" }}
       ></div>
       <div className="fixed inset-0 z-[-1] bg-[radial-gradient(circle_at_top_center,rgba(206,193,255,0.15)_0%,transparent_70%)] pointer-events-none"></div>
-
-      <Header user={user} />
 
       {/* Main Content Canvas */}
       <main className="max-w-7xl mx-auto pt-32 px-4 sm:px-6 lg:px-8 pb-32 relative z-10">
@@ -111,7 +106,7 @@ const AdminUserManagementView = () => {
                   </tr>
                 ) : (
                   filteredUsers.map((u) => {
-                    const isActive = u.status === 'ACTIVE';
+                    const isActive = u.isActive;
                     return (
                       <tr key={u.id} className="hover:bg-white/5 transition-colors group">
                         <td className="py-4 px-6 flex items-center gap-3">
@@ -145,7 +140,7 @@ const AdminUserManagementView = () => {
                         <td className="py-4 px-6 text-right">
                           <button 
                             disabled={isToggling}
-                            onClick={() => handleToggle(u.id, u.status)}
+                            onClick={() => handleToggle(u.id, u.isActive)}
                             className={`px-4 py-1.5 rounded-lg font-bold text-xs transition-colors ${
                               isActive 
                                 ? 'bg-error-container/20 text-error hover:bg-error hover:text-on-error border border-error/30' 
@@ -168,8 +163,6 @@ const AdminUserManagementView = () => {
           </div>
         </div>
       </main>
-
-      <BottomDock />
     </div>
   );
 };
