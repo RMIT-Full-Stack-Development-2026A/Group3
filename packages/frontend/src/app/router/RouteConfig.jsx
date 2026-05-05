@@ -1,6 +1,10 @@
 import React from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 
+// Layouts
+import MainLayout from '../../shared/components/layout/MainLayout';
+import AdminLayout from '../../shared/components/layout/AdminLayout';
+
 // Features
 import LoginView from '../../features/auth/LoginView';
 import RegisterView from '../../features/auth/RegisterView';
@@ -15,77 +19,75 @@ import AdminUserManagementView from '../../features/admin/AdminUserManagementVie
 import { RouteGuard } from '../../shared/components/RouteGuard';
 
 export const router = createBrowserRouter([
+  { 
+    path: '/login', 
+    element: <LoginView /> 
+  },
+  { 
+    path: '/register', 
+    element: <RegisterView /> 
+  },
   {
     path: '/',
-    element: <Navigate to="/dashboard" replace />,
-  },
-  {
-    path: '/login',
-    element: <LoginView />,
-  },
-  {
-    path: '/register',
-    element: <RegisterView />,
-  },
-  {
-    path: '/dashboard',
     element: (
       <RouteGuard allowedRoles={['PLAYER', 'ADMIN']}>
-        <DashboardView />
+        <MainLayout /> 
       </RouteGuard>
     ),
-  },
-  {
-    path: '/game/ai/:sessionId',
-    element: (
-      <RouteGuard allowedRoles={['PLAYER', 'ADMIN']}>
-        <GameBoardView />
-      </RouteGuard>
-    ),
-  },
-  {
-    path: '/game/local/:sessionId',
-    element: (
-      <RouteGuard allowedRoles={['PLAYER', 'ADMIN']}>
-        <GameBoardView />
-      </RouteGuard>
-    ),
-  },
-  {
-    path: '/match-history',
-    element: (
-      <RouteGuard allowedRoles={['PLAYER', 'ADMIN']}>
-        <MatchHistoryView />
-      </RouteGuard>
-    ),
-  },
-  {
-    path: '/profile',
-    element: (
-      <RouteGuard allowedRoles={['PLAYER', 'ADMIN']}>
-        <ProfileView />
-      </RouteGuard>
-    ),
+    children: [
+      { 
+        path: 'dashboard', 
+        element: <DashboardView /> 
+      },
+      { 
+        path: 'match-history',
+        element: <MatchHistoryView /> 
+      },
+      { 
+        path: 'profile', 
+        element: <ProfileView /> 
+      },
+      { 
+        path: 'game',
+        children: [
+          { 
+            path: 'ai/:sessionId', 
+            element: <GameBoardView /> 
+          },
+          { 
+            path: 'local/:sessionId', 
+            element: <GameBoardView /> 
+          }
+        ]
+      },
+      { 
+        index: true, 
+        element: <Navigate to="/dashboard" replace /> 
+      }
+    ]
   },
 
+  // ADMIN ROUTES
   {
     path: '/admin',
     element: (
       <RouteGuard allowedRoles={['ADMIN']}>
-        <AdminDashboardView />
+        <AdminLayout />
       </RouteGuard>
     ),
+    children: [
+      { 
+        index: true, 
+        element: <AdminDashboardView /> 
+      },
+      { 
+        path: 'users', 
+        element: <AdminUserManagementView /> 
+      },
+    ]
   },
-  {
-    path: '/admin/users',
-    element: (
-      <RouteGuard allowedRoles={['ADMIN']}>
-        <AdminUserManagementView />
-      </RouteGuard>
-    ),
-  },
-  {
-    path: '*',
-    element: <Navigate to="/dashboard" replace />,
+  { 
+    path: '*', 
+    element: <Navigate to="/dashboard" replace /> 
   }
 ]);
