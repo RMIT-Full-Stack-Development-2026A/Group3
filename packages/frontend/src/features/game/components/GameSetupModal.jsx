@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import gameService from '../gameService';
+import defaultBoardTheme from '../../../assets/images/boardThemes/default_theme.png';
+import SaigonBoardTheme from '../../../assets/images/boardThemes/Saigon_skyline_theme.png';
+import VietnamBoardTheme from '../../../assets/images/boardThemes/Vietnam_theme.png';
 
 const GameSetupModal = ({ isOpen, mode = 'AI', onClose }) => {
   if (!isOpen) return null;
@@ -161,9 +164,9 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose }) => {
             <div className="grid grid-cols-3 gap-3">
               {['DEFAULT', 'SAIGON', 'VIETNAM'].map(theme => {
                 const imgUrls = {
-                  'DEFAULT': 'https://lh3.googleusercontent.com/aida/ADBb0ujiiKhW_K9Dwv0Rt0upQsWitsYdmFsHSwPepejUMB1MJl3zJhYqY1VJ-oAu1cwfOitVzMgZzr9MgHSxaMXbKcD3oVcj-tB22gDS-mLmLfJ9CW2lfvtWFW7LZub6C2E__coZMHQU16g_dzidjW-BFygl489rPpV-EbO6HVP2mdr4z_KAfLZJmKZaQzWPNT-dwKNmaGWSM-azi0NP4O405F8JAu4-THcinRkHm_e6Br6xbYo11oEMmsTS7a1zyPvPh3MKrq2Hpqvapbw',
-                  'SAIGON': 'https://lh3.googleusercontent.com/aida/ADBb0uh4H1sWlXSwdN0v_Nd2yWkIrwLCYNi6YaQBYD6Ll1vPsipXua3AMDg82EPHKD5oExZKHcuwqDVmSlm-wmOzacRBQWoTS9hmVFujLHK_EGSu2PJLI1VUSuCVyrLtD0hS20-30861VgzWz02KzFLPNBQ8HQkZ3uKp7BnVLKsqpGVTACMnkivwqOx-vZORflX7Mn8zBnNXqGtticJagAgi_sjJl9G0RyiYFvpJlNM-YA-GiwL5uabIU1Q4pUFAa92y32nHcNVaLIOYw_I',
-                  'VIETNAM': 'https://lh3.googleusercontent.com/aida/ADBb0uhjs7THl6VsD5sYnrvF7wTlr7DQ7Re1w_-jSAk1Ao9Dw6s46RfDQ2G6d-KLk1cbeQ_4Nsg9vEqMtfOJ2e-m7o2gZzkVIcDJZ9uN0AgjncJKXxFEUxsXQNIdlwDZhVtQT_BZ1KnO7yj-yiySdYrTE7T6Qqc8esiWqNMheaIy1lYbir-X6fQbMBDzCHqXJj9PUuKDUlgzK3fcexXPqxVpVsqUyYWasHZVmII5_BWCKgH8U7GgvmApgxouBrBtHkHFiTzyR6lD7NZKKA'
+                  'DEFAULT': defaultBoardTheme,
+                  'SAIGON': SaigonBoardTheme,
+                  'VIETNAM': VietnamBoardTheme
                 };
                 return (
                   <button 

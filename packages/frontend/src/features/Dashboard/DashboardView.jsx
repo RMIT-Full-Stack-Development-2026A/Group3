@@ -1,21 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-// Update import paths
-import { useAuthStore } from '../../app/store/authStore.js';
-import Header from '../../shared/components/layout/Header.jsx';
-import BottomDock from '../../shared/components/layout/BottomDock.jsx';
+import { useAuthUser } from '../../app/store/authStore.js';
 import ModeCard from './components/ModeCard.jsx';
-import GameSetupModal from '../../features/Game/components/GameSetupModal.jsx';
+import GameSetupModal from '../game/components/GameSetupModal.jsx';
 
 export default function DashboardView() {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const user = useAuthUser();
   const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
   const [setupMode, setSetupMode] = useState('AI');
 
   return (
     <div className={`min-h-screen bg-surface text-on-surface font-body selection:bg-primary selection:text-on-primary ${isSetupModalOpen ? 'overflow-hidden' : ''}`}>
-      <Header user={user} />
+
 
       <main className={`min-h-screen pt-32 pb-40 px-6 flex flex-col items-center relative overflow-hidden transition-all duration-500 ${isSetupModalOpen ? 'blur-md scale-[0.98] pointer-events-none' : ''}`}>
         {/* Background Atmospheric Element */}
@@ -81,9 +78,7 @@ export default function DashboardView() {
           </ModeCard>
         </div>
       </main>
-
-      <BottomDock />
-
+      
       {/* AI Setup Modal */}
       <GameSetupModal
         isOpen={isSetupModalOpen}

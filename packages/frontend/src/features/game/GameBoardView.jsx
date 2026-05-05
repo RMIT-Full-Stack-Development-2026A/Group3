@@ -1,15 +1,15 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGame } from './gameHook';
-import Header from '../../shared/components/layout/Header';
-import { useAuthStore } from '../../app/store/authStore';
+
 import { getAvatarUrl } from '../../shared/utils/avatarUtil';
 import gameService from './gameService';
+import VietnamBoardTheme from '../../assets/images/boardThemes/Vietnam_theme.png';
+import SaigonBoardTheme from '../../assets/images/boardThemes/Saigon_skyline_theme.png';
 
 const GameBoardView = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuthStore();
   const { session, loading, error, makeMove, refresh } = useGame(sessionId);
 
   if (loading) return (
@@ -95,7 +95,7 @@ const GameBoardView = () => {
           <img 
             alt="Background Landscape" 
             className="w-full h-full object-cover opacity-60" 
-            src="https://lh3.googleusercontent.com/aida/ADBb0uhjs7THl6VsD5sYnrvF7wTlr7DQ7Re1w_-jSAk1Ao9Dw6s46RfDQ2G6d-KLk1cbeQ_4Nsg9vEqMtfOJ2e-m7o2gZzkVIcDJZ9uN0AgjncJKXxFEUxsXQNIdlwDZhVtQT_BZ1KnO7yj-yiySdYrTE7T6Qqc8esiWqNMheaIy1lYbir-X6fQbMBDzCHqXJj9PUuKDUlgzK3fcexXPqxVpVsqUyYWasHZVmII5_BWCKgH8U7GgvmApgxouBrBtHkHFiTzyR6lD7NZKKA"
+            src={VietnamBoardTheme}
           />
         </div>
       )}
@@ -105,14 +105,13 @@ const GameBoardView = () => {
           <img 
             alt="Saigon Skyline" 
             className="w-full h-full object-cover opacity-60 mix-blend-screen" 
-            src="https://lh3.googleusercontent.com/aida/ADBb0uh4H1sWlXSwdN0v_Nd2yWkIrwLCYNi6YaQBYD6Ll1vPsipXua3AMDg82EPHKD5oExZKHcuwqDVmSlm-wmOzacRBQWoTS9hmVFujLHK_EGSu2PJLI1VUSuCVyrLtD0hS20-30861VgzWz02KzFLPNBQ8HQkZ3uKp7BnVLKsqpGVTACMnkivwqOx-vZORflX7Mn8zBnNXqGtticJagAgi_sjJl9G0RyiYFvpJlNM-YA-GiwL5uabIU1Q4pUFAa92y32nHcNVaLIOYw_I"
+            src={SaigonBoardTheme}
           />
           <div className="absolute inset-0 bg-gradient-to-b from-slate-950/40 via-transparent to-slate-950/80"></div>
         </div>
       )}
 
       <div className="relative z-10">
-        <Header user={user} theme={session?.boardTheme} />
         
         <main className="pt-24 pb-10 px-4 lg:px-8">
           <div className="max-w-[1600px] mx-auto grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
