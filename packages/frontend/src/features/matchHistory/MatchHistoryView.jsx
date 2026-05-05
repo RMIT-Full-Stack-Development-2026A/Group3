@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useMatchHistory } from './matchHistoryHook';
 import matchHistoryModel from './matchHistoryModel';
 
@@ -134,6 +135,13 @@ const MatchRow = ({ match, index }) => {
         <span className="text-[10px] font-mono text-primary/60 tracking-wide">
           #{match.id?.slice(-8)?.toUpperCase()}
         </span>
+        <Link
+          to={`/replay/${match.id}`}
+          className="mt-2 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary/15 border border-primary/20 text-primary text-[10px] font-bold uppercase tracking-widest hover:bg-primary/25 transition-all active:scale-95"
+        >
+          <span className="material-symbols-outlined text-sm">play_arrow</span>
+          Replay
+        </Link>
       </div>
 
       {/* Hover glow effect */}

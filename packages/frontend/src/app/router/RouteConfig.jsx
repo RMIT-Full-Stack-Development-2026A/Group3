@@ -12,6 +12,7 @@ import DashboardView from '../../features/dashboard/DashboardView';
 import GameBoardView from '../../features/game/GameBoardView';
 import MatchHistoryView from '../../features/matchHistory/MatchHistoryView';
 import ProfileView from '../../features/profile/ProfileView';
+import ReplayView from '../../features/replay/ReplayView';
 import AdminDashboardView from '../../features/admin/AdminDashboardView';
 import AdminUserManagementView from '../../features/admin/AdminUserManagementView';
 
@@ -46,6 +47,10 @@ export const router = createBrowserRouter([
       { 
         path: 'profile', 
         element: <ProfileView /> 
+      },
+      {
+        path: 'replay/:sessionId',
+        element: <ReplayView />
       },
       { 
         path: 'game',
