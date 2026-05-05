@@ -1,5 +1,5 @@
 // Phân quyền RBAC (PLAYER / ADMIN)
-const responseHelper = require('../common/responseHelper');
+import responseHelper from '../common/responseHelper.js';
 
 const roleMiddleware = (...allowedRoles) => {
 	const normalizedAllowedRoles = allowedRoles.map((role) => String(role).toUpperCase());
@@ -24,4 +24,4 @@ const roleMiddleware = (...allowedRoles) => {
 	};
 };
 
-module.exports = roleMiddleware;
+export default roleMiddleware;

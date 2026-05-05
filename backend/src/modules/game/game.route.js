@@ -1,9 +1,9 @@
 /** game route */
-const express = require('express');
-const gameController = require('./game.controller');
-const authMiddleware = require('../../middleware/authMiddleware');
-const roleMiddleware = require('../../middleware/roleMiddleware');
-const premiumMiddleware = require('../../middleware/premiumMiddleware');
+import express from 'express';
+import gameController from './game.controller.js';
+import authMiddleware from '../../middleware/authMiddleware.js';
+import roleMiddleware from '../../middleware/roleMiddleware.js';
+import premiumMiddleware from '../../middleware/premiumMiddleware.js';
 
 const router = express.Router();
 
@@ -15,4 +15,4 @@ router.get(
 	gameController.getReplaySession
 );
 
-module.exports = router;
+export default router;

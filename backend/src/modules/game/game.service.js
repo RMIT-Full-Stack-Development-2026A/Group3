@@ -1,6 +1,6 @@
-const { getBestMove } = require('./helpers/aiLogic.helper');
-const { checkWin, isValidMove, isBoardFull } = require('./helpers/gameLogic.helper');
-const gameRepository = require('./game.repository');
+import { getBestMove } from './helpers/aiLogic.helper.js';
+import { checkWin, isValidMove, isBoardFull } from './helpers/gameLogic.helper.js';
+import gameRepository from './game.repository.js';
 
 /**
  * Game Service - Handles game logic and AI turns
@@ -74,7 +74,7 @@ const getReplaySession = async (sessionId, user) => {
   return session;
 };
 
-module.exports = {
+export default {
   processAIMove,
   getReplaySession
 };

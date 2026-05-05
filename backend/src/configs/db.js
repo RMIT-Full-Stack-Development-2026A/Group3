@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { env } from './env.js';
 
-const connectDB = async () => {
+export const connectDB = async () => {
     try {
         const conn = await mongoose.connect(env.MONGO_URI, {
             maxPoolSize: 100, // Đảm bảo chịu tải 100,000 users

@@ -1,8 +1,8 @@
 /** game controller */
-const mongoose = require('mongoose');
-const responseHelper = require('../../common/responseHelper');
-const gameService = require('./game.service');
-const gameDTO = require('./game.dto');
+import mongoose from 'mongoose';
+import responseHelper from '../../common/responseHelper.js';
+import gameService from './game.service.js';
+import gameDTO from './game.dto.js';
 
 const getReplaySession = async (req, res) => {
 	try {
@@ -26,6 +26,6 @@ const getReplaySession = async (req, res) => {
 	}
 };
 
-module.exports = {
+export default {
 	getReplaySession
 };

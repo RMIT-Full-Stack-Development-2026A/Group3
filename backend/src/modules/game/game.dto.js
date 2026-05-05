@@ -53,4 +53,4 @@ const gameDTO = {
   }
 };
 
-module.exports = gameDTO;
+export default gameDTO;

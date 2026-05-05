@@ -1,5 +1,5 @@
 // Phân quyền ABAC (Chặn tính năng Replay)
-const responseHelper = require('../common/responseHelper');
+import responseHelper from '../common/responseHelper.js';
 
 const premiumMiddleware = (req, res, next) => {
 	const role = String((req.user && req.user.role) || '').toUpperCase();
@@ -22,4 +22,4 @@ const premiumMiddleware = (req, res, next) => {
 	return next();
 };
 
-module.exports = premiumMiddleware;
+export default premiumMiddleware;

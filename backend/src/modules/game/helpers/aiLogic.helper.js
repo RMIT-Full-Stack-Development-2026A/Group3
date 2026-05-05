@@ -1,4 +1,4 @@
-const { checkWin, isValidMove, countInDirection } = require('./gameLogic.helper');
+import { checkWin, isValidMove, countInDirection } from './gameLogic.helper.js';
 
 /**
  * Heuristic AI Engine
@@ -129,7 +129,7 @@ const getBestMove = (board, difficulty, aiMarker, playerMarker) => {
   return bestMove;
 };
 
-module.exports = {
+export {
   getBestMove,
   evaluatePosition
 };

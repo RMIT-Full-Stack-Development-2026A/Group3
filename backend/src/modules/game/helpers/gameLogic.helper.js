@@ -84,7 +84,7 @@ const isBoardFull = (board) => {
   return board.every(row => row.every(cell => cell !== null));
 };
 
-module.exports = {
+export {
   isValidMove,
   checkWin,
   isBoardFull,

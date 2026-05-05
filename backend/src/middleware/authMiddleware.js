@@ -1,6 +1,6 @@
 // Xác thực JWT token
-const jwt = require('jsonwebtoken');
-const responseHelper = require('../common/responseHelper');
+import jwt from 'jsonwebtoken';
+import responseHelper from '../common/responseHelper.js';
 
 const authMiddleware = (req, res, next) => {
 	const authHeader = req.headers.authorization || '';
@@ -35,4 +35,4 @@ const authMiddleware = (req, res, next) => {
 	}
 };
 
-module.exports = authMiddleware;
+export default authMiddleware;

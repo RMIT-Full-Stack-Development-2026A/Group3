@@ -1,7 +1,7 @@
-require('dotenv').config();
-const express = require('express');
-const connectDB = require('./src/configs/db');
-const gameRoute = require('./src/modules/game/game.route');
+import 'dotenv/config.js';
+import express from 'express';
+import { connectDB } from './src/configs/db.js';
+import gameRoute from './src/modules/game/game.route.js';
 
 const app = express();
 
