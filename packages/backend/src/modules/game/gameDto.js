@@ -137,6 +137,7 @@ class GameDTO {
             id: game._id?.toString() || game._id,
             gameType: game.gameType,
             boardSize: game.boardSize,
+            boardTheme: game.boardTheme || 'DEFAULT',
             status: game.status,
             winnerId: serializeId(game.winnerId),
             winLine: game.winLine || [],
@@ -152,7 +153,7 @@ class GameDTO {
 
     static toLocalReq(body = {}) {
         const { 
-            gameType, boardSize, 
+            gameType, boardSize, boardTheme,
             p1Id, p1Name, p1Marker,
             p2Name, p2Marker, 
             winnerId, winLine, moves,
@@ -173,6 +174,7 @@ class GameDTO {
         return {
             gameType: gameType,
             boardSize: boardSize === 15 ? 15 : 10,
+            boardTheme: boardTheme,
             
             player1Id: p1Id,
             player1Name: p1Name,

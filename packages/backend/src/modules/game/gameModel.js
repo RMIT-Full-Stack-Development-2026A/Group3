@@ -13,7 +13,7 @@ const gameSessionSchema = new mongoose.Schema({
     gameType: { type: String, enum: ['SINGLE', 'LOCAL', 'ONLINE'], required: true },
     boardSize: { type: Number, enum: [10, 15], required: true },
     boardTheme: { type: String, enum: ['DEFAULT', 'SAIGON', 'VIETNAM'], default: 'DEFAULT' },
-    
+     
     player1Id: { type: mongoose.Schema.Types.ObjectId, ref: 'user', index: true, required: true },
     player1Marker: { type: String, enum: ['CROSS', 'CIRCLE', 'TRIANGLE', 'SQUARE', 'DIAMOND', 'STAR'], required: true},
     player1Name: { type: String, required: true },

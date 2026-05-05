@@ -97,6 +97,7 @@ export function useReplay(sessionId, options = {}) {
   return {
     replay,
     board,
+    boardTheme: replay?.boardTheme || 'DEFAULT',
     loading,
     error,
     currentStep,

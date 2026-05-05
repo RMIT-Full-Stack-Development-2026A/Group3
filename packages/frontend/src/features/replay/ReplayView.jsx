@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { getAvatarUrl } from '../../shared/utils/avatarUtil';
 import replayModel from './replayModel';
 import { useReplay } from './replayHook';
+import VietnamBoardTheme from '../../assets/images/boardThemes/Vietnam_theme.png';
+import SaigonBoardTheme from '../../assets/images/boardThemes/Saigon_skyline_theme.png';
 
 const getMarkerSymbol = (marker) => {
   if (marker === 'CROSS') return 'close';
@@ -20,6 +22,7 @@ const ReplayView = () => {
   const {
     replay,
     board,
+    boardTheme,
     loading,
     error,
     currentStep,
@@ -67,19 +70,50 @@ const ReplayView = () => {
     currentStep >= totalMoves &&
     totalMoves > 0
   );
+  const isWinCell = (y, x) => showWinningLine && replay?.winLine?.some((line) => line.x === x && line.y === y);
+
+  const isVN = boardTheme === 'VIETNAM';
+  const isSG = boardTheme === 'SAIGON';
 
   return (
-    <div className="min-h-screen text-on-surface font-body selection:bg-primary/30 overflow-x-hidden relative">
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-surface/60 via-surface/80 to-surface"></div>
-        <div
-          className="absolute inset-0 opacity-30"
-          style={{
-            backgroundImage:
-              'radial-gradient(circle at 50% 0%, rgba(179,161,255,0.2) 0%, rgba(10,8,18,0) 70%)'
-          }}
-        ></div>
-      </div>
+    <div className={`min-h-screen text-on-surface font-body selection:bg-primary/30 overflow-x-hidden relative ${
+      isVN ? 'bg-vn-surface-dim' : isSG ? 'bg-sg-surface' : 'bg-background'
+    }`}>
+      
+      {/* Background Layers */}
+      {isVN && (
+        <div className="fixed inset-0 z-0 pointer-events-none">
+          <img 
+            alt="Background Landscape" 
+            className="w-full h-full object-cover opacity-60" 
+            src={VietnamBoardTheme}
+          />
+        </div>
+      )}
+
+      {isSG && (
+        <div className="fixed inset-0 z-0 pointer-events-none">
+          <img 
+            alt="Saigon Skyline" 
+            className="w-full h-full object-cover opacity-60 mix-blend-screen" 
+            src={SaigonBoardTheme}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/40 via-transparent to-slate-950/80"></div>
+        </div>
+      )}
+
+      {!isVN && !isSG && (
+        <div className="fixed inset-0 z-0 pointer-events-none">
+          <div className="absolute inset-0 bg-gradient-to-b from-surface/60 via-surface/80 to-surface"></div>
+          <div
+            className="absolute inset-0 opacity-30"
+            style={{
+              backgroundImage:
+                'radial-gradient(circle at 50% 0%, rgba(179,161,255,0.2) 0%, rgba(10,8,18,0) 70%)'
+            }}
+          ></div>
+        </div>
+      )}
 
       <div className="relative z-10">
         <main className="pt-24 pb-24 px-6 max-w-[1400px] mx-auto grid grid-cols-12 gap-6">
@@ -151,27 +185,49 @@ const ReplayView = () => {
           </aside>
 
           <section className="col-span-12 lg:col-span-6">
-            <div className="glass-panel p-4 rounded-2xl shadow-[0_0_40px_rgba(0,0,0,0.5)]">
-              <div
-                className="grid gap-1 bg-surface-container-low/60 p-2 rounded-xl"
-                style={{
-                  gridTemplateColumns: `repeat(${replay?.boardSize || 10}, minmax(0, 1fr))`
+            <div className={`p-2 lg:p-4 relative transition-all duration-700 shadow-[0_0_40px_rgba(0,0,0,0.5)] ${
+              isVN ? 'glass-panel-vn rounded-none border-2 border-vn-tertiary/30' : 
+              isSG ? 'bg-slate-900/80 border border-sg-cyan/50 shadow-[0_0_30px_rgba(34,211,238,0.1)]' : 
+              'glass-panel rounded-2xl border border-outline-variant/10 shadow-[0_0_80px_rgba(0,0,0,0.5)]'
+            } w-full`}>
+              
+              {/* Board Ornaments */}
+              {isVN && (
+                <>
+                  <div className="absolute -top-4 -left-4 w-12 h-12 border-t-2 border-l-2 border-vn-tertiary"></div>
+                  <div className="absolute -top-4 -right-4 w-12 h-12 border-t-2 border-r-2 border-vn-tertiary"></div>
+                  <div className="absolute -bottom-4 -left-4 w-12 h-12 border-b-2 border-l-2 border-vn-tertiary"></div>
+                  <div className="absolute -bottom-4 -right-4 w-12 h-12 border-b-2 border-r-2 border-vn-tertiary"></div>
+                </>
+              )}
+
+              <div 
+                className={`grid gap-1 p-1 rounded-lg relative ${isVN ? '' : 'bg-surface-container-low/60'}`}
+                style={{ 
+                  gridTemplateColumns: `repeat(${replay?.boardSize || 10}, minmax(0, 1fr))` 
                 }}
               >
+                {/* Grid Layers */}
+                {isVN && <div className="absolute inset-0 bamboo-grid pointer-events-none opacity-40"></div>}
+                {isSG && (
+                  <div className="absolute inset-0 pointer-events-none border border-sg-cyan/20"></div>
+                )}
+
                 {board.map((row, y) =>
                   row.map((cell, x) => (
-                    <div
+                    <div 
                       key={`${y}-${x}`}
-                      className={`aspect-square border border-white/5 flex items-center justify-center text-lg font-black rounded-sm transition-all duration-300 ${
-                        showWinningLine && replay?.winLine?.some((line) => line.x === x && line.y === y)
-                          ? 'bg-primary/25 ring-1 ring-primary/70 shadow-[0_0_18px_rgba(179,161,255,0.45)]'
-                          : 'bg-surface-container-low'
-                      }`}
+                      className={`aspect-square transition-all rounded-sm flex items-center justify-center text-sm md:text-lg lg:text-xl font-black relative overflow-hidden group ${
+                        isVN ? 'border border-vn-tertiary/5' : 
+                        isSG ? 'border border-sg-cyan/20 shadow-[inset_0_0_10px_rgba(34,211,238,0.05)] bg-white/5' : 'border border-white/5 bg-surface-container-low'
+                      } ${isWinCell(y, x) ? (isVN ? 'bg-vn-tertiary/20' : isSG ? 'bg-sg-cyan/20' : 'bg-primary/25 ring-1 ring-primary/70 shadow-[0_0_18px_rgba(179,161,255,0.45)]') : ''}`}
                     >
                       {cell && (
-                        <span
+                        <span 
                           className={`material-symbols-outlined ${
-                            cell === markers.p1 ? 'text-primary marker-glow-x' : 'text-secondary marker-glow-o'
+                            isWinCell(y, x) ? 'marker-winner-glow' : 
+                            cell === markers.p1 ? (isVN ? 'text-vn-tertiary' : isSG ? 'text-sg-cyan neon-text-cyan' : 'text-primary marker-glow-x') : 
+                            (isVN ? 'text-vn-secondary' : isSG ? 'text-sg-magenta neon-text-magenta' : 'text-secondary marker-glow-o')
                           }`}
                           style={{ fontVariationSettings: '"FILL" 1' }}
                         >

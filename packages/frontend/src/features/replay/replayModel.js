@@ -6,6 +6,7 @@ const replayModel = {
       id: data.id || data._id,
       gameType: data.gameType,
       boardSize: data.boardSize || 10,
+      boardTheme: data.boardTheme,
       status: data.status,
       winnerId: data.winnerId || null,
       winLine: Array.isArray(data.winLine) ? data.winLine : [],
