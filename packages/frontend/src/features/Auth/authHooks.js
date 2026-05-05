@@ -1,15 +1,17 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { authService } from './authService';
 import { useAuthStore } from '../../app/store/authStore';
 
 export function useLogin() {
     const navigate = useNavigate();
-    const setAuth = useAuthStore((state) => state.setAuth);
+    const location = useLocation();
+    const setAuth = useAuthStore((state) => state.actions.setAuth);
     const [formData, setFormData] = useState({ identifier: '', password: '' });
     const [errors, setErrors] = useState({});
     const [message, setMessage] = useState('');
     const [isSuccess, setIsSuccess] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const validateForm = () => {
         const tempErrors = {};
@@ -34,29 +36,45 @@ export function useLogin() {
 
         if (!validateForm()) return;
 
+        setIsLoading(true);
+
         try {
             const response = await authService.login(formData.identifier, formData.password);
-            const { user, token } = response.data;
-            
-            // Update global store
+            const { user, token } = response.data || {};
+
+            if (!user || !token) {
+                throw new Error('Invalid login response');
+            }
+
             setAuth(user, token);
-            
+
             setMessage("Login successful");
             setIsSuccess(true);
+
+            // Determine redirect path
+            let from = location.state?.from?.pathname;
+            if (user.role === 'ADMIN' && (!from || from === '/' || from === '/dashboard')) {
+                from = '/admin';
+            }
             
-            // Navigate to dashboard after store update
-            setTimeout(() => navigate("/dashboard"), 500);
+            const isHomeOrEmpty = !from || from === '/';
+            const destination = isHomeOrEmpty ? (user.role === 'ADMIN' ? '/admin' : '/dashboard') : from;
+
+            setTimeout(() => navigate(destination, { replace: true }), 500);
         } catch (error) {
             console.error("Login error details:", error);
             setMessage(error.message || "Invalid credentials or server error.");
             setIsSuccess(false);
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    return { formData, errors, message, isSuccess, handleChange, handleSubmit };
+    return { formData, errors, message, isSuccess, isLoading, handleChange, handleSubmit };
 }
 
 export function useRegister() {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         username: '',
         email: '',
@@ -68,6 +86,7 @@ export function useRegister() {
     const [errors, setErrors] = useState({});
     const [message, setMessage] = useState('');
     const [isSuccess, setIsSuccess] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const validateForm = () => {
         let tempErrors = {};
@@ -103,17 +122,22 @@ export function useRegister() {
 
         if (!validateForm()) return;
 
+        setIsLoading(true);
+
         try {
             await authService.register(formData);
-            setMessage('Registration successful!');
+            setMessage('Registration successful! Redirecting to login...');
             setIsSuccess(true);
             setFormData({ username: '', email: '', password: '', confirmPassword: '', country: '' });
+            setTimeout(() => navigate('/login', { replace: true }), 700);
         } catch (error) {
             console.error('Registration error', error);
             setMessage(error.message || 'Registration failed');
             setIsSuccess(false);
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    return { formData, errors, message, isSuccess, handleChange, handleSubmit, setFormData };
+    return { formData, errors, message, isSuccess, isLoading, handleChange, handleSubmit, setFormData };
 }

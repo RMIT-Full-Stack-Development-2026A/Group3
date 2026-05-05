@@ -32,7 +32,7 @@ httpUtil.interceptors.response.use(
     (error) => {
         if (error.response && error.response.status === 401) {
             // Handle unauthorized (e.g., logout)
-            useAuthStore.getState().logout();
+            useAuthStore.getState().actions.logout();
         }
         return Promise.reject(error.response?.data || error);
     }

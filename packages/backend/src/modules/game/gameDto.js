@@ -86,6 +86,7 @@ class GameDTO {
             sessionId: session._id.toString(),
             gameType: session.gameType,
             boardSize: session.boardSize,
+            boardTheme: session.boardTheme || 'DEFAULT',
             difficulty: session.difficulty,
             status: session.status,
             players: {

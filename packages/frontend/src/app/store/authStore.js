@@ -8,24 +8,29 @@ export const useAuthStore = create(
       token: null,
       isAuthenticated: false,
       
-      setAuth: (user, token) => set({ 
-        user, 
-        token, 
-        isAuthenticated: !!user 
-      }),
-      
-      logout: () => set({ 
-        user: null, 
-        token: null, 
-        isAuthenticated: false 
-      }),
-      
-      updateUser: (updatedUser) => set((state) => ({
-        user: { ...state.user, ...updatedUser }
-      })),
+      actions: {
+        setAuth: (user, token) => set({ 
+          user, 
+          token, 
+          isAuthenticated: !!token && !!user 
+        }),
+        
+        logout: () => {
+          set({ user: null, token: null, isAuthenticated: false });
+          localStorage.removeItem('auth-storage'); 
+        },
+        
+        updateUser: (updatedUser) => set((state) => ({
+          user: state.user ? { ...state.user, ...updatedUser } : null
+        })),
+      }
     }),
     {
-      name: 'auth-storage', // name of the item in the storage (must be unique)
+      name: 'auth-storage',
+      partialize: (state) => ({ user: state.user, token: state.token }),
     }
   )
 );
+
+export const useAuthUser = () => useAuthStore((state) => state.user);
+export const useAuthActions = () => useAuthStore((state) => state.actions);

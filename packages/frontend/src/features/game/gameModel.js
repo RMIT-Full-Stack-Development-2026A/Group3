@@ -13,6 +13,7 @@ const gameModel = {
       currentTurn: gameState.currentTurn || data.currentPlayer,
       status: data.status,
       boardSize: data.boardSize || 10,
+      boardTheme: data.boardTheme || 'DEFAULT',
       
       p1: players.p1 || (data.players ? data.players[0] : null),
       p2: players.p2 || (data.players ? data.players[1] : null),
