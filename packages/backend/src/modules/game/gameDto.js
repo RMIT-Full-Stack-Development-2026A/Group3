@@ -117,6 +117,38 @@ class GameDTO {
         };
     }
 
+    static mapReplayMoves(moves = []) {
+        return moves.map((move) => ({
+            step: move.step,
+            playerId: move.pId,
+            x: move.x,
+            y: move.y,
+            marker: move.marker,
+            time: move.time
+        }));
+    }
+
+    static toReplayResponse(game) {
+        if (!game) return null;
+        const serializeId = (val) => val?._id?.toString() || val?.toString() || null;
+
+        return {
+            id: game._id?.toString() || game._id,
+            gameType: game.gameType,
+            boardSize: game.boardSize,
+            status: game.status,
+            winnerId: serializeId(game.winnerId),
+            winLine: game.winLine || [],
+            players: {
+                player1Id: serializeId(game.player1Id),
+                player1Name: game.player1Name,
+                player2Id: serializeId(game.player2Id),
+                player2Name: game.player2Name
+            },
+            moves: this.mapReplayMoves(game.moves)
+        };
+    }
+
     static toLocalReq(body = {}) {
         const { 
             gameType, boardSize, 

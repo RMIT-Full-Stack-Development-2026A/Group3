@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import GameService from './gameService.js';
 import GameDTO from './gameDto.js';
 import { responseHelper } from '../../common/responseHelper.js';
@@ -75,6 +76,28 @@ class GameController {
       return sendSuccess(res, 200, data, 'History fetched successfully');
     } catch (error) {
       return sendError(res, 400, 'HISTORY_FETCH_FAILED', error.message);
+    }
+  }
+
+  async getReplaySession(req, res) {
+    try {
+      const { id } = req.params;
+
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return sendError(res, 400, 'INVALID_GAME_ID', 'Game id is invalid.');
+      }
+
+      const session = await GameService.getReplaySession(id, req.user);
+      const data = GameDTO.toReplayResponse(session);
+
+      return sendSuccess(res, 200, data, 'Replay session loaded');
+    } catch (error) {
+      return sendError(
+        res,
+        error.statusCode || 500,
+        error.errorCode || 'REPLAY_SESSION_ERROR',
+        error.message || 'Unable to load replay session'
+      );
     }
   }
 }
