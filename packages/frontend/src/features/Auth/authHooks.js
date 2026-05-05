@@ -52,7 +52,11 @@ export function useLogin() {
             setIsSuccess(true);
 
             // Determine redirect path
-            const from = location.state?.from?.pathname;
+            let from = location.state?.from?.pathname;
+            if (user.role === 'ADMIN' && (!from || from === '/' || from === '/dashboard')) {
+                from = '/admin';
+            }
+            
             const isHomeOrEmpty = !from || from === '/';
             const destination = isHomeOrEmpty ? (user.role === 'ADMIN' ? '/admin' : '/dashboard') : from;
 
