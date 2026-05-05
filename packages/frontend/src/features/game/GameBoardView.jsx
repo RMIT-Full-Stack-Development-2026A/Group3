@@ -1,8 +1,7 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGame } from './gameHook';
-import Header from '../../shared/components/layout/Header';
-import { useAuthStore } from '../../app/store/authStore';
+
 import { getAvatarUrl } from '../../shared/utils/avatarUtil';
 import gameService from './gameService';
 import VietnamBoardTheme from '../../assets/images/boardThemes/Vietnam_theme.png';
@@ -11,7 +10,6 @@ import SaigonBoardTheme from '../../assets/images/boardThemes/Saigon_skyline_the
 const GameBoardView = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuthStore();
   const { session, loading, error, makeMove, refresh } = useGame(sessionId);
 
   if (loading) return (
@@ -114,7 +112,6 @@ const GameBoardView = () => {
       )}
 
       <div className="relative z-10">
-        <Header user={user} theme={session?.boardTheme} />
         
         <main className="pt-24 pb-10 px-4 lg:px-8">
           <div className="max-w-[1600px] mx-auto grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">

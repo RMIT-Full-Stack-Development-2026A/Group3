@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
 import { useMatchHistory } from './matchHistoryHook';
 import matchHistoryModel from './matchHistoryModel';
-import Header from '../../shared/components/layout/Header';
-import BottomDock from '../../shared/components/layout/BottomDock';
-import { useAuthStore } from '../../app/store/authStore';
 
 const RESULT_FILTERS = [
   { key: 'ALL', label: 'All Matches', icon: 'apps' },
@@ -301,7 +298,6 @@ const QuickStats = ({ history, pagination }) => {
 /* ─── Main View ──────────────────────────────────────────────── */
 
 const MatchHistoryView = () => {
-  const { user } = useAuthStore();
   const {
     history, loading, error, pagination, page,
     search, resultFilter, sortOrder,
@@ -312,7 +308,7 @@ const MatchHistoryView = () => {
 
   return (
     <div className="min-h-screen bg-surface text-on-surface font-body selection:bg-primary/30">
-      <Header user={user} />
+
 
       <main className="pt-28 md:pt-32 pb-32 px-4 md:px-8 max-w-6xl mx-auto space-y-8">
 
@@ -379,8 +375,6 @@ const MatchHistoryView = () => {
           <Pagination pagination={pagination} page={page} onPageChange={goToPage} />
         )}
       </main>
-
-      <BottomDock />
     </div>
   );
 };

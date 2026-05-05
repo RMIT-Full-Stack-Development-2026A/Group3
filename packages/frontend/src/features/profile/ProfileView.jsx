@@ -1,10 +1,8 @@
-import  React, { useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useProfile } from './profileHook';
 import { useWallet } from './walletHook';
-import Header from '../../shared/components/layout/Header';
-import BottomDock from '../../shared/components/layout/BottomDock';
-import profileModel from './profileModel';
+
 import { getAvatarUrl } from '../../shared/utils/avatarUtil';
 import { useAuthStore } from '../../app/store/authStore';
 import EditProfileModal from './components/EditProfileModal';
@@ -19,7 +17,7 @@ const ProfileView = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isTopUpModalOpen, setIsTopUpModalOpen] = useState(false);
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
-  const { updateUser } = useAuthStore();
+  const updateUser = useAuthStore(state => state.actions.updateUser);
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
@@ -72,7 +70,7 @@ const ProfileView = () => {
 
   return (
     <div className="min-h-screen bg-background text-on-surface font-body selection:bg-primary/30 overflow-x-hidden">
-      <Header user={{ ...user, avatarUrl: profile?.avatarUrl }} />
+
 
       <main className="pt-32 pb-24 px-6 md:px-12 max-w-7xl mx-auto space-y-12">
         {/* Premium Profile Header */}
@@ -335,8 +333,6 @@ const ProfileView = () => {
         onSubscribe={onSubscribe}
         loading={actionLoading}
       />
-
-      <BottomDock />
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../../../app/store/authStore';
+import { useAuthActions } from '../../../app/store/authStore';
 import { getAvatarUrl } from '../../../shared/utils/avatarUtil';
 
 const Header = ({ user, theme = 'DEFAULT' }) => {
@@ -8,7 +8,7 @@ const Header = ({ user, theme = 'DEFAULT' }) => {
   const isSG = theme === 'SAIGON';
   const isTransparent = isVN || isSG;
   const navigate = useNavigate();
-  const logout = useAuthStore(state => state.logout);
+  const logout = useAuthActions().logout;
 
   const handleLogout = () => {
     logout();
