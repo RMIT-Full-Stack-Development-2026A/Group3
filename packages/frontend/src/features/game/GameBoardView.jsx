@@ -1,6 +1,7 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGame } from './gameHook';
+import { useAuthStore } from '../../app/store/authStore';
 
 import { getAvatarUrl } from '../../shared/utils/avatarUtil';
 import gameService from './gameService';
@@ -270,7 +271,7 @@ const GameBoardView = () => {
                 </div>
                 <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full border border-primary/20">
                   <span className="text-xs font-bold text-primary uppercase tracking-widest">
-                    {session?.gameType === 'SINGLE' ? `Difficulty: ${session?.difficulty || 'MEDIUM'}` : 'Local Match'}
+                    {session?.gameType === 'SINGLE' ? `Difficulty: ${session?.difficulty || 'MEDIUM'}` : session?.gameType === 'ONLINE' ? 'Online Match' : 'Local Match'}
                   </span>
                 </div>
               </div>
@@ -292,7 +293,7 @@ const GameBoardView = () => {
                   </div>
                   <div>
                     <h3 className={`font-bold text-lg ${isVN ? 'text-vn-error' : isSG ? 'text-sg-magenta neon-text-magenta' : 'text-on-surface'}`}>
-                      {session?.gameType === 'SINGLE' ? (session?.p2?.name || 'Aetheris') : 'Player 2'}
+                      {session?.gameType === 'SINGLE' ? (session?.p2?.name || 'Aetheris') : (session?.p2?.name || 'Player 2')}
                     </h3>
                     <p className={`text-xs uppercase tracking-widest ${isVN ? 'text-vn-error/60' : isSG ? 'text-sg-magenta/60' : 'text-on-surface/50'}`}>
                       Rating: {session?.gameType === 'SINGLE' ? '2310 Elo' : 'N/A'}

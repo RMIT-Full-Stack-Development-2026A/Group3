@@ -205,12 +205,11 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
               })}
             </div>
           </div>
-
           {/* Section 2: Select Marker */}
           <div>
             <div className="flex justify-between items-center mb-3">
               <label className="block text-[10px] font-bold uppercase tracking-widest text-primary">Select Marker</label>
-              {mode === 'LOCAL' && (
+              {(mode === 'LOCAL' || mode === 'ONLINE') && (
                 <div className="flex p-1 bg-surface-container-highest/50 rounded-lg border border-white/5">
                   {['P1', 'P2'].map(sel => (
                     <button 
@@ -261,7 +260,6 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
               })}
             </div>
           </div>
-          )}
 
           {/* Section: Select Difficulty (AI Only) */}
           {mode === 'AI' && (
@@ -319,6 +317,8 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
           </div>
           )}
 
+        </div>
+
         {/* Footer - Fixed */}
         <div className="p-6 pt-2 border-t border-white/5 bg-surface/50 backdrop-blur-md">
           <button
@@ -337,7 +337,6 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
       </div>
     </div>
   );
-
 
 };
 
