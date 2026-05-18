@@ -12,6 +12,7 @@ const arenaService = {
 
 	async createRoom(user, config = {}) {
 		const creator = await AuthService.getUserById(user.id);
+		const creatorData = await ProfileService.getProfileData(user.id);
 		const code = await ArenaRepository.generateUniqueCode();
 		
 		// Extract config with defaults
@@ -19,12 +20,13 @@ const arenaService = {
 		const player1Marker = config.players?.p1?.marker || 'CROSS';
 		const player2Marker = config.players?.p2?.marker || 'CIRCLE';
 		const moveFirst = config.currentTurn === 'PLAYER2' ? 'PLAYER2' : 'PLAYER1';
+		const player1Avatar = creatorData.profile?.avatarUrl || '';
 		
 		const room = await ArenaRepository.createRoom({
 			roomCode: code,
 			player1Id: user.id,
 			player1Name: creator.username || 'Player',
-			player1Avatar: creatorData.profile?.avatarUrl || '',
+			player1Avatar,
 			boardSize,
 			player1Marker,
 			player2Marker,
@@ -33,7 +35,6 @@ const arenaService = {
 
 		// Create GameSession immediately with P1 data only (status: WAITING)
 		try {
-			const creatorData = await ProfileService.getProfileData(user.id);
 			const size = boardSize;
 			const initialBoard = Array(size).fill(null).map(() => Array(size).fill(null));
 

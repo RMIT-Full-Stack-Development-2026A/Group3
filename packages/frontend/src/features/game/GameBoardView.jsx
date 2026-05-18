@@ -183,15 +183,19 @@ const GameBoardView = () => {
             {/* Game Board Section (Center) */}
             <div className="xl:col-span-6 flex flex-col items-center">
               <div className="mb-6 flex items-center gap-8 h-16">
-                {session?.status === 'ACTIVE' ? (
+                {session?.status === 'ACTIVE' || session?.status === 'WAITING' ? (
                   <div className="text-center animate-fade-in">
                     <p className={`text-[10px] uppercase font-black tracking-[0.2em] mb-1 ${isVN ? 'text-vn-tertiary/60' : isSG ? 'text-sg-cyan/60' : 'text-primary/60'}`}>
-                      {session.gameType === 'SINGLE' 
-                        ? (session.currentTurn === 'PLAYER1' ? 'Your Turn' : "AI's Turn")
-                        : (session.currentTurn === 'PLAYER1' ? "Player 1's Turn" : "Player 2's Turn")}
+                      {session?.status === 'WAITING' 
+                        ? 'Waiting for opponent' 
+                        : (session.gameType === 'SINGLE' 
+                          ? (session.currentTurn === 'PLAYER1' ? 'Your Turn' : "AI's Turn")
+                          : (session.currentTurn === 'PLAYER1' ? "Player 1's Turn" : "Player 2's Turn"))}
                     </p>
                     <p className={`text-2xl font-headline font-black tracking-tight ${isVN ? 'text-vn-tertiary' : isSG ? 'text-sg-cyan neon-text-cyan' : 'text-primary'}`}>
-                      {session.gameType === 'SINGLE' && session.currentTurn === 'PLAYER2' ? 'THINKING...' : 'AWAITING INPUT'}
+                      {session?.status === 'WAITING'
+                        ? 'ARENA LOADING'
+                        : (session.gameType === 'SINGLE' && session.currentTurn === 'PLAYER2' ? 'THINKING...' : 'AWAITING INPUT')}
                     </p>
                   </div>
                 ) : (

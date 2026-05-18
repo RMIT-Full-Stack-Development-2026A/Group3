@@ -88,7 +88,7 @@ export function useGame(sessionId) {
     };
   }, [sessionId]);
 
-  const makeMove = async (row, col) => {
+  const makeMove = useCallback(async (row, col) => {
     if (!session || session.status !== 'ACTIVE') return;
     
     // Handle Local Move
@@ -137,9 +137,8 @@ export function useGame(sessionId) {
       const msg = err?.response?.data?.message || err.message || 'Invalid move';
       setMoveError(msg);
     }
-  };
+  }, [session, sessionId, user]);
 
-  return {  };
   const reset = useCallback(() => {
     setSession(null);
     setLocalMoves([]);
@@ -149,5 +148,5 @@ export function useGame(sessionId) {
     }
   }, [sessionId, fetchSession]);
 
-  return { session, loading, error, moveError, makeMove, refresh: reset, refresh: fetchSession };
+  return { session, loading, error, moveError, makeMove, refresh: reset };
 }

@@ -18,7 +18,7 @@ const ALLOWED_HISTORY_RESULTS = new Set(['ALL', 'WIN', 'LOSS', 'DRAW']);
 
 class GameDTO {
     static _calculateOutcome(session, userId) {
-        if (session.status === 'ACTIVE') return 'ONGOING';
+        if (session.status === 'ACTIVE' || session.status === 'WAITING') return 'ONGOING';
         if (session.status === 'ABORTED') return 'CANCELLED';
     
         if (!session.winnerId) {

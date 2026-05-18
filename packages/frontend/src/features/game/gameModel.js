@@ -20,7 +20,8 @@ const gameModel = {
       
       winnerId: result.winnerId || data.winner,
       winLine: result.winLine || [],
-      matchOutcome: result.matchOutcome,
+      matchOutcome: result.matchOutcome || data.matchOutcome,
+      gameType: data.gameType,
       
       lastMove: gameState.lastMove || data.lastMove
     };
