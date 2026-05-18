@@ -12,6 +12,7 @@ import DashboardView from '../../features/dashboard/DashboardView';
 import GameBoardView from '../../features/game/GameBoardView';
 import MatchHistoryView from '../../features/matchHistory/MatchHistoryView';
 import ProfileView from '../../features/profile/ProfileView';
+import ArenaView from '../../features/Arena/ArenaView';
 import ReplayView from '../../features/replay/ReplayView';
 import AdminDashboardView from '../../features/admin/AdminDashboardView';
 import AdminUserManagementView from '../../features/admin/AdminUserManagementView';
@@ -29,6 +30,59 @@ export const router = createBrowserRouter([
     element: <RegisterView /> 
   },
   {
+    path: '/register',
+    element: <RegisterView />,
+  },
+  {
+    path: '/dashboard',
+    element: (
+      <RouteGuard allowedRoles={['PLAYER', 'ADMIN']}>
+        <DashboardView />
+      </RouteGuard>
+    ),
+  },
+  {
+    path: '/arena',
+    element: (
+      <RouteGuard allowedRoles={['PLAYER', 'ADMIN']}>
+        <ArenaView />
+      </RouteGuard>
+    ),
+  },
+  {
+    path: '/game/ai/:sessionId',
+    element: (
+      <RouteGuard allowedRoles={['PLAYER', 'ADMIN']}>
+        <GameBoardView />
+      </RouteGuard>
+    ),
+  },
+  {
+    path: '/game/online/:sessionId',
+    element: (
+      <RouteGuard allowedRoles={['PLAYER', 'ADMIN']}>
+        <GameBoardView />
+      </RouteGuard>
+    ),
+  },
+  {
+    path: '/game/local/:sessionId',
+    element: (
+      <RouteGuard allowedRoles={['PLAYER', 'ADMIN']}>
+        <GameBoardView />
+      </RouteGuard>
+    ),
+  },
+  {
+    path: '/match-history',
+    element: (
+      <RouteGuard allowedRoles={['PLAYER', 'ADMIN']}>
+        <MatchHistoryView />
+      </RouteGuard>
+    ),
+  },
+  {
+    path: '/profile',
     path: '/',
     element: (
       <RouteGuard allowedRoles={['PLAYER', 'ADMIN']}>

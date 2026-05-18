@@ -5,7 +5,7 @@ import defaultBoardTheme from '../../../assets/images/boardThemes/default_theme.
 import SaigonBoardTheme from '../../../assets/images/boardThemes/Saigon_skyline_theme.png';
 import VietnamBoardTheme from '../../../assets/images/boardThemes/Vietnam_theme.png';
 
-const GameSetupModal = ({ isOpen, mode = 'AI', onClose }) => {
+const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
   if (!isOpen) return null;
   const navigate = useNavigate();
   const [boardSize, setBoardSize] = useState(10);
@@ -101,6 +101,24 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose }) => {
         return;
       }
 
+      if (mode === 'ONLINE') {
+        const onlineSession = {
+          gameType: 'ONLINE',
+          boardSize,
+          players: {
+            p1: { name: 'Player 1', marker: p1 },
+            p2: { name: 'Player 2', marker: p2 }
+          },
+          status: 'ACTIVE',
+          currentTurn: moveFirst === 1 ? 'PLAYER1' : 'PLAYER2'
+        };
+        if (onStartOnline) {
+          await onStartOnline(onlineSession);
+        }
+        onClose();
+        return;
+      }
+
       const res = await gameService.createSession(config);
       const sessionId = res.data.sessionId || res.data._id || res.data.id;
       
@@ -115,7 +133,7 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
       {/* Backdrop Dimmer */}
       <div className="absolute inset-0 bg-[#000000]/70 backdrop-blur-sm" onClick={onClose}></div>
       
@@ -213,10 +231,10 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose }) => {
             <div className="grid grid-cols-6 gap-2">
               {markers.map((marker) => {
                 const isP1 = p1Marker === marker.id;
-                const isP2 = p2Marker === marker.id && mode === 'LOCAL';
+                const isP2 = p2Marker === marker.id;
                 const isActive = (mode === 'AI' && isP1) || 
-                                 (mode === 'LOCAL' && ((activeSelector === 'P1' && isP1) || (activeSelector === 'P2' && isP2)));
-                const isDisabled = mode === 'LOCAL' && ((activeSelector === 'P1' && isP2) || (activeSelector === 'P2' && isP1));
+                                 ((mode === 'LOCAL' || mode === 'ONLINE') && ((activeSelector === 'P1' && isP1) || (activeSelector === 'P2' && isP2)));
+                const isDisabled = (mode === 'LOCAL' || mode === 'ONLINE') && ((activeSelector === 'P1' && isP2) || (activeSelector === 'P2' && isP1));
                 
                 return (
                   <button
@@ -225,14 +243,14 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose }) => {
                     onClick={() => handleMarkerSelect(marker.id)}
                     className={`aspect-square flex items-center justify-center rounded-lg transition-all active:scale-95 group relative border ${
                       isActive 
-                      ? 'bg-gradient-to-br from-primary to-primary-container border-transparent text-on-primary marker-glow' 
+                      ? 'bg-linear-to-br from-primary to-primary-container border-transparent text-on-primary marker-glow' 
                       : 'bg-surface-container-highest border border-outline-variant/30 text-on-surface-variant hover:text-primary'
                     } ${isDisabled ? 'opacity-20 cursor-not-allowed grayscale' : ''}`}
                   >
                     <span className="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">
                       {marker.icon}
                     </span>
-                    {mode === 'LOCAL' && (
+                    {(mode === 'LOCAL' || mode === 'ONLINE') && (
                       <>
                         {isP1 && <div className="absolute -top-1 -left-1 bg-primary text-[6px] font-black px-1 rounded shadow-sm text-on-primary">P1</div>}
                         {isP2 && <div className="absolute -top-1 -right-1 bg-cyan-500 text-[6px] font-black px-1 rounded shadow-sm text-white">P2</div>}
@@ -243,6 +261,7 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose }) => {
               })}
             </div>
           </div>
+          )}
 
           {/* Section: Select Difficulty (AI Only) */}
           {mode === 'AI' && (
@@ -267,8 +286,9 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose }) => {
           )}
 
           {/* Section 3: Move First */}
-          <div>
-            <label className="block text-[10px] font-bold uppercase tracking-widest text-primary mb-3">Move First</label>
+          {(mode === 'AI' || mode === 'LOCAL' || mode === 'ONLINE') && (
+          <div className="mb-8">
+            <label className="block text-xs font-bold uppercase tracking-widest text-primary mb-4">Move First</label>
             <div className="grid grid-cols-2 gap-4">
               {[1, 2].map(p => {
                 const isActive = moveFirst === p;
@@ -297,7 +317,7 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose }) => {
               })}
             </div>
           </div>
-        </div>
+          )}
 
         {/* Footer - Fixed */}
         <div className="p-6 pt-2 border-t border-white/5 bg-surface/50 backdrop-blur-md">
@@ -306,11 +326,14 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose }) => {
             disabled={loading}
             className="w-full py-4 rounded-xl bg-gradient-to-br from-primary to-primary-container text-on-primary font-headline font-extrabold text-lg tracking-tight shadow-[0_8px_24px_rgba(179,161,255,0.3)] hover:shadow-[0_12px_32px_rgba(179,161,255,0.5)] active:scale-[0.98] transition-all disabled:opacity-50"
           >
-            {loading ? 'Initializing...' : 'Start Game'}
+            {loading ? 'Initializing...' : (mode === 'ONLINE' ? 'Create Room' : 'Start Game')}
           </button>
           {/* Bottom decorative glass accent */}
           <div className="mt-4 h-1 w-24 mx-auto rounded-full bg-primary/20"></div>
         </div>
+
+        {/* Bottom decorative glass accent */}
+        <div className="h-1.5 w-full bg-linear-to-r from-transparent via-primary/40 to-transparent"></div>
       </div>
     </div>
   );

@@ -10,7 +10,8 @@ import SaigonBoardTheme from '../../assets/images/boardThemes/Saigon_skyline_the
 const GameBoardView = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
-  const { session, loading, error, makeMove, refresh } = useGame(sessionId);
+  const { user } = useAuthStore();
+  const { session, loading, error, moveError, makeMove, refresh } = useGame(sessionId);
 
   if (loading) return (
     <div className="min-h-screen bg-surface flex flex-col items-center justify-center text-white gap-4">

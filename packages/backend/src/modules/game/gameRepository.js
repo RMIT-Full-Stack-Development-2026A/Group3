@@ -47,6 +47,21 @@ class GameRepository {
         );
     }
 
+    async updateSessionWithPlayer2(sessionId, { player2Id, player2Name, player2Avatar, player2Rating }) {
+        return await GameSession.findByIdAndUpdate(
+            sessionId,
+            {
+                $set: {
+                    player2Id,
+                    player2Name,
+                    player2Avatar,
+                    status: 'ACTIVE'
+                }
+            },
+            { new: true }
+        );
+    }
+
     async findActiveSessionByPlayer(userId) {
         return await GameSession.findOne({
             $or: [{ player1Id: userId }, { player2Id: userId }],
