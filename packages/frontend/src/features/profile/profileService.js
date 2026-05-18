@@ -12,7 +12,7 @@ const profileService = {
     const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
     if (!cloudName || !uploadPreset) {
-      throw new Error('Cloudinary config missing in .env');
+      throw new Error('Cloudinary config missing');
     }
 
     const formData = new FormData();

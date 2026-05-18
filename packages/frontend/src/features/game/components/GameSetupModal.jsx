@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import gameService from '../gameService';
+import defaultBoardTheme from '../../../assets/images/boardThemes/default_theme.png';
+import SaigonBoardTheme from '../../../assets/images/boardThemes/Saigon_skyline_theme.png';
+import VietnamBoardTheme from '../../../assets/images/boardThemes/Vietnam_theme.png';
 
 const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
   if (!isOpen) return null;
@@ -12,6 +15,7 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
   const [p1Marker, setP1Marker] = useState('close');
   const [difficulty, setDifficulty] = useState('MEDIUM');
   const [moveFirst, setMoveFirst] = useState(1);
+  const [boardTheme, setBoardTheme] = useState('DEFAULT');
   
   // Local specific / P2 state
   const [p2Marker, setP2Marker] = useState('circle');
@@ -52,14 +56,27 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
   const handleStart = async () => {
     setLoading(true);
     try {
+      let finalP2Marker = p2Marker;
+
+      if (mode === 'AI') {
+        if (p1Marker === 'circle') {
+          const availableMarkers = markers.filter(m => m.id !== 'circle');
+          const randomIdx = Math.floor(Math.random() * availableMarkers.length);
+          finalP2Marker = availableMarkers[randomIdx].id;
+        } else {
+          finalP2Marker = 'circle';
+        }
+      }
+
       const p1 = markerMap[p1Marker];
-      const p2 = markerMap[p2Marker];
+      const p2 = markerMap[finalP2Marker];
 
       const config = {
         gameType: mode === 'AI' ? 'SINGLE' : 'LOCAL',
         boardSize: boardSize,
         player1Marker: p1,
         player2Marker: p2,
+        boardTheme: boardTheme,
         // AI specific
         ...(mode === 'AI' && {
           moveFirst: moveFirst === 1 ? 'player' : 'bot',
@@ -76,6 +93,7 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
             p2: { name: 'Player 2', marker: config.player2Marker }
           },
           status: 'ACTIVE',
+          boardTheme: boardTheme,
           currentTurn: moveFirst === 1 ? 'PLAYER1' : 'PLAYER2'
         };
         navigate('/game/local/new', { state: { config: localSession } });
@@ -120,35 +138,37 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
       <div className="absolute inset-0 bg-[#000000]/70 backdrop-blur-sm" onClick={onClose}></div>
       
       {/* Game Setup Modal */}
-      <div className="relative glass-panel w-full max-w-lg rounded-2xl border border-outline-variant/15 shadow-[0_20px_80px_rgba(0,0,0,0.8)] overflow-hidden">
-        <div className="p-8">
-          
-          {/* Header */}
-          <div className="flex justify-between items-center mb-7">
-            <h2 className="text-4xl font-extrabold font-headline tracking-tighter text-on-surface">Game Setup</h2>
-            <button onClick={onClose} className="text-on-surface-variant hover:text-on-surface transition-colors p-2 hover:bg-white/5 rounded-full">
-              <span className="material-symbols-outlined">close</span>
-            </button>
-          </div>
+      <div className="relative glass-panel w-[95%] max-w-lg max-h-[90vh] rounded-2xl border border-outline-variant/15 shadow-[0_20px_80px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col transition-all duration-300">
+        
+        {/* Header - Fixed */}
+        <div className="px-6 pt-6 pb-4 flex justify-between items-center border-b border-white/5">
+          <h2 className="text-2xl font-extrabold font-headline tracking-tighter text-on-surface">Game Setup</h2>
+          <button onClick={onClose} className="text-on-surface-variant hover:text-on-surface transition-colors p-2 hover:bg-white/5 rounded-full">
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
 
+        {/* Content - Scrollable */}
+        <div className="flex-1 overflow-y-auto p-6 scrollbar-ethereal space-y-6">
+          
           {/* Section 1: Board Size */}
-          <div className="mb-7">
-            <label className="block text-xs font-bold uppercase tracking-widest text-primary mb-4">Board Size</label>
+          <div>
+            <label className="block text-[10px] font-bold uppercase tracking-widest text-primary mb-3">Board Size</label>
             <div className="grid grid-cols-2 gap-4">
               {[10, 15].map(size => (
                 <button 
                   key={size}
                   onClick={() => setBoardSize(size)}
-                  className={`flex flex-col items-center justify-center py-6 px-4 rounded-xl border transition-all duration-300 ${
+                  className={`flex flex-col items-center justify-center py-4 px-4 rounded-xl border transition-all duration-300 ${
                     boardSize === size 
                     ? 'border-primary text-primary bg-primary/10 shadow-[0_0_20px_rgba(179,161,255,0.2)]' 
                     : 'border-outline-variant/30 text-on-surface/60 hover:bg-surface-variant'
                   }`}
                 >
-                  <span className={`text-2xl font-black font-headline mb-1 ${boardSize === size ? 'text-primary' : 'text-on-surface'}`}>
+                  <span className={`text-xl font-black font-headline mb-1 ${boardSize === size ? 'text-primary' : 'text-on-surface'}`}>
                     {size} x {size}
                   </span>
-                  <span className={`text-[10px] font-medium ${boardSize === size ? 'opacity-60' : 'opacity-40'}`}>
+                  <span className={`text-[9px] font-medium ${boardSize === size ? 'opacity-60' : 'opacity-40'}`}>
                     {size === 10 ? 'CLASSIC ARENA' : 'GRAND MASTER'}
                   </span>
                 </button>
@@ -156,39 +176,59 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
             </div>
           </div>
 
+          {/* Section 1.5: Select Board Theme */}
+          <div>
+            <label className="block text-[10px] font-bold uppercase tracking-widest text-primary mb-3">Select Board Theme</label>
+            <div className="grid grid-cols-3 gap-3">
+              {['DEFAULT', 'SAIGON', 'VIETNAM'].map(theme => {
+                const imgUrls = {
+                  'DEFAULT': defaultBoardTheme,
+                  'SAIGON': SaigonBoardTheme,
+                  'VIETNAM': VietnamBoardTheme
+                };
+                return (
+                  <button 
+                    key={theme}
+                    onClick={() => setBoardTheme(theme)}
+                    className={`flex flex-col gap-2 p-1.5 rounded-xl border transition-all duration-300 group ${
+                      boardTheme === theme 
+                      ? 'border-primary bg-primary/10 shadow-[0_0_20px_rgba(179,161,255,0.2)]' 
+                      : 'border-outline-variant/30 text-on-surface/60 hover:bg-surface-variant'
+                    }`}
+                  >
+                    <div className="aspect-video w-full rounded-lg overflow-hidden relative border border-outline-variant/10">
+                      <img alt={`${theme} Theme`} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" src={imgUrls[theme]}/>
+                    </div>
+                    <span className={`text-[9px] font-bold font-headline text-center uppercase tracking-tighter ${boardTheme === theme ? 'text-primary' : ''}`}>{theme}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Section 2: Select Marker */}
-          {(mode === 'AI' || mode === 'LOCAL' || mode === 'ONLINE') && (
-          <div className="mb-7">
-            <div className="flex justify-between items-center mb-4">
-              <label className="block text-xs font-bold uppercase tracking-widest text-primary">Select Marker</label>
-              
-              {/* Player Selector Tabs */}
-              {(mode === 'LOCAL' || mode === 'ONLINE') && (
+          <div>
+            <div className="flex justify-between items-center mb-3">
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-primary">Select Marker</label>
+              {mode === 'LOCAL' && (
                 <div className="flex p-1 bg-surface-container-highest/50 rounded-lg border border-white/5">
-                  <button 
-                    onClick={() => setActiveSelector('P1')}
-                    className={`px-3 py-1 rounded-md text-[10px] font-black tracking-widest transition-all duration-300 flex items-center gap-1.5 ${
-                      activeSelector === 'P1' 
-                      ? 'bg-primary text-on-primary shadow-lg scale-105' 
-                      : 'text-on-surface/40 hover:text-on-surface/70'
-                    }`}
-                  >
-                    PLAYER 1
-                  </button>
-                  <button 
-                    onClick={() => setActiveSelector('P2')}
-                    className={`px-3 py-1 rounded-md text-[10px] font-black tracking-widest transition-all duration-300 flex items-center gap-1.5 ${
-                      activeSelector === 'P2' 
-                      ? 'bg-cyan-500 text-white shadow-lg scale-105' 
-                      : 'text-on-surface/40 hover:text-on-surface/70'
-                    }`}
-                  >
-                    PLAYER 2
-                  </button>
+                  {['P1', 'P2'].map(sel => (
+                    <button 
+                      key={sel}
+                      onClick={() => setActiveSelector(sel)}
+                      className={`px-3 py-1 rounded-md text-[9px] font-black tracking-widest transition-all duration-300 ${
+                        activeSelector === sel 
+                        ? (sel === 'P1' ? 'bg-primary text-on-primary' : 'bg-cyan-500 text-white') 
+                        : 'text-on-surface/40 hover:text-on-surface/70'
+                      }`}
+                    >
+                      {sel === 'P1' ? 'PLAYER 1' : 'PLAYER 2'}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-6 gap-2">
               {markers.map((marker) => {
                 const isP1 = p1Marker === marker.id;
                 const isP2 = p2Marker === marker.id;
@@ -201,19 +241,19 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
                     key={marker.id}
                     disabled={isDisabled}
                     onClick={() => handleMarkerSelect(marker.id)}
-                    className={`aspect-square flex items-center justify-center rounded-xl transition-all active:scale-95 group relative border ${
+                    className={`aspect-square flex items-center justify-center rounded-lg transition-all active:scale-95 group relative border ${
                       isActive 
                       ? 'bg-linear-to-br from-primary to-primary-container border-transparent text-on-primary marker-glow' 
                       : 'bg-surface-container-highest border border-outline-variant/30 text-on-surface-variant hover:text-primary'
                     } ${isDisabled ? 'opacity-20 cursor-not-allowed grayscale' : ''}`}
                   >
-                    <span className="material-symbols-outlined text-4xl group-hover:scale-110 transition-transform">
+                    <span className="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">
                       {marker.icon}
                     </span>
                     {(mode === 'LOCAL' || mode === 'ONLINE') && (
                       <>
-                        {isP1 && <div className="absolute top-2 left-2 bg-primary text-[8px] font-black px-1.5 py-0.5 rounded shadow-sm text-on-primary">P1</div>}
-                        {isP2 && <div className="absolute top-2 right-2 bg-cyan-500 text-[8px] font-black px-1.5 py-0.5 rounded shadow-sm text-white">P2</div>}
+                        {isP1 && <div className="absolute -top-1 -left-1 bg-primary text-[6px] font-black px-1 rounded shadow-sm text-on-primary">P1</div>}
+                        {isP2 && <div className="absolute -top-1 -right-1 bg-cyan-500 text-[6px] font-black px-1 rounded shadow-sm text-white">P2</div>}
                       </>
                     )}
                   </button>
@@ -225,20 +265,20 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
 
           {/* Section: Select Difficulty (AI Only) */}
           {mode === 'AI' && (
-            <div className="mb-7">
-              <label className="block text-xs font-bold uppercase tracking-widest text-primary mb-4">Select Difficulty</label>
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-primary mb-3">Select Difficulty</label>
               <div className="grid grid-cols-3 gap-3">
                 {['EASY', 'MEDIUM', 'HARD'].map((level) => (
                   <button 
                     key={level}
                     onClick={() => setDifficulty(level)}
-                    className={`flex items-center justify-center py-4 px-4 rounded-xl border transition-all duration-300 ${
+                    className={`flex items-center justify-center py-3 px-2 rounded-xl border transition-all duration-300 ${
                       difficulty === level 
                       ? 'border-primary text-primary bg-primary/10 shadow-[0_0_20px_rgba(179,161,255,0.2)]' 
                       : 'border-outline-variant/30 text-on-surface/60 hover:bg-surface-variant'
                     }`}
                   >
-                    <span className="text-lg font-bold font-headline capitalize">{level.toLowerCase()}</span>
+                    <span className="text-sm font-bold font-headline capitalize">{level.toLowerCase()}</span>
                   </button>
                 ))}
               </div>
@@ -263,13 +303,13 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
                   <button 
                     key={p}
                     onClick={() => setMoveFirst(p)}
-                    className={`flex flex-col items-center justify-center py-4 px-4 rounded-xl border transition-all duration-300 active:scale-95 ${
+                    className={`flex flex-col items-center justify-center py-3 px-4 rounded-xl border transition-all duration-300 active:scale-95 ${
                       isActive 
                       ? 'border-primary text-primary bg-primary/10 shadow-[0_0_20px_rgba(179,161,255,0.2)]' 
                       : 'border-outline-variant/30 text-on-surface/60 hover:bg-surface-variant'
                     }`}
                   >
-                    <span className={`text-lg font-bold font-headline ${isActive ? 'text-primary' : 'text-on-surface'}`}>
+                    <span className={`text-sm font-bold font-headline ${isActive ? 'text-primary' : 'text-on-surface'}`}>
                       {label}
                     </span>
                   </button>
@@ -279,14 +319,17 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
           </div>
           )}
 
-          {/* Start Action */}
+        {/* Footer - Fixed */}
+        <div className="p-6 pt-2 border-t border-white/5 bg-surface/50 backdrop-blur-md">
           <button
             onClick={handleStart}
             disabled={loading}
-            className="w-full py-5 rounded-xl bg-linear-to-br from-primary to-primary-container text-on-primary font-headline font-extrabold text-xl tracking-tight shadow-[0_8px_24px_rgba(179,161,255,0.3)] hover:shadow-[0_12px_32px_rgba(179,161,255,0.5)] active:scale-[0.98] transition-all disabled:opacity-50"
+            className="w-full py-4 rounded-xl bg-gradient-to-br from-primary to-primary-container text-on-primary font-headline font-extrabold text-lg tracking-tight shadow-[0_8px_24px_rgba(179,161,255,0.3)] hover:shadow-[0_12px_32px_rgba(179,161,255,0.5)] active:scale-[0.98] transition-all disabled:opacity-50"
           >
             {loading ? 'Initializing...' : (mode === 'ONLINE' ? 'Create Room' : 'Start Game')}
           </button>
+          {/* Bottom decorative glass accent */}
+          <div className="mt-4 h-1 w-24 mx-auto rounded-full bg-primary/20"></div>
         </div>
 
         {/* Bottom decorative glass accent */}

@@ -107,6 +107,7 @@ export function useGame(sessionId) {
           await gameService.syncLocalMatch({
             gameType: 'LOCAL',
             boardSize: session.boardSize,
+            boardTheme: session.boardTheme,
             p1Id: session.p1.id,
             p1Name: session.p1.name,
             p1Marker: session.p1.marker,
@@ -138,5 +139,15 @@ export function useGame(sessionId) {
     }
   };
 
-  return { session, loading, error, moveError, makeMove, refresh: fetchSession };
+  return {  };
+  const reset = useCallback(() => {
+    setSession(null);
+    setLocalMoves([]);
+    setError(null);
+    if (sessionId && sessionId !== 'new') {
+      fetchSession();
+    }
+  }, [sessionId, fetchSession]);
+
+  return { session, loading, error, moveError, makeMove, refresh: reset, refresh: fetchSession };
 }

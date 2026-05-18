@@ -6,13 +6,12 @@ import { useAuthStore } from '../../app/store/authStore';
 export function useLogin() {
     const navigate = useNavigate();
     const location = useLocation();
-    const setAuth = useAuthStore((state) => state.setAuth);
+    const setAuth = useAuthStore((state) => state.actions.setAuth);
     const [formData, setFormData] = useState({ identifier: '', password: '' });
     const [errors, setErrors] = useState({});
     const [message, setMessage] = useState('');
     const [isSuccess, setIsSuccess] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const redirectPath = location.state?.from?.pathname || '/dashboard';
 
     const validateForm = () => {
         const tempErrors = {};
@@ -46,13 +45,22 @@ export function useLogin() {
             if (!user || !token) {
                 throw new Error('Invalid login response');
             }
-            
+
             setAuth(user, token);
-            
+
             setMessage("Login successful");
             setIsSuccess(true);
+
+            // Determine redirect path
+            let from = location.state?.from?.pathname;
+            if (user.role === 'ADMIN' && (!from || from === '/' || from === '/dashboard')) {
+                from = '/admin';
+            }
             
-            setTimeout(() => navigate(redirectPath, { replace: true }), 500);
+            const isHomeOrEmpty = !from || from === '/';
+            const destination = isHomeOrEmpty ? (user.role === 'ADMIN' ? '/admin' : '/dashboard') : from;
+
+            setTimeout(() => navigate(destination, { replace: true }), 500);
         } catch (error) {
             console.error("Login error details:", error);
             setMessage(error.message || "Invalid credentials or server error.");

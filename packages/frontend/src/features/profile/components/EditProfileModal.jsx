@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import profileService from '../profileService';
-import { useAuthStore } from '../../../app/store/authStore';
+import { useAuthActions } from '../../../app/store/authStore';
 import { countries } from '../../../shared/utils/countries';
 
 const EditProfileModal = ({ isOpen, onClose, currentData, onUpdate, onSave, loading }) => {
@@ -8,7 +7,7 @@ const EditProfileModal = ({ isOpen, onClose, currentData, onUpdate, onSave, load
   const [country, setCountry] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const { updateUser } = useAuthStore();
+  const updateUser = useAuthActions().updateUser;
   const dropdownRef = useRef(null);
 
   useEffect(() => {

@@ -7,6 +7,10 @@ const premiumMiddleware = (req, res, next) => {
 		});
 	}
 
+	if (String(req.user.role || '').toUpperCase() === 'ADMIN') {
+		return next();
+	}
+
 	if (req.user.isPremium !== true) {
 		return res.status(403).json({
 			success: false,

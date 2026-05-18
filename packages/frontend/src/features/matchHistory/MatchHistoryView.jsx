@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useMatchHistory } from './matchHistoryHook';
 import matchHistoryModel from './matchHistoryModel';
-import Header from '../../shared/components/layout/Header';
-import BottomDock from '../../shared/components/layout/BottomDock';
-import { useAuthStore } from '../../app/store/authStore';
 
 const RESULT_FILTERS = [
   { key: 'ALL', label: 'All Matches', icon: 'apps' },
@@ -137,6 +135,13 @@ const MatchRow = ({ match, index }) => {
         <span className="text-[10px] font-mono text-primary/60 tracking-wide">
           #{match.id?.slice(-8)?.toUpperCase()}
         </span>
+        <Link
+          to={`/replay/${match.id}`}
+          className="mt-2 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary/15 border border-primary/20 text-primary text-[10px] font-bold uppercase tracking-widest hover:bg-primary/25 transition-all active:scale-95"
+        >
+          <span className="material-symbols-outlined text-sm">play_arrow</span>
+          Replay
+        </Link>
       </div>
 
       {/* Hover glow effect */}
@@ -301,7 +306,6 @@ const QuickStats = ({ history, pagination }) => {
 /* ─── Main View ──────────────────────────────────────────────── */
 
 const MatchHistoryView = () => {
-  const { user } = useAuthStore();
   const {
     history, loading, error, pagination, page,
     search, resultFilter, sortOrder,
@@ -312,7 +316,7 @@ const MatchHistoryView = () => {
 
   return (
     <div className="min-h-screen bg-surface text-on-surface font-body selection:bg-primary/30">
-      <Header user={user} />
+
 
       <main className="pt-28 md:pt-32 pb-32 px-4 md:px-8 max-w-6xl mx-auto space-y-8">
 
@@ -379,8 +383,6 @@ const MatchHistoryView = () => {
           <Pagination pagination={pagination} page={page} onPageChange={goToPage} />
         )}
       </main>
-
-      <BottomDock />
     </div>
   );
 };

@@ -52,7 +52,41 @@ class UsersRepository {
         { email: normalizedIdentifier },
         { username: { $regex: new RegExp(`^${identifier.trim()}$`, 'i') } }
       ]
-    }).lean();
+    });
+  }
+
+  /**
+   * Lấy tất cả Player cùng với thông tin Profile (Premium status)
+   */
+  async findAllWithProfiles() {
+    return await User.aggregate([
+      {
+        $match: { role: 'PLAYER' }
+      },
+      {
+        $lookup: {
+          from: 'profiles',
+          localField: '_id',
+          foreignField: 'userId',
+          as: 'profile'
+        }
+      },
+      {
+        $unwind: { path: '$profile', preserveNullAndEmptyArrays: true }
+      },
+      {
+        $project: {
+          username: 1,
+          email: 1,
+          isActive: 1,
+          isPremium: { $ifNull: ['$profile.isPremium', false] },
+          createdAt: 1
+        }
+      },
+      {
+        $sort: { createdAt: -1 }
+      }
+    ]);
   }
 }
 

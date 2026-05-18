@@ -51,16 +51,39 @@ class AuthService {
       throw new Error('Invalid credentials or account is disabled');
     }
 
-    // 2. Kiểm tra mật khẩu
+    // 2. Check if account is locked (Level 2 Brute-force)
+    if (user.lockUntil && user.lockUntil > Date.now()) {
+      const remainingTime = Math.ceil((user.lockUntil - Date.now()) / 1000);
+      throw new Error(`Account is temporarily locked. Please try again after ${remainingTime} seconds.`);
+    }
+
+    // 3. Check password
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    
     if (!isPasswordValid) {
+      // Increment failed login attempts
+      user.loginAttempts += 1;
+      
+      // If 5 failed attempts -> Lock for 60 seconds
+      if (user.loginAttempts >= 5) {
+        user.lockUntil = new Date(Date.now() + 60 * 1000);
+      }
+      
+      await user.save();
       throw new Error('Invalid credentials');
     }
 
-    // 3. Lấy Profile để lấy isPremium và avatarUrl
+    // 4. Login success -> Reset lock status
+    if (user.loginAttempts > 0 || user.lockUntil) {
+      user.loginAttempts = 0;
+      user.lockUntil = undefined;
+      await user.save();
+    }
+
+    // 5. Get profile to get isPremium and avatarUrl
     const profile = await ProfileRepository.findProfileByUserId(user._id);
 
-    // 4. Tạo token
+    // 6. Create token
     const token = this._generateToken(user, profile);
 
     return { user, profile, token };

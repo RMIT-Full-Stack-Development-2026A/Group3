@@ -1,26 +1,33 @@
 import React from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 
+// Layouts
+import MainLayout from '../../shared/components/layout/MainLayout';
+import AdminLayout from '../../shared/components/layout/AdminLayout';
+
 // Features
-import LoginView from '../../features/Auth/LoginView';
-import RegisterView from '../../features/Auth/RegisterView';
-import DashboardView from '../../features/Dashboard/DashboardView';
+import LoginView from '../../features/auth/LoginView';
+import RegisterView from '../../features/auth/RegisterView';
+import DashboardView from '../../features/dashboard/DashboardView';
 import GameBoardView from '../../features/game/GameBoardView';
 import MatchHistoryView from '../../features/matchHistory/MatchHistoryView';
 import ProfileView from '../../features/profile/ProfileView';
 import ArenaView from '../../features/Arena/ArenaView';
+import ReplayView from '../../features/replay/ReplayView';
+import AdminDashboardView from '../../features/admin/AdminDashboardView';
+import AdminUserManagementView from '../../features/admin/AdminUserManagementView';
 
 // Shared
 import { RouteGuard } from '../../shared/components/RouteGuard';
 
 export const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <Navigate to="/dashboard" replace />,
+  { 
+    path: '/login', 
+    element: <LoginView /> 
   },
-  {
-    path: '/login',
-    element: <LoginView />,
+  { 
+    path: '/register', 
+    element: <RegisterView /> 
   },
   {
     path: '/register',
@@ -76,22 +83,70 @@ export const router = createBrowserRouter([
   },
   {
     path: '/profile',
+    path: '/',
     element: (
       <RouteGuard allowedRoles={['PLAYER', 'ADMIN']}>
-        <ProfileView />
+        <MainLayout /> 
       </RouteGuard>
     ),
+    children: [
+      { 
+        path: 'dashboard', 
+        element: <DashboardView /> 
+      },
+      { 
+        path: 'match-history',
+        element: <MatchHistoryView /> 
+      },
+      { 
+        path: 'profile', 
+        element: <ProfileView /> 
+      },
+      {
+        path: 'replay/:sessionId',
+        element: <ReplayView />
+      },
+      { 
+        path: 'game',
+        children: [
+          { 
+            path: 'ai/:sessionId', 
+            element: <GameBoardView /> 
+          },
+          { 
+            path: 'local/:sessionId', 
+            element: <GameBoardView /> 
+          }
+        ]
+      },
+      { 
+        index: true, 
+        element: <Navigate to="/dashboard" replace /> 
+      }
+    ]
   },
+
+  // ADMIN ROUTES
   {
     path: '/admin',
     element: (
       <RouteGuard allowedRoles={['ADMIN']}>
-        <div className="p-8 text-white font-headline">Admin Control Panel (Authorized Only)</div>
+        <AdminLayout />
       </RouteGuard>
     ),
+    children: [
+      { 
+        index: true, 
+        element: <AdminDashboardView /> 
+      },
+      { 
+        path: 'users', 
+        element: <AdminUserManagementView /> 
+      },
+    ]
   },
-  {
-    path: '*',
-    element: <Navigate to="/dashboard" replace />,
+  { 
+    path: '*', 
+    element: <Navigate to="/dashboard" replace /> 
   }
 ]);

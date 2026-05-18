@@ -1,18 +1,31 @@
 import { LayoutDashboard, History, Settings, LogOut } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../../../app/store/authStore.js';
+import { useAuthUser, useAuthActions } from '../../../app/store/authStore.js';
 import { cn } from '../../lib/utils.js';
 
 const links = [
-  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/match-history', label: 'History', icon: History },
-  { path: '/game-setup', label: 'Setup', icon: Settings }
+  { 
+    path: '/dashboard',
+    label: 'Dashboard',
+    icon: LayoutDashboard 
+  },
+  { 
+    path: '/match-history',
+    label: 'History',
+    icon: History 
+  },
+  { 
+    path: '/game-setup',
+    label: 'Setup',
+    icon: Settings 
+  }
 ];
 
 export function Navigation() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuthStore();
+  const user = useAuthUser();
+  const logout = useAuthActions().logout;
 
   const handleLogout = () => {
     logout();
