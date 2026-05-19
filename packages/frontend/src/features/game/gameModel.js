@@ -2,28 +2,27 @@ const gameModel = {
   formatSession: (data) => {
     if (!data) return null;
     
-    // Support both old and new data structures during transition
-    const gameState = data.gameState || {};
-    const players = data.players || {};
-    const result = data.result || {};
+    const gameState = data.gameState;
+    const players = data.players;
+    const result = data.result;
 
     return {
-      id: data.sessionId || data.id || data._id,
-      board: gameState.board || data.board || [],
-      currentTurn: gameState.currentTurn || data.currentPlayer,
+      id: data.sessionId,
+      board: gameState.board,
+      currentTurn: gameState.currentTurn,
       status: data.status,
-      boardSize: data.boardSize || 10,
-      boardTheme: data.boardTheme || 'DEFAULT',
+      boardSize: data.boardSize,
+      boardTheme: data.boardTheme,
       
-      p1: players.p1 || (data.players ? data.players[0] : null),
-      p2: players.p2 || (data.players ? data.players[1] : null),
+      p1: players.p1,
+      p2: players.p2,
       
-      winnerId: result.winnerId || data.winner,
-      winLine: result.winLine || [],
-      matchOutcome: result.matchOutcome || data.matchOutcome,
+      winnerId: result.winnerId,
+      winLine: result.winLine,
+      matchOutcome: result.matchOutcome,
       gameType: data.gameType,
       
-      lastMove: gameState.lastMove || data.lastMove
+      lastMove: gameState.lastMove
     };
   }
 };

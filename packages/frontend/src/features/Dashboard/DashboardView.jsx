@@ -24,7 +24,7 @@ export default function DashboardView() {
             TicTacToang
           </h2>
           <p className="text-on-surface-variant max-w-xl mx-auto text-lg md:text-xl font-light tracking-wide">
-            Welcome back, <span className="text-primary font-bold">{user?.username || 'Player'}</span>.
+            Welcome back, <span className="text-primary font-bold">{user?.username}</span>.
             Experience the classic game evolved through an ethereal digital landscape.
           </p>
         </section>
@@ -64,18 +64,7 @@ export default function DashboardView() {
             actionLabel="Join Queue"
             actionIcon="public"
             onClick={() => navigate('/arena')}
-          >
-            <div className="mt-4 flex -space-x-3 mb-4">
-              {[1, 2].map(i => (
-                <div key={i} className="w-8 h-8 rounded-full border-2 border-surface bg-surface-container-highest overflow-hidden">
-                  <img alt="Portrait" src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i * 123}`} />
-                </div>
-              ))}
-              <div className="w-8 h-8 rounded-full border-2 border-surface bg-surface-container-highest flex items-center justify-center text-[10px] font-bold text-primary">
-                +14k
-              </div>
-            </div>
-          </ModeCard>
+          />
         </div>
       </main>
       

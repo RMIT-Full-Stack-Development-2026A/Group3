@@ -61,7 +61,7 @@ export function useGame(sessionId) {
         id: config.gameType === 'SINGLE' ? 'ai-session' : 'local-session',
         board: initialBoard,
         currentTurn: currentTurn,
-        p1: { ...config.players.p1, id: user?.id || 'p1-local' },
+        p1: { ...config.players.p1, id: user?.id, name: user?.username, avatar: user?.avatarUrl },
         p2: { ...config.players.p2, id: null },
         status: 'ACTIVE'
       });
