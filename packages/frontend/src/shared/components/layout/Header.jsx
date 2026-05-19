@@ -48,7 +48,7 @@ const Header = ({ user, theme = 'DEFAULT' }) => {
           />
         </Link>
         
-        <button className={`px-5 py-2 font-bold rounded-lg transition-all active:scale-95 ${
+        <Link to="/profile" className={`px-5 py-2 font-bold rounded-lg transition-all active:scale-95 ${
           isVN 
             ? 'bg-vn-tertiary text-vn-on-tertiary shadow-lg shadow-vn-tertiary/20' 
             : isSG
@@ -56,7 +56,7 @@ const Header = ({ user, theme = 'DEFAULT' }) => {
             : 'bg-gradient-to-br from-primary to-primary-container text-on-primary hover:shadow-[0_0_15px_rgba(179,161,255,0.3)]'
         }`}>
           Subscription
-        </button>
+        </Link>
         
         <button 
           onClick={handleLogout}
