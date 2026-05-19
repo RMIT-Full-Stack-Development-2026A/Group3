@@ -17,6 +17,7 @@ const arenaService = {
 		
 		// Extract config with defaults
 		const boardSize = config.boardSize || 10;
+		const boardTheme = config.boardTheme || 'DEFAULT';
 		const player1Marker = config.players?.p1?.marker || 'CROSS';
 		const player2Marker = config.players?.p2?.marker || 'CIRCLE';
 		const moveFirst = config.currentTurn === 'PLAYER2' ? 'PLAYER2' : 'PLAYER1';
@@ -41,6 +42,7 @@ const arenaService = {
 			const sessionPayload = {
 				gameType: 'ONLINE',
 				boardSize: size,
+				boardTheme: boardTheme,
 				roomId: room._id,
 				player1Id: user.id,
 				player1Name: creatorData.user.username || creator.username || 'Player',

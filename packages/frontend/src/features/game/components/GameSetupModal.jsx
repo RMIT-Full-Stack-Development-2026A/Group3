@@ -105,6 +105,7 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
         const onlineSession = {
           gameType: 'ONLINE',
           boardSize,
+          boardTheme,
           players: {
             p1: { name: 'Player 1', marker: p1 },
             p2: { name: 'Player 2', marker: p2 }
