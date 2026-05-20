@@ -84,19 +84,23 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
         })
       };
       
-      if (mode === 'LOCAL') {
+      if (mode === 'LOCAL' || mode === 'AI') {
         const localSession = {
-          gameType: 'LOCAL',
+          gameType: mode === 'AI' ? 'SINGLE' : 'LOCAL',
           boardSize: config.boardSize,
           players: {
             p1: { name: 'Player 1', marker: config.player1Marker },
-            p2: { name: 'Player 2', marker: config.player2Marker }
+            p2: { name: mode === 'AI' ? 'AI' : 'Player 2', marker: config.player2Marker }
           },
           status: 'ACTIVE',
           boardTheme: boardTheme,
-          currentTurn: moveFirst === 1 ? 'PLAYER1' : 'PLAYER2'
+          currentTurn: moveFirst === 1 ? 'PLAYER1' : 'PLAYER2',
+          initialTurn: moveFirst === 1 ? 'PLAYER1' : 'PLAYER2',
+          difficulty: config.difficulty,
+          moveFirst: config.moveFirst
         };
-        navigate('/game/local/new', { state: { config: localSession } });
+        const path = mode === 'AI' ? '/game/ai/new' : '/game/local/new';
+        navigate(path, { state: { config: localSession } });
         onClose();
         return;
       }

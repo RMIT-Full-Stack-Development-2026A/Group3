@@ -16,37 +16,7 @@ class GameRepository {
             .lean();
     }
 
-    async recordMoves(sessionId, { moves, nextBoard, nextTurn }) {
-        return await GameSession.findByIdAndUpdate(
-            sessionId,
-            {
-                $push: { moves: { $each: moves } },
-                $set: { 
-                    boardState: nextBoard,
-                    currentTurn: nextTurn 
-                }
-            },
-            { 
-                new: true, 
-                runValidators: true 
-            }
-        );
-    }
 
-    async completeGame(sessionId, { status, winnerId, winLine, endTime }) {
-        return await GameSession.findByIdAndUpdate(
-            sessionId,
-            {
-                $set: {
-                    status,
-                    winnerId,
-                    winLine,
-                    endTime: endTime || new Date()
-                }
-            },
-            { new: true }
-        );
-    }
 
     async updateSessionWithPlayer2(sessionId, { player2Id, player2Name, player2Avatar, player2Rating }) {
         return await GameSession.findByIdAndUpdate(
@@ -61,13 +31,6 @@ class GameRepository {
             },
             { new: true }
         );
-    }
-
-    async findActiveSessionByPlayer(userId) {
-        return await GameSession.findOne({
-            $or: [{ player1Id: userId }, { player2Id: userId }],
-            status: 'ACTIVE'
-        }).lean();
     }
 
     async findPlayerHistory(userId, limit = 10) {

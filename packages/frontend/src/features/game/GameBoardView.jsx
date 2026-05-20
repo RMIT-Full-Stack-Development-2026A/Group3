@@ -5,7 +5,6 @@ import { useAuthStore } from '../../app/store/authStore';
 import ChatView from './components/ChatView';
 
 import { getAvatarUrl } from '../../shared/utils/avatarUtil';
-import gameService from './gameService';
 import VietnamBoardTheme from '../../assets/images/boardThemes/Vietnam_theme.png';
 import SaigonBoardTheme from '../../assets/images/boardThemes/Saigon_skyline_theme.png';
 
@@ -13,7 +12,7 @@ const GameBoardView = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { session, loading, error, moveError, makeMove, refresh, chatMessages, sendMessage } = useGame(sessionId);
+  const { session, loading, error, makeMove, refresh, chatMessages, sendMessage } = useGame(sessionId);
 
   if (loading) return (
     <div className="min-h-screen bg-surface flex flex-col items-center justify-center text-white gap-4">
@@ -43,7 +42,8 @@ const GameBoardView = () => {
           },
           status: 'ACTIVE',
           boardTheme: session.boardTheme,
-          currentTurn: 'PLAYER1'
+          currentTurn: session.initialTurn,
+          initialTurn: session.initialTurn
         };
         // Use replace: true to avoid filling history with reset states
         navigate('/game/local/new', { state: { config: localSession }, replace: true });
@@ -51,19 +51,20 @@ const GameBoardView = () => {
         return;
       }
 
-      const config = {
+      const aiSession = {
         gameType: 'SINGLE',
         boardSize: session.boardSize,
-        player1Marker: session.p1.marker,
-        player2Marker: session.p2.marker,
+        players: {
+          p1: { name: session.p1.name, marker: session.p1.marker },
+          p2: { name: session.p2.name, marker: session.p2.marker }
+        },
+        status: 'ACTIVE',
         boardTheme: session.boardTheme,
-        moveFirst: 'player',
-        difficulty: session.difficulty || 'MEDIUM'
+        currentTurn: 'PLAYER1',
+        difficulty: session.difficulty,
+        moveFirst: 'player'
       };
-
-      const res = await gameService.createSession(config);
-      const newSessionId = res.data.sessionId || res.data._id || res.data.id;
-      navigate(`/game/ai/${newSessionId}`, { replace: true });
+      navigate('/game/ai/new', { state: { config: aiSession }, replace: true });
       refresh();
     } catch (err) {
       console.error('Failed to reset game:', err);
@@ -121,13 +122,13 @@ const GameBoardView = () => {
             {/* Player 1 Stats Section (Left) */}
             <div className="xl:col-span-3 space-y-6">
               <div className={`p-6 rounded-2xl border-2 transition-all relative overflow-hidden group ${isVN ? 'glass-panel-vn border-l-4 border-vn-tertiary' :
-                  isSG ? 'glass-panel-saigon border-sg-cyan/30 shadow-[0_0_20px_rgba(34,211,238,0.2)]' :
-                    session?.currentTurn === 'PLAYER1' ? 'glass-panel border-primary shadow-[0_0_30px_rgba(179,161,255,0.2)]' : 'glass-panel border-outline-variant/10 shadow-2xl'
+                isSG ? 'glass-panel-saigon border-sg-cyan/30 shadow-[0_0_20px_rgba(34,211,238,0.2)]' :
+                  session?.currentTurn === 'PLAYER1' ? 'glass-panel border-primary shadow-[0_0_30px_rgba(179,161,255,0.2)]' : 'glass-panel border-outline-variant/10 shadow-2xl'
                 }`}>
                 <div className="flex items-center gap-4 mb-6">
                   <div className={`relative w-14 h-14 rounded-xl overflow-hidden border-2 ${isVN ? 'border-vn-tertiary' : isSG ? 'border-sg-cyan' : 'border-primary'
                     }`}>
-                    <img alt="P1 Avatar" className="w-full h-full object-cover" src={getAvatarUrl(session?.p1?.avatar, 100)} />
+                    <img alt="P1 Avatar" className="w-full h-full object-cover" src={getAvatarUrl(session?.p1?.avatar, 100, session?.p1?.name)} />
                     <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-surface"></div>
                   </div>
                   <div>
@@ -159,8 +160,8 @@ const GameBoardView = () => {
                 <button
                   onClick={handleReset}
                   className={`w-full py-3 rounded-lg font-headline font-bold transition-all flex items-center justify-center gap-2 group active:scale-95 ${isVN ? 'bg-vn-tertiary text-vn-on-tertiary shadow-lg shadow-vn-tertiary/20' :
-                      isSG ? 'bg-sg-cyan text-black font-bold uppercase shadow-[0_0_15px_rgba(34,211,238,0.4)]' :
-                        'bg-primary text-on-primary shadow-[0_4px_15px_rgba(179,161,255,0.3)] hover:brightness-110'
+                    isSG ? 'bg-sg-cyan text-black font-bold uppercase shadow-[0_0_15px_rgba(34,211,238,0.4)]' :
+                      'bg-primary text-on-primary shadow-[0_4px_15px_rgba(179,161,255,0.3)] hover:brightness-110'
                     }`}
                 >
                   <span className="material-symbols-outlined text-xl group-hover:rotate-180 transition-transform duration-500">replay</span>
@@ -224,8 +225,8 @@ const GameBoardView = () => {
 
               {/* Board Container */}
               <div className={`p-2 lg:p-4 relative transition-all duration-700 ${isVN ? 'glass-panel-vn rounded-none border-2 border-vn-tertiary/30' :
-                  isSG ? 'bg-slate-900/80 border border-sg-cyan/50 shadow-[0_0_30px_rgba(34,211,238,0.1)]' :
-                    'glass-panel rounded-2xl border border-outline-variant/10 shadow-[0_0_80px_rgba(0,0,0,0.5)]'
+                isSG ? 'bg-slate-900/80 border border-sg-cyan/50 shadow-[0_0_30px_rgba(34,211,238,0.1)]' :
+                  'glass-panel rounded-2xl border border-outline-variant/10 shadow-[0_0_80px_rgba(0,0,0,0.5)]'
                 } w-full max-w-[700px]`}>
 
                 {/* Board Ornaments */}
@@ -256,15 +257,15 @@ const GameBoardView = () => {
                         key={`${y}-${x}`}
                         onClick={() => !cell && session?.status === 'ACTIVE' && makeMove(y, x)}
                         className={`aspect-square transition-all rounded-sm flex items-center justify-center text-sm md:text-lg lg:text-xl font-black relative overflow-hidden cursor-pointer active:scale-95 group ${isVN ? 'hover:bg-vn-tertiary/10 border border-vn-tertiary/5' :
-                            isSG ? 'hover:bg-sg-cyan/5 border border-sg-cyan/20 shadow-[inset_0_0_10px_rgba(34,211,238,0.05)] bg-white/5' : 'bg-surface-container-low hover:bg-surface-container-high'
+                          isSG ? 'hover:bg-sg-cyan/5 border border-sg-cyan/20 shadow-[inset_0_0_10px_rgba(34,211,238,0.05)] bg-white/5' : 'bg-surface-container-low hover:bg-surface-container-high'
                           } ${isWinCell(y, x) ? (isVN ? 'bg-vn-tertiary/20' : isSG ? 'bg-sg-cyan/20' : 'bg-primary/20') : ''}`}
                       >
                         {cell && (
                           <span
                             className={`material-symbols-outlined ${isWinCell(y, x) ? 'marker-winner-glow' :
-                                cell === session.p1.marker
-                                  ? (isVN ? 'text-vn-tertiary' : isSG ? 'text-sg-cyan neon-text-cyan' : 'text-primary marker-glow-x')
-                                  : (isVN ? 'text-vn-error' : isSG ? 'text-sg-magenta neon-text-magenta' : 'text-secondary marker-glow-o opacity-80')
+                              cell === session.p1.marker
+                                ? (isVN ? 'text-vn-tertiary' : isSG ? 'text-sg-cyan neon-text-cyan' : 'text-primary marker-glow-x')
+                                : (isVN ? 'text-vn-error' : isSG ? 'text-sg-magenta neon-text-magenta' : 'text-secondary marker-glow-o opacity-80')
                               }`}
                             style={isVN && cell === session.p1.marker ? { fontVariationSettings: '"FILL" 1' } : {}}
                           >
@@ -292,13 +293,13 @@ const GameBoardView = () => {
             {/* Player 2 Stats Section (Right) */}
             <div className="xl:col-span-3 space-y-6">
               <div className={`p-6 rounded-2xl border-2 transition-all relative overflow-hidden group ${isVN ? 'glass-panel-vn border-l-4 border-vn-error' :
-                  isSG ? 'glass-panel-saigon border-sg-magenta/30 shadow-[0_0_20px_rgba(192,38,211,0.2)]' :
-                    session?.currentTurn === 'PLAYER2' ? 'glass-panel border-primary shadow-[0_0_30px_rgba(179,161,255,0.2)]' : 'glass-panel border-outline-variant/10 shadow-2xl'
+                isSG ? 'glass-panel-saigon border-sg-magenta/30 shadow-[0_0_20px_rgba(192,38,211,0.2)]' :
+                  session?.currentTurn === 'PLAYER2' ? 'glass-panel border-primary shadow-[0_0_30px_rgba(179,161,255,0.2)]' : 'glass-panel border-outline-variant/10 shadow-2xl'
                 }`}>
                 <div className="flex items-center gap-4 mb-6">
                   <div className={`relative w-14 h-14 rounded-xl overflow-hidden border-2 ${isVN ? 'border-vn-error' : isSG ? 'border-sg-magenta' : 'border-primary'
                     }`}>
-                    <img alt="P2 Avatar" className="w-full h-full object-cover" src={session?.p2?.avatar || "https://api.dicebear.com/7.x/bottts/svg?seed=AI"} />
+                    <img alt="P2 Avatar" className="w-full h-full object-cover" src={session?.p2?.avatar ? getAvatarUrl(session?.p2?.avatar, 100) : (session?.gameType === 'SINGLE' ? "https://api.dicebear.com/7.x/bottts/svg?seed=AI" : `https://api.dicebear.com/7.x/avataaars/svg?seed=${session?.p2?.name || 'Player2'}`)} />
                     <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-surface"></div>
                   </div>
                   <div>
@@ -322,17 +323,6 @@ const GameBoardView = () => {
                     <p className={`text-[10px] uppercase mb-1 ${isVN ? 'text-vn-error/60' : isSG ? 'text-sg-magenta/60' : 'text-on-surface/40'}`}>Score</p>
                     <p className={`text-2xl font-bold font-headline ${isVN ? 'text-vn-tertiary' : isSG ? 'text-sg-magenta' : 'text-on-surface'}`}>0</p>
                   </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4">
-                <div className={`p-4 rounded-xl border text-center ${isVN ? 'glass-panel-vn border-vn-tertiary/20' : isSG ? 'glass-panel-saigon border-sg-cyan/20' : 'glass-panel border-outline-variant/10'}`}>
-                  <p className={`text-[10px] font-bold uppercase tracking-widest ${isVN ? 'text-vn-tertiary/60' : isSG ? 'text-sg-cyan/60' : 'text-violet-400'}`}>Spectators</p>
-                  <p className={`text-2xl font-black ${isVN ? 'text-vn-tertiary' : isSG ? 'text-sg-cyan' : 'text-violet-200'}`}>128</p>
-                </div>
-                <div className={`p-4 rounded-xl border text-center ${isVN ? 'glass-panel-vn border-vn-tertiary/20' : isSG ? 'glass-panel-saigon border-sg-cyan/20' : 'glass-panel border-outline-variant/10'}`}>
-                  <p className={`text-[10px] font-bold uppercase tracking-widest ${isVN ? 'text-vn-tertiary/60' : isSG ? 'text-sg-cyan/60' : 'text-violet-400'}`}>Match Strength</p>
-                  <p className={`text-2xl font-black ${isVN ? 'text-vn-tertiary' : isSG ? 'text-sg-cyan' : 'text-violet-200'}`}>Elite</p>
                 </div>
               </div>
             </div>

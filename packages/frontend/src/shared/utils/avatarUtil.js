@@ -1,8 +1,8 @@
 import { API_CONFIG } from '../../configs/apiConfig';
 
-export const getAvatarUrl = (url, size = 200) => {
+export const getAvatarUrl = (url, size = 200, seed = '') => {
   if (!url) {
-    return `https://api.dicebear.com/7.x/avataaars/svg?seed=Kaelen`;
+    return `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`;
   }
   
   // Cloudinary Transformation Optimization
