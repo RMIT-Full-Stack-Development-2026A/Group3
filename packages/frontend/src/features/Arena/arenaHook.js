@@ -64,8 +64,9 @@ export function useArenaRooms() {
     const handleGameStarted = (payload) => {
       if (!payload) return;
       const sessionId = payload.sessionId || payload.session?.id || payload.sessionId;
+      const roomCode = payload.roomCode;
       if (sessionId) {
-        navigate(`/game/online/${sessionId}`);
+        navigate(`/game/online/${sessionId}`, { state: { roomCode } });
       }
     };
 

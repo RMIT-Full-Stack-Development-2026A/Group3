@@ -14,6 +14,10 @@ export function useGame(sessionId) {
   const [error, setError] = useState(null);
   const [moveError, setMoveError] = useState(null);
   
+  // Chat state for online games
+  const [chatMessages, setChatMessages] = useState([]);
+  const resolvedRoomCode = location.state?.roomCode || session?.roomCode || null;
+  
   // Local game state history
   const [localMoves, setLocalMoves] = useState([]);
 
@@ -74,6 +78,11 @@ export function useGame(sessionId) {
       socket.connect();
     }
 
+    // For online games, join the room socket channel
+    if (session?.gameType === 'ONLINE' && resolvedRoomCode) {
+      socket.emit('join-room', resolvedRoomCode);
+    }
+
     const handleGameMove = (payload) => {
       if (!payload || !payload.session) return;
       const incoming = payload.session;
@@ -81,12 +90,24 @@ export function useGame(sessionId) {
       setSession(gameModel.formatSession(incoming));
     };
 
+    const handleChatMessage = (messageObj) => {
+      // Add incoming chat message to chat messages array
+      setChatMessages(prev => [...prev, messageObj]);
+    };
+
     socket.on('game:move', handleGameMove);
+    socket.on('chat:message', handleChatMessage);
 
     return () => {
       socket.off('game:move', handleGameMove);
+      socket.off('chat:message', handleChatMessage);
+      
+      // Leave room when component unmounts or session changes
+      if (session?.gameType === 'ONLINE' && resolvedRoomCode) {
+        socket.emit('leave-room', resolvedRoomCode);
+      }
     };
-  }, [sessionId]);
+  }, [sessionId, session?.gameType, resolvedRoomCode]);
 
   const makeMove = useCallback(async (row, col) => {
     if (!session || session.status !== 'ACTIVE') return;
@@ -142,11 +163,29 @@ export function useGame(sessionId) {
   const reset = useCallback(() => {
     setSession(null);
     setLocalMoves([]);
+    setChatMessages([]);
     setError(null);
     if (sessionId && sessionId !== 'new') {
       fetchSession();
     }
   }, [sessionId, fetchSession]);
 
-  return { session, loading, error, moveError, makeMove, refresh: reset };
+  const sendMessage = useCallback((message) => {
+    if (!message || !message.trim()) return;
+    
+    const socket = getSocket();
+    if (!socket) return;
+
+    if (!resolvedRoomCode) {
+      console.log(`Room #${resolvedRoomCode} not available`);
+      return;
+    }
+
+    socket.emit('chat:message', { 
+      roomCode: resolvedRoomCode,
+      message: message.trim() 
+    });
+  }, [resolvedRoomCode]);
+
+  return { session, loading, error, moveError, makeMove, refresh: reset, chatMessages, sendMessage };
 }

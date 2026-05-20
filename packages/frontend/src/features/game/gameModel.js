@@ -9,6 +9,8 @@ const gameModel = {
 
     return {
       id: data.sessionId || data.id || data._id,
+      roomId: data.roomId,
+      roomCode: data.roomCode,
       board: gameState.board || data.board || [],
       currentTurn: gameState.currentTurn || data.currentPlayer,
       status: data.status,
