@@ -4,6 +4,39 @@ import { GameSession } from './gameModel.js';
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 class GameRepository {
+
+     async completeGame(sessionId, { status, winnerId, winLine, endTime }) {
+        return await GameSession.findByIdAndUpdate(
+            sessionId,
+            {
+                $set: {
+                    status,
+                    winnerId,
+                    winLine,
+                    endTime: endTime || new Date()
+                }
+            },
+            { new: true }
+        );
+    }
+
+    async recordMoves(sessionId, { moves, nextBoard, nextTurn }) {
+        return await GameSession.findByIdAndUpdate(
+            sessionId,
+            {
+                $push: { moves: { $each: moves } },
+                $set: { 
+                    boardState: nextBoard,
+                    currentTurn: nextTurn 
+                }
+            },
+            { 
+                new: true, 
+                runValidators: true 
+            }
+        );
+    }
+
     async createSession(sessionData) {
         return await GameSession.create(sessionData);
     }
@@ -31,15 +64,6 @@ class GameRepository {
             },
             { new: true }
         );
-    }
-
-    async findPlayerHistory(userId, limit = 10) {
-        return await GameSession.find({
-            $or: [{ player1Id: userId }, { player2Id: userId }]
-        })
-        .sort({ createdAt: -1 })
-        .limit(limit)
-        .lean();
     }
 
     _buildBasePipeline ({ userId, search, result, date, dateFrom, dateTo }) {

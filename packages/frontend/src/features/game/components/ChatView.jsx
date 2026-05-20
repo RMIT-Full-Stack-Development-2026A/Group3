@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuthStore } from '../../../app/store/authStore';
 
-const ChatPanel = ({ messages = [], onSendMessage, isPlaying = false, currentUser, opponentName = 'Opponent' }) => {
+const ChatPanel = ({ messages = [], onSendMessage, currentUser, opponentName = 'Opponent' }) => {
   const [messageInput, setMessageInput] = useState('');
   const [lastMessageTime, setLastMessageTime] = useState(0);
   const [isRateLimited, setIsRateLimited] = useState(false);

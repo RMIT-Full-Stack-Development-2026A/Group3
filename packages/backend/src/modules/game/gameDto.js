@@ -17,6 +17,15 @@ const ALLOWED_HISTORY_RESULTS = new Set(['ALL', 'WIN', 'LOSS', 'DRAW']);
 
 
 class GameDTO {
+
+    static toMoveReq(body) {
+        const { row, col, marker } = body;
+        if (row === undefined || col === undefined || !marker) {
+            throw new Error('Invalid move coordinates or marker');
+        }
+        return {y: parseInt(row), x: parseInt(col), marker: marker.toUpperCase()};
+    }
+    
     static _calculateOutcome(session, userId) {
         if (session.status === 'ACTIVE' || session.status === 'WAITING') return 'ONGOING';
         if (session.status === 'ABORTED') return 'CANCELLED';

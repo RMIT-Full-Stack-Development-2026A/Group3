@@ -44,6 +44,60 @@ class AdminController {
       });
     }
   }
+
+  /**
+   * GET /api/admin/rooms
+   */
+  async getRooms(req, res) {
+    try {
+      // 1. DTO transform & validate query parameters
+      const filter = AdminDTO.transformGetRoomsQuery(req.query);
+
+      // 2. Gọi Service xử lý
+      const { rooms, pagination } = await AdminService.getRooms(filter);
+
+      // 3. Định dạng response trả về qua DTO
+      const formattedRooms = AdminDTO.formatRoomListResponse(rooms);
+
+      res.json(AdminDTO.formatSuccessResponse('Rooms retrieved successfully', {
+        rooms: formattedRooms,
+        pagination
+      }));
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
+  /**
+   * POST /api/admin/rooms/:id/close
+   */
+  async closeRoom(req, res) {
+    try {
+      const roomId = req.params.id;
+      const { reason } = req.body;
+      const adminId = req.user.id;
+
+      if (!roomId) {
+        throw new Error('Room ID is required');
+      }
+
+      // Gọi Service đóng phòng đấu
+      const closedRoom = await AdminService.closeRoom(adminId, roomId, reason);
+
+      res.json(AdminDTO.formatSuccessResponse(
+        `Room ${closedRoom.roomCode} has been closed successfully.`
+      ));
+    } catch (error) {
+      const status = error.message === 'Room not found' ? 404 : 400;
+      res.status(status).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
 }
 
 export default new AdminController();

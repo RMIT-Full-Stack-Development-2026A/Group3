@@ -19,6 +19,24 @@ const adminModel = {
   formatUserList: (usersData) => {
     if (!Array.isArray(usersData)) return [];
     return usersData.map(adminModel.formatUserRow);
+  },
+
+  formatRoomRow: (roomData) => {
+    if (!roomData) return null;
+    return {
+      id: roomData._id || roomData.id,
+      roomCode: roomData.roomCode || 'UNKNOWN',
+      player1Name: roomData.player1Name || 'Unknown',
+      player2Name: roomData.player2Name || 'Waiting...',
+      status: roomData.status || 'WAITING',
+      startTime: roomData.startTime || new Date().toISOString(),
+      endTime: roomData.endTime || null
+    };
+  },
+
+  formatRoomList: (roomsData) => {
+    if (!Array.isArray(roomsData)) return [];
+    return roomsData.map(adminModel.formatRoomRow);
   }
 };
 

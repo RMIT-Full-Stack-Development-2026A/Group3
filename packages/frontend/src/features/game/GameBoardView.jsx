@@ -157,17 +157,17 @@ const GameBoardView = () => {
 
               {/* Game Controls */}
               <div className="space-y-3">
-                <button
-                  onClick={handleReset}
-                  className={`w-full py-3 rounded-lg font-headline font-bold transition-all flex items-center justify-center gap-2 group active:scale-95 ${isVN ? 'bg-vn-tertiary text-vn-on-tertiary shadow-lg shadow-vn-tertiary/20' :
-                    isSG ? 'bg-sg-cyan text-black font-bold uppercase shadow-[0_0_15px_rgba(34,211,238,0.4)]' :
-                      'bg-primary text-on-primary shadow-[0_4px_15px_rgba(179,161,255,0.3)] hover:brightness-110'
-                    }`}
-                >
-                  <span className="material-symbols-outlined text-xl group-hover:rotate-180 transition-transform duration-500">replay</span>
-                  Reset Game
-                </button>
-
+                {session?.gameType !== 'ONLINE' && (
+                  <button
+                    onClick={handleReset}
+                    className={`w-full py-3 rounded-lg font-headline font-bold transition-all flex items-center justify-center gap-2 group active:scale-95 ${isVN ? 'bg-vn-tertiary text-vn-on-tertiary shadow-lg shadow-vn-tertiary/20' :
+                      isSG ? 'bg-sg-cyan text-black font-bold uppercase shadow-[0_0_15px_rgba(34,211,238,0.4)]' :
+                        'bg-primary text-on-primary shadow-[0_4px_15px_rgba(179,161,255,0.3)] hover:brightness-110'
+                    }`}>
+                    <span className="material-symbols-outlined text-xl group-hover:rotate-180 transition-transform duration-500">replay</span>
+                    Reset Game
+                  </button>
+                )}
                 <button
                   onClick={() => navigate('/dashboard')}
                   className="w-full py-3 rounded-lg bg-surface-container-high text-violet-300 font-headline font-bold border border-outline-variant/30 hover:bg-surface-variant transition-all flex items-center justify-center gap-2 active:scale-95"
@@ -178,12 +178,11 @@ const GameBoardView = () => {
               </div>
 
               {/* Chat Panel */}
-              {session?.gameType === 'ONLINE' && session?.status === 'ACTIVE' && (
+              {session?.gameType === 'ONLINE' && (
                 <div className="mt-6 hidden xl:block">
                   <ChatView
                     messages={chatMessages}
                     onSendMessage={sendMessage}
-                    isPlaying={session?.status === 'ACTIVE'}
                     currentUser={user}
                     opponentName={session?.p2?.name || 'Opponent'}
                   />
@@ -202,7 +201,7 @@ const GameBoardView = () => {
                         ? 'Waiting for opponent'
                         : (session.gameType === 'SINGLE'
                           ? (session.currentTurn === 'PLAYER1' ? 'Your Turn' : "AI's Turn")
-                          : (session.currentTurn === 'PLAYER1' ? "Player 1's Turn" : "Player 2's Turn"))}
+                          : (session.currentTurn === 'PLAYER1' ? `${session?.p1.name}'s Turn` : `${session?.p2.name}'s Turn`))}
                     </p>
                     <p className={`text-2xl font-headline font-black tracking-tight ${isVN ? 'text-vn-tertiary' : isSG ? 'text-sg-cyan neon-text-cyan' : 'text-primary'}`}>
                       {session?.status === 'WAITING'
@@ -216,7 +215,9 @@ const GameBoardView = () => {
                     <p className={`text-3xl font-headline font-black tracking-tight ${isVN ? 'text-vn-tertiary' : isSG ? 'text-sg-cyan neon-text-cyan' : 'text-primary'}`}>
                       {session?.gameType === 'SINGLE'
                         ? (session?.matchOutcome === 'WIN' ? 'VICTORY!' : session?.matchOutcome === 'LOSS' ? 'DEFEAT' : 'DRAW')
-                        : (session?.matchOutcome === 'WIN' ? 'P1 VICTORIOUS' : session?.matchOutcome === 'LOSS' ? 'P2 VICTORIOUS' : 'DRAW')
+                        : session?.gameType === "LOCAL" 
+                        ? (session?.matchOutcome === 'WIN' ? 'P1 VICTORY' : session?.matchOutcome === 'LOSS' ? 'P2 VICTORIOUS' : 'DRAW')
+                        : (session?.winnerId === session?.p1?.id ? `${session?.p1.name} WINS` : `${session?.p2.name} WINS`)
                       }
                     </p>
                   </div>
