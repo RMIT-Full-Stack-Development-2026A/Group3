@@ -16,6 +16,7 @@ import ArenaView from '../../features/Arena/ArenaView';
 import ReplayView from '../../features/replay/ReplayView';
 import AdminDashboardView from '../../features/admin/AdminDashboardView';
 import AdminUserManagementView from '../../features/admin/AdminUserManagementView';
+import AdminRoomManagementView from '../../features/admin/AdminRoomManagementView';
 
 // Shared
 import { RouteGuard } from '../../shared/components/RouteGuard';
@@ -100,6 +101,10 @@ export const router = createBrowserRouter([
       { 
         path: 'users', 
         element: <AdminUserManagementView /> 
+      },
+      {
+        path: 'rooms',
+        element: <AdminRoomManagementView />
       },
     ]
   },
