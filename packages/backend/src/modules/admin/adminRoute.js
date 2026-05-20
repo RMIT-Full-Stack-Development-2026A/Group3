@@ -21,4 +21,18 @@ router.get('/users', AdminController.getUsers);
  */
 router.patch('/users/:id/status', AdminController.updateUserStatus);
 
+/**
+ * @route   GET /api/admin/rooms
+ * @desc    Lấy danh sách các phòng chơi kèm tìm kiếm và phân trang
+ * @access  Private (Admin)
+ */
+router.get('/rooms', AdminController.getRooms);
+
+/**
+ * @route   POST /api/admin/rooms/:id/close
+ * @desc    Force-close phòng đấu và hủy trận đấu trực tuyến tương ứng
+ * @access  Private (Admin)
+ */
+router.post('/rooms/:id/close', AdminController.closeRoom);
+
 export default router;
