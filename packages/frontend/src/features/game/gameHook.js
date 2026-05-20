@@ -39,7 +39,6 @@ export function useGame(sessionId) {
     if (isNewSession && !session) {
       const config = location.state.config;
       const size = config.boardSize || 10;
-      console.log("Initializing local/AI session...");
       
       let initialBoard = Array(size).fill(null).map(() => Array(size).fill(null));
       let currentTurn = config.currentTurn || 'PLAYER1';
@@ -175,8 +174,30 @@ export function useGame(sessionId) {
       return;
     }
 
-  }, [session, sessionId, user]);
+    if (session.gameType === 'ONLINE') {
+      const isP1 = session.p1 && String(session.p1.id) === String(user?.id);
+      const isP2 = session.p2 && String(session.p2.id) === String(user?.id);
+      const isMyTurn = (session.currentTurn === 'PLAYER1' && isP1) || (session.currentTurn === 'PLAYER2' && isP2);
 
+      if (!isMyTurn) {
+        console.log("It's not your turn!");
+        return;
+      }
+      
+      const currentMarker = session.currentTurn === 'PLAYER1' ? session.p1.marker : session.p2.marker;
+      try {
+        const res = await gameService.makeMove(sessionId, {
+          row,
+          col,
+          marker: currentMarker
+        });
+        setSession(gameModel.formatSession(res.data));
+      } catch (err) {
+        console.error('Failed to make online move:', err);
+        setError(err.message || 'Failed to make move');
+      }
+    }
+  }, [session, sessionId, user, resolvedRoomCode]);
   const reset = useCallback(() => {
     setSession(null);
     setChatMessages([]);

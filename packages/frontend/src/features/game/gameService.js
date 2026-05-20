@@ -6,6 +6,10 @@ const gameService = {
     return await httpUtil.get(`/game/sessions/${sessionId}`);
   },
 
+  makeMove: async (sessionId, moveData) => {
+    return await httpUtil.post(`/game/sessions/${sessionId}/move`, moveData);
+  },
+
   getMatchHistory: async () => {
     return await httpUtil.get('/game/history');
   },
