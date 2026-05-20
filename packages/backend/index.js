@@ -76,6 +76,13 @@ io.use((socket, next) => {
 arenaService.setIO(io);
 setSocketIO(io);
 
+// In-memory chat buffer: stores messages per room
+// Structure: { 'roomCode': [ { senderId, senderName, message, timestamp }, ... ] }
+const chatBuffer = {};
+
+// Track connected users per room for cleanup
+const roomConnections = {};
+
 io.on('connection', (socket) => {
     // Basic connection logging
     const uid = socket.user?.id || 'anonymous';
@@ -85,12 +92,77 @@ io.on('connection', (socket) => {
         if (!roomCode) return;
         const roomName = `room-${roomCode}`;
         socket.join(roomName);
+
+        // Track connection for this room
+        if (!roomConnections[roomCode]) {
+            roomConnections[roomCode] = [];
+        }
+        roomConnections[roomCode].push(socket.id);
     });
 
     socket.on('leave-room', (roomCode) => {
         if (!roomCode) return;
         const roomName = `room-${roomCode}`;
         socket.leave(roomName);
+
+        // Remove socket from room connections
+        if (roomConnections[roomCode]) {
+            roomConnections[roomCode] = roomConnections[roomCode].filter(id => id !== socket.id);
+
+            // If no more connections, cleanup chat buffer for this room
+            if (roomConnections[roomCode].length === 0) {
+                delete chatBuffer[roomCode];
+                delete roomConnections[roomCode];
+                console.log(`Chat buffer cleared for room: ${roomCode}`);
+            }
+        }
+    });
+
+    socket.on('chat:message', (data) => {
+        const { roomCode, message } = data;
+        if (!roomCode || !socket.user) return;
+
+        // Message validation
+        const trimmedMessage = message.trim();
+        if (trimmedMessage.length === 0 || trimmedMessage.length > 200) {
+            return;
+        }
+
+        // Create message object with metadata
+        const messageObj = {
+            senderId: socket.user.id,
+            senderName: socket.user.username || 'Player',
+            message: trimmedMessage,
+            timestamp: new Date()
+        };
+
+        // Initialize chat buffer for this room if not exists
+        if (!chatBuffer[roomCode]) {
+            chatBuffer[roomCode] = [];
+        }
+
+        // Add message to buffer
+        chatBuffer[roomCode].push(messageObj);
+
+        // Broadcast message to all players in the room
+        const roomName = `room-${roomCode}`;
+        io.to(roomName).emit('chat:message', messageObj);
+
+        console.log(`Chat message in room ${roomCode} from ${socket.user.username}: ${trimmedMessage}`);
+    });
+
+    socket.on('disconnect', () => {
+        console.log(`Socket disconnected: ${socket.id} user:${uid}`);
+        
+        // Clean up room connections on disconnect
+        for (const roomCode in roomConnections) {
+            roomConnections[roomCode] = roomConnections[roomCode].filter(id => id !== socket.id);
+            if (roomConnections[roomCode].length === 0) {
+                delete chatBuffer[roomCode];
+                delete roomConnections[roomCode];
+                console.log(`Chat buffer cleared for room: ${roomCode} (user disconnect)`);
+            }
+        }
     });
 });
 

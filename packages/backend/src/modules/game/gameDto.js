@@ -89,6 +89,8 @@ class GameDTO {
             boardTheme: session.boardTheme || 'DEFAULT',
             difficulty: session.difficulty,
             status: session.status,
+            roomId: session.roomId,
+            roomCode: session.roomId?.roomCode || null,
             players: {
                 p1: {
                     id: serializeId(session.player1Id),

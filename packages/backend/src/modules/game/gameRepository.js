@@ -12,6 +12,7 @@ class GameRepository {
         return await GameSession.findById(sessionId)
             .populate('player1Id', 'username avatar')
             .populate('player2Id', 'username avatar')
+            .populate('roomId', 'roomCode')
             .lean();
     }
 
