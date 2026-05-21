@@ -18,7 +18,7 @@ const GameBoardView = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { session, loading, error, roomNotice, makeMove, refresh, chatMessages, sendMessage } = useGame(sessionId);
+  const { session, loading, error, roomNotice, makeMove, refresh, chatMessages, sendMessage, moves } = useGame(sessionId);
 
   if (loading) return (
     <div className="min-h-screen bg-surface flex flex-col items-center justify-center text-white gap-4">
@@ -80,6 +80,8 @@ const GameBoardView = () => {
   const isWinCell = (row, col) => {
     return session?.winLine?.some(line => line.y === row && line.x === col);
   };
+
+  const lastMove = session?.lastMove || (moves && moves.length > 0 ? moves[moves.length - 1] : null);
 
   const getMarkerSymbol = (marker) => {
     switch (marker) {
@@ -143,9 +145,6 @@ const GameBoardView = () => {
                     <h3 className={`font-bold text-lg ${isVN ? 'text-vn-tertiary' : isSG ? 'text-sg-cyan neon-text-cyan' : 'text-on-surface'}`}>
                       {session?.p1?.name || 'You'}
                     </h3>
-                    <p className={`text-xs uppercase tracking-widest ${isVN ? 'text-vn-tertiary/60' : isSG ? 'text-sg-cyan/60' : 'text-on-surface/50'}`}>
-                      Rating: 2450 ELO
-                    </p>
                   </div>
                 </div>
 
@@ -224,7 +223,7 @@ const GameBoardView = () => {
                       {session?.status === 'ABORTED'
                         ? 'MATCH ABORTED'
                         : session?.gameType === 'SINGLE'
-                        ? (session?.matchOutcome === 'WIN' ? 'VICTORY!' : session?.matchOutcome === 'LOSS' ? 'DEFEAT' : 'DRAW')
+                        ? (session?.matchOutcome === 'WIN' ? 'YOU WIN!' : session?.matchOutcome === 'LOSS' ? 'YOU LOSE!' : 'DRAW')
                         : session?.gameType === "LOCAL" 
                         ? (session?.matchOutcome === 'WIN' ? 'P1 VICTORY' : session?.matchOutcome === 'LOSS' ? 'P2 VICTORIOUS' : 'DRAW')
                         : (session?.winnerId === session?.p1?.id ? `${session?.p1.name} WINS` : `${session?.p2.name} WINS`)
@@ -274,7 +273,7 @@ const GameBoardView = () => {
                         onClick={() => !cell && session?.status === 'ACTIVE' && makeMove(y, x)}
                         className={`aspect-square transition-all rounded-sm flex items-center justify-center text-sm md:text-lg lg:text-xl font-black relative overflow-hidden cursor-pointer active:scale-95 group ${isVN ? 'hover:bg-vn-tertiary/10 border border-vn-tertiary/5' :
                           isSG ? 'hover:bg-sg-cyan/5 border border-sg-cyan/20 shadow-[inset_0_0_10px_rgba(34,211,238,0.05)] bg-white/5' : 'bg-surface-container-low hover:bg-surface-container-high'
-                          } ${isWinCell(y, x) ? (isVN ? 'bg-vn-tertiary/20' : isSG ? 'bg-sg-cyan/20' : 'bg-primary/20') : ''}`}
+                          } ${isWinCell(y, x) ? (isVN ? 'bg-vn-tertiary/20' : isSG ? 'bg-sg-cyan/20' : 'bg-primary/20') : ''} ${lastMove?.y === y && lastMove?.x === x ? 'bg-white/20 ring-2 ring-white/50 shadow-[inset_0_0_20px_rgba(255,255,255,0.4)] z-10' : ''}`}
                       >
                         {cell && (
                           <span
@@ -322,9 +321,6 @@ const GameBoardView = () => {
                     <h3 className={`font-bold text-lg ${isVN ? 'text-vn-error' : isSG ? 'text-sg-magenta neon-text-magenta' : 'text-on-surface'}`}>
                       {session?.gameType === 'SINGLE' ? getAIName(session?.difficulty) : (session?.p2?.name)}
                     </h3>
-                    <p className={`text-xs uppercase tracking-widest ${isVN ? 'text-vn-error/60' : isSG ? 'text-sg-magenta/60' : 'text-on-surface/50'}`}>
-                      Rating: {session?.gameType === 'SINGLE' ? '2310 Elo' : 'N/A'}
-                    </p>
                   </div>
                 </div>
 
