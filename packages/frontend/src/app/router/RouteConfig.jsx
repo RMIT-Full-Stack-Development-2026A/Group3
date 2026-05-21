@@ -6,8 +6,8 @@ import MainLayout from '../../shared/components/layout/MainLayout';
 import AdminLayout from '../../shared/components/layout/AdminLayout';
 
 // Features
-import LoginView from '../../features/auth/LoginView';
-import RegisterView from '../../features/auth/RegisterView';
+import LoginView from '../../features/Auth/LoginView';
+import RegisterView from '../../features/Auth/RegisterView';
 import DashboardView from '../../features/Dashboard/DashboardView';
 import GameBoardView from '../../features/game/GameBoardView';
 import MatchHistoryView from '../../features/matchHistory/MatchHistoryView';
