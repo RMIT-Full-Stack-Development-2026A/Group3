@@ -1,4 +1,5 @@
 import SubscriptionService from './subscriptionService.js';
+import AuthService from '../auth/authService.js';
 import { SubscriptionDTO } from './subscriptionDto.js';
 import { responseHelper } from '../../common/responseHelper.js';
 
@@ -26,7 +27,13 @@ class SubscriptionController {
             const plan = SubscriptionDTO.toSubscribeReq(req.body);
 
             const result = await SubscriptionService.subscribe(userId, plan);
+            
+            // Generate a fresh token
+            const user = await AuthService.getUserById(userId);
+            const newToken = AuthService._generateToken(user, result.profile);
+            
             const data = SubscriptionDTO.toSubscriptionRes(result.subscription, result.transaction, result.profile);
+            data.token = newToken;
 
             return sendSuccess(res, 201, data, `Premium ${plan.label} plan activated! Confirmation email sent.`);
         } catch (error) {

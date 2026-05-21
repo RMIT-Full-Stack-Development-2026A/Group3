@@ -287,7 +287,7 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
                       : 'border-outline-variant/30 text-on-surface/60 hover:bg-surface-variant'
                     }`}
                   >
-                    <span className="text-sm font-bold font-headline">{getAIName(level)}</span>
+                    <span className="text-sm font-bold font-headline">{level}</span>
                   </button>
                 ))}
               </div>
