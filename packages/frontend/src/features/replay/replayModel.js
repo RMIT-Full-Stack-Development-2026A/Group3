@@ -2,7 +2,7 @@ const getAIName = (difficulty) => ({
   EASY: 'Havoc',
   MEDIUM: 'Berserker',
   HARD: 'Mayhem'
-});
+}[difficulty]);
 
 const replayModel = {
   formatReplay: (data) => {

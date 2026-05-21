@@ -9,7 +9,7 @@ const getAIName = (difficulty) => ({
   EASY: 'Havoc',
   MEDIUM: 'Berserker',
   HARD: 'Mayhem'
-});
+}[difficulty]);
 
 const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
   if (!isOpen) return null;
