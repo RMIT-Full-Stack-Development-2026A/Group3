@@ -68,8 +68,8 @@ class GameService {
     const session = await GameRepository.findById(sessionId);
     if (!session) throw new Error('Game not found');
 
-    const p1Id = session.player1Id?._id?.toString() || session.player1Id?.toString();
-    const p2Id = session.player2Id?._id?.toString() || session.player2Id?.toString();
+    const p1Id = session.player1Id?._id?.toString();
+    const p2Id = session.player2Id?._id?.toString();
     const currentUserId = userId.toString();
 
     if (p1Id !== currentUserId && p2Id !== currentUserId) {
@@ -108,8 +108,8 @@ class GameService {
     }
 
     if (role !== 'ADMIN') {
-      const p1Id = session.player1Id?._id?.toString() || session.player1Id?.toString();
-      const p2Id = session.player2Id?._id?.toString() || session.player2Id?.toString();
+      const p1Id = session.player1Id?._id?.toString();
+      const p2Id = session.player2Id?._id?.toString();
       const isPlayer = [p1Id, p2Id].filter(Boolean).some((playerId) => playerId === userId);
 
       if (!isPlayer) {

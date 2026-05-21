@@ -66,7 +66,7 @@ class GameDTO {
 
     static toHistoryRes(payload) {
         return {
-            items: (payload.items || []).map((item) => ({
+            items: (payload.items).map((item) => ({
                 matchId: item.matchId,
                 gameType: item.gameType,
                 boardSize: item.boardSize,
@@ -75,7 +75,7 @@ class GameDTO {
                 result: item.result,             
                 playedAt: item.playedAt
             })),
-            pagination: payload.pagination || null
+            pagination: payload.pagination
         };
     }
 
@@ -109,12 +109,12 @@ class GameDTO {
             gameState: {
                 board: session.boardState,
                 currentTurn: session.currentTurn,
-                totalMoves: session.moves?.length || 0,
+                totalMoves: session.moves?.length,
                 lastMove: session.moves?.length > 0 ? session.moves[session.moves.length - 1] : null
             },
             result: {
                 winnerId: serializeId(session.winnerId),
-                winLine: session.winLine || [],
+                winLine: session.winLine,
                 matchOutcome: this._calculateOutcome(session, currentUserId),
                 endTime: session.endTime
             }

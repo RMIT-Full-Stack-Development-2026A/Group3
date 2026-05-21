@@ -39,10 +39,6 @@ const BottomDock = () => {
       
       <div className="w-[1px] h-6 bg-outline-variant/30 mx-2"></div>
       
-      <button className="p-3 text-on-surface/70 hover:text-primary transition-colors">
-        <span className="material-symbols-outlined">leaderboard</span>
-      </button>
-      
       <Link to="/match-history" className={`p-3 rounded-xl transition-all active:scale-90 ${isActive('/match-history') ? 'bg-primary text-on-primary shadow-lg' : 'text-on-surface/70 hover:text-primary'}`}>
         <span className="material-symbols-outlined" style={{ fontVariationSettings: isActive('/match-history') ? "'FILL' 1" : "''" }}>history</span>
       </Link>
