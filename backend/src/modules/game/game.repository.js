@@ -1,2 +1,0 @@
-/** game repository */
-module.exports = {};

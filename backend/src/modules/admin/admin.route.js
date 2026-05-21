@@ -1,2 +1,0 @@
-/** admin route */
-module.exports = {};

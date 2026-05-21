@@ -1,2 +1,0 @@
-/** arena service */
-module.exports = {};

@@ -1,2 +1,0 @@
-/** subscription controller */
-module.exports = {};

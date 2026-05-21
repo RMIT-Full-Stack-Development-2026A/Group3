@@ -1,2 +1,0 @@
-/** subscription repository */
-module.exports = {};

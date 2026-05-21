@@ -1,2 +1,0 @@
-/** profile route */
-module.exports = {};

@@ -1,0 +1,46 @@
+import ProfileRepository from './profileRepository.js';
+import UsersService from '../users/usersService.js';
+
+class ProfileService {
+  async getProfileData(userId) {
+    let [user, profile, stats] = await Promise.all([
+      UsersService.getPublicById(userId),
+      ProfileRepository.findProfileByUserId(userId),
+      ProfileRepository.findStatsByUserId(userId)
+    ]);
+
+
+    if (!user) throw new Error('User not found');
+    
+    if (!profile || !stats) {
+      [profile, stats] = await ProfileRepository.initUserProfile(
+        userId, 
+        'Vietnam', 
+        `https://api.dicebear.com/7.x/bottts/svg?seed=${user.username}`
+      );
+    }
+
+    return { user, profile, stats };
+  }
+
+  async updateProfile(userId, updateData) {
+    const { username, country, avatarUrl } = updateData;
+
+    // 1. Update Auth info if username changed
+    if (username) {
+      const existingUser = await UsersService.findByUsername(username);
+      if (existingUser && existingUser._id.toString() !== userId.toString()) throw new Error('Username already taken');
+      await UsersService.updateUserInfo(userId, { username });
+    }
+
+    // 2. Update Profile info if any
+    const profileUpdates = {};
+    if (country) profileUpdates.country = country;
+    if (avatarUrl) profileUpdates.avatarUrl = avatarUrl;
+    if (Object.keys(profileUpdates).length > 0) await ProfileRepository.updateProfileByUserId(userId, profileUpdates);
+
+    return this.getProfileData(userId);
+  }
+}
+
+export default new ProfileService();

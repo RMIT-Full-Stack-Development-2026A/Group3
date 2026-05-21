@@ -74,6 +74,8 @@ To score in the **Excellent** band on every criterion, the team must commit to U
 
 | Layer | Technology | Justification |
 |---|---|---|
+| Monorepo | **npm workspaces** | Unified dependency management for backend, frontend, and shared packages |
+| Core | **ES Modules (ESM)** | Modern JS standard for modularity, better tree-shaking, and consistency across packages |
 | Frontend | React 18 + Vite | Fast HMR, modern JSX, Concurrent Rendering (useTransition) |
 | Frontend | Tailwind CSS + Bootstrap 5 | Tailwind for layout architecture; Bootstrap for standard UI elements (modal, badge, card) |
 | Frontend | **Zustand** | Zero-latency game state management (Optimistic UI) — avoids React Context re-render penalties |
@@ -87,18 +89,17 @@ To score in the **Excellent** band on every criterion, the team must commit to U
 | Backend | express-rate-limit | Per-IP brute-force protection middleware (SRS 2.2.1) |
 | Backend | nodemailer | Email notification on premium payment (SRS 5.1.2) |
 | Backend | multer + sharp | Avatar upload (SRS 3.2.1) + auto-resize to 200×200 px |
+| Shared | **@tictactoang/shared** | Shared game logic (win-check), AI heuristics, and constants between client/server |
 | Database | MongoDB Atlas | Cloud DB — whitelist `0.0.0.0/0` for grader network access |
 | Deployment | Render | Cloud deploy for backend (Web Service) and frontend (Static Site) |
 
-> **Note on the existing guide**: `tictactoe_platform_guide.md` references Java Spring Boot. This project uses **Node.js + Express** as required by the SRS MEN Stack specification. All architecture patterns — N-Tier, Modular Monolith, DTOs, RBAC, ABAC — are language-agnostic and apply identically here.
 
----
+> **Note on the existing guide**: `tictactoe_platform_guide.md` references Java Spring Boot. This project uses **Node.js + Express** as required by the SRS MEN Stack specification. All architecture patterns — N-Tier, Modular Monolith, DTOs, RBAC, ABAC — are language-agnostic and apply identically.
 
-## 3. Architecture Blueprint
+### 3.1 Backend: Monorepo Modular Monolith (Ultimo)
 
-### 3.1 Backend: Modular Monolith (Ultimo)
 
-The backend combines two architectural patterns: **N-Tier** (separation of concerns within a module) and **Modular Monolith** (bounded contexts between modules). The result is a single deployable unit where each business domain is internally structured and externally isolated.
+The backend is structured as a **Monorepo Modular Monolith** within the `packages/backend` workspace. It combines **N-Tier** layering (internal separation) with **Vertical Slicing** (feature-based isolation). All core game rules and AI logic are unified in `@tictactoang/shared` to ensure consistency.
 
 **Why not pure N-Tier alone?** Pure N-Tier groups files by layer (`controllers/`, `services/`, `models/`), which causes high coupling between business domains — changing the auth service risks breaking game logic. Modular Monolith adds vertical slicing by feature, so each domain owns its own layers.
 
@@ -132,7 +133,7 @@ backend/
 │   ├── authRepository.js           ← findByEmail() | findByUsername() | createUser()
 │   ├── authModel.js                ← Mongoose User schema
 │   ├── authDTO.js                  ← RegisterRequestDTO | LoginResponseDTO | PublicUserDTO
-│   └── authInterface.js            ← Public interface for other modules to call (A.3.1)
+│   
 │
 ├── profile/                        ← 📊 PROFILE MODULE
 │   ├── profileRoute.js             ← GET /api/v1/profile/:id | PUT /api/v1/profile/:id
@@ -185,8 +186,11 @@ backend/
 | **Repository** | `*Repository.js` | Define and execute all database queries via Mongoose | Contain business logic or HTTP concerns |
 | **Model** | `*Model.js` | Define the Mongoose schema and collection structure | Contain logic of any kind |
 | **DTO** | `*DTO.js` | Shape data coming in (validation) and going out (field filtering) | Persist data or enforce business rules |
-| **Interface** | `*Interface.js` | Re-export selected service functions for other modules to call | Expose internal Repository or Model |
 
+#### Shared Logic Layer (`@tictactoang/shared`)
+A critical piece of the architecture is the Shared logic package, containing "Ground Truth" rules:
+- `gameLogic.util.js`: Win-check algorithms and validity rules.
+- `aiLogic.util.js`: Heuristic engines for AI difficulties.
 ---
 
 ---
@@ -203,15 +207,15 @@ frontend/src/
 │                                      Exports: authAPI, gameAPI, profileAPI, arenaAPI, adminAPI
 │                                      Each group is an object of named route strings
 │
-├── util/
-│   └── httpClient.js              ← Axios instance — the REST HTTP Helper (SRS A.2.b)
+├── utils/
+│   └── http.util.js              ← Axios instance — the REST HTTP Helper (SRS A.2.b)
 │                                      Attaches Authorization: Bearer <token> to every request
 │                                      Returns { data, status, headers } to the caller
 │                                      Handles 401 responses globally (redirect to login)
 │
 ├── core/
 │   ├── AuthContext.jsx            ← JWT state management: user, token, login(), logout()
-│   └── RouteGuard.jsx             ← Role-based redirect guard (SRS A.2.c)
+│   
 │
 ├── components/                    ← Reusable UI components (SRS A.1.3)
 │   ├── Button/
@@ -219,6 +223,7 @@ frontend/src/
 │   ├── Avatar/
 │   ├── LoadingSpinner/
 │   └── CountrySelect/             ← Dropdown for country field — SRS 1.1.4 (no free text)
+│   └── RouteGuard.jsx             ← Role-based redirect guard (SRS A.2.c)
 │
 ├── features/
 │   ├── auth/
@@ -270,7 +275,7 @@ frontend/src/
 │       ├── AdminRoomListView.jsx  ← Room list + search + close action
 │       ├── useAdminHook.js
 │       ├── adminService.js        ← Network: GET /admin/users | PUT /admin/users/:id/status | DELETE /admin/rooms/:id
-│       └── admin.css              ← Responsive grid layout
+│       
 │
 └── App.jsx                        ← Router + RouteGuard wrapping all protected routes
 ```
@@ -283,7 +288,7 @@ frontend/src/
 | **Hook** | `use*Hook.js` | Own component state, handle user events, call service functions, manage loading flags | Render any JSX |
 | **Service** | `*Service.js` | Make HTTP calls via `httpClient`, return raw response data to the hook | Manage state or render UI |
 | **Model** | `*Model.js` | Define the shape of objects the feature works with | Contain logic or make network calls |
-| **Style** | `*.css` | Scoped styles for the feature | Anything outside styling |
+| **Store** | `.store.js` | Persist state across the app (Zustand) | Handle direct DOM events |
 
 #### Component–Hook Decoupling (SRS A.3.b)
 
@@ -604,152 +609,6 @@ Client Request
 
 ---
 
-## 6. Data Model (MongoDB Collections)
-
-### Collection: `users`
-
-| Field | Type | Constraints & Notes |
-|---|---|---|
-| `_id` | ObjectId | Auto-generated primary key |
-| `username` | String | Unique. Pattern: letters, numbers, `_`, `-` only (SRS 1.2.3) |
-| `email` | String | Unique, lowercase normalized. Validated format (SRS 1.2.2) |
-| `passwordHash` | String | bcrypt hash — **never in any DTO** |
-| `country` | String | Selected from dropdown (SRS 1.1.4) |
-| `role` | String | Enum: `PLAYER` \| `ADMIN` — embedded in JWS token |
-| `avatarUrl` | String | Path to resized 200×200 image (SRS 3.2.1) |
-| `walletBalance` | Number | Default 0. In `ProfileResponseDTO` only — **never in admin or public DTOs** |
-| `isPremium` | Boolean | Default false. Embedded in JWS token |
-| `premiumExpiry` | Date | Null when not premium |
-| `isActive` | Boolean | Default true. False = deactivated by admin (SRS 6.2.1) |
-| `loginAttempts` | Number | Default 0. Brute-force counter — **never in any DTO** |
-| `lockUntil` | Date | Null when not locked — **never in any DTO** |
-| `createdAt` | Date | Auto-set on creation |
-
-### Collection: `gameSessions`
-
-| Field | Type | Notes |
-|---|---|---|
-| `_id` | ObjectId | |
-| `gameType` | String | Enum: `SINGLE` \| `LOCAL` \| `ONLINE` |
-| `boardSize` | String | Enum: `10x10` \| `15x15` |
-| `player1Id` | ObjectId | Ref: users |
-| `player1Name` | String | Denormalized for display performance |
-| `player2Id` | ObjectId | Null for single-player games |
-| `player2Name` | String | AI bot name for single-player (SRS 4.2.2) |
-| `currentTurn` | String | Enum: `PLAYER1` \| `PLAYER2` |
-| `boardState` | Array (2D) | 2D array of cell values: null \| marker string |
-| `moves` | Array | **Critical for Replay (SRS 4.3.3)** — each entry: `{ seq, marker, x, y }` |
-| `status` | String | Enum: `ACTIVE` \| `WIN` \| `DRAW` \| `ABORTED` |
-| `winnerId` | ObjectId | Null until game ends with a winner |
-| `winLine` | Array | Five `{ x, y }` objects for highlighting the winning cells (SRS 4.1.4) |
-| `roomId` | ObjectId | Null for offline games. Ref: gameRooms |
-| `startTime` | Date | |
-| `endTime` | Date | Set on game conclusion |
-
-> **Design note on `moves[]`**: Every move is appended in sequence order. This array is what enables the Replay feature — `ReplaySessionDTO` iterates it and applies algebraic notation conversion. This array also provides the coordinate data for the algebraic notation axes displayed on the board during all game modes, as required by SRS 4.3.3.
-
-### Collection: `gameRooms`
-
-| Field | Type | Notes |
-|---|---|---|
-| `_id` | ObjectId | |
-| `roomCode` | String | Short human-readable code, e.g. `ROOM-4829` |
-| `player1Id` | ObjectId | Room creator |
-| `player1Name` | String | Denormalized |
-| `player2Id` | ObjectId | Null until a second player joins |
-| `player2Name` | String | Null until joined |
-| `status` | String | Enum: `WAITING` \| `ACTIVE` \| `CLOSED` |
-| `sessionId` | ObjectId | Ref: gameSessions — created when the game starts |
-| `createdAt` | Date | |
-| `endTime` | Date | Set when room is closed or game ends |
-
-### Collection: `subscriptions`
-
-| Field | Type | Notes |
-|---|---|---|
-| `_id` | ObjectId | |
-| `userId` | ObjectId | Ref: users |
-| `amount` | Number | 10 (USD) |
-| `method` | String | Enum: `WALLET` \| `STRIPE` |
-| `paidAt` | Date | |
-| `expiresAt` | Date | paidAt + 30 days |
-
----
-
-## 7. Sprint Plan
-
-> Story points use a Fibonacci-like scale: 1 · 2 · 3 · 5 · 7 · 8. **Never estimate in hours — the rubric explicitly requires feature/story points.**
-
-### Sprint 1 — Foundation & Architecture Setup (Weeks 1–2)
-
-| # | Task | SRS Ref | Story Pts | HD Detail |
-|---|---|---|---|---|
-| S1-1 | Git repo + GitHub Project Board setup | SCRUM | 2 | All branch types created. Lecturer added to board. |
-| S1-2 | SCRUM board columns + swim lanes | SCRUM | 3 | All 7 columns. Docs swim lane. Story points + assignee + deadline on every task. |
-| S1-3 | MongoDB schema design + ERD | All | 5 | All 4 collections with all fields documented. ERD committed to `/docs`. |
-| S1-4 | Backend skeleton: Modular Monolith + N-Tier | A.1.1–A.2.1 | 5 | All module folders with placeholder files. Verified: `npm install && node index.js` runs. |
-| S1-5 | Common: responseHelper + errorHandler | A.3.2 | 2 | Envelope pattern established. Global Express error handler wired. |
-| S1-6 | Middleware stubs: all 5 files | A.2.3 | 3 | Stubs wired into routes from day 1 — architecture visible in first commit. |
-| S1-7 | Module interface files stubs | A.3.1 | 2 | `authInterface.js`, `gameInterface.js` stubs. Enforces isolation before any feature is built. |
-| S1-8 | Frontend: Vite + feature-driven structure | A.1.3, A.3.a | 4 | All feature folders created. `apiConfig.js` + `httpClient.js` with Axios interceptor. |
-| S1-9 | `AuthContext.jsx` + `RouteGuard.jsx` | A.2.c | 3 | JWT stored in sessionStorage. Role-based redirect logic wired. |
-| S1-10 | Wireframes + responsive UI design | A.4.b | 4 | All screens. Responsive layouts for Profile + Admin. Committed to `/docs`. |
-| S1-11 | README scaffold | Submission | 2 | Exact start steps. Credential table placeholder. GitHub link. |
-
-### Sprint 2 — Authentication, Profile & Core Offline Game (Weeks 3–5)
-
-| # | Task | SRS Ref | Story Pts | HD Detail |
-|---|---|---|---|---|
-| S2-1 | Registration API + dual validation | 1.1.x, 1.2.x, 1.3.1 | 5 | All validation rules. Descriptive inline error per rule on both FE and BE. |
-| S2-2 | Login API + JWS + per-account lockout | 2.1.1, 2.2.1, 2.3.1 | 6 | JWS with `{ id, role, isPremium }`. DB-level account lockout after 5 fails / 60s. |
-| S2-3 | `loginRateLimiter` middleware (per-IP) | 2.2.1 | 2 | `express-rate-limit`: 5 req / 60s on `/auth/login` only. |
-| S2-4 | Register + Login UI with inline validation | 1.1.x, 1.1.4 | 4 | Country dropdown (not free text — SRS explicit). Error shown inline per field, not as alert. |
-| S2-5 | Profile view + edit API with DTOs | 3.1.1, A.3.2 | 3 | `ProfileResponseDTO` excludes `passwordHash`, `loginAttempts`, `lockUntil`. |
-| S2-6 | Avatar upload + auto-resize | 3.2.1 | 4 | multer for upload, sharp to resize to 200×200. URL stored in DB. |
-| S2-7 | Game session history API (search + filter + sort) | 3.1.2, 3.2.2, 3.3.1 | 5 | Search by session# or Player2 name (case-insensitive pattern match). Filter by date range, result, game type. Sort asc/desc. All in backend. |
-| S2-8 | Profile UI (responsive) | 3.x, A.4.b | 4 | Avatar, stats, history table with search + filter controls. Responsive layout. |
-| S2-9 | Offline 2-player board (10×10) | 4.1.x | 5 | Prompt Player2 name. 5-in-a-row win check (all directions). Highlight winning cells. Abort. Choose who goes first. |
-| S2-10 | Game session recording API with `moves[]` | 4.1.4 | 4 | Every move appended to `moves[]` in sequence order. |
-| S2-11 | Easy AI | 4.2.3 | 3 | Pick a random empty cell **adjacent to the player's last move** — not any random empty cell. The SRS is specific about this. |
-| S2-12 | Medium AI | 4.2.4 | 5 | Block: any 5-mark line, any open-ended 4-mark line, any fork formation (two crossing open-ended 3-mark lines). Pattern scanning in `aiEngine.js`. |
-| S2-13 | Board customization UI | 4.2.1 | 4 | 3 board styles, 10×10/15×15 toggle, 6 marker choices. Display avatar + marker during game. |
-| S2-14 | Algebraic notation on board axes | 4.3.3 | 3 | Column letters A–O, row numbers 1–15 on all board sizes in **all game modes**. |
-
-### Sprint 3 — Online Play, Admin, Premium & Ultimo Features (Weeks 6–8)
-
-| # | Task | SRS Ref | Story Pts | HD Detail |
-|---|---|---|---|---|
-| S3-1 | Socket.IO server + real-time game sync | 4.3.1 | 8 | Events: `createRoom`, `joinRoom`, `makeMove`, `gameOver`, `playerLeft`. Sync `boardState` on both clients. Emit `playerJoined` to P1 when P2 joins. |
-| S3-2 | Arena view (live room list) | 4.3.1 | 5 | Socket.IO listener for live room list. Room code, players, join button. New room added to arena instantly without page refresh. |
-| S3-3 | Real-time in-game chat | 4.3.2 | 3 | Chat sidebar during online game. Socket message events with timestamps. |
-| S3-4 | Hard AI | 4.2.5 | 7 | All Medium defenses + offensive heuristic: complete own 5-mark line when opportunity exists. Prioritize attack over defense when a winning move is available. |
-| S3-5 | Replay system (Premium) | 4.3.3 | 7 | Reads `moves[]` from DB via `ReplaySessionDTO`. Replay UI: Pause / Resume / Forward / Backward controls. Algebraic notation display. Linked from Profile history page. |
-| S3-6 | Win announcement animation | 4.2.6 | 3 | CSS animation: color sweep along the 5-mark line + winner banner with motion. Works in all game modes. |
-| S3-7 | `premiumMiddleware` wired on replay route | 4.3.3, A.2.3 | 2 | Full chain: `authMiddleware` → `roleMiddleware(PLAYER)` → `premiumMiddleware` → controller. |
-| S3-8 | Admin user management (responsive) | 6.1.1, 6.2.1, A.4.b | 5 | Table: Username, Email, Premium Status, Account Status. Deactivate/reactivate toggle. Deactivated users cannot login. Responsive layout. |
-| S3-9 | Admin room management | 6.3.x | 4 | List rooms: code, P1, P2, start time, end time. Search by room code or player name. Close active room → emit socket event to disconnect both players. |
-| S3-10 | Premium wallet + subscription | 5.1.1, 5.1.2 | 5 | Deposit → wallet. Subscribe → deduct 10 USD → record in `subscriptions` → trigger nodemailer email. |
-| S3-11 | Module interface audit (A.3.1) | A.3.1 | 4 | Review all cross-module calls. Confirm no module imports another's Service directly. All external calls via `*Interface.js`. |
-| S3-12 | DTO audit (A.3.2) | A.3.2 | 3 | Trace every controller endpoint. Every response goes through a DTO. No raw Mongoose documents in `res.json()`. |
-| S3-13 | Frontend route guard audit | A.2.c | 3 | Every page wrapped in `RouteGuard`. Test: PLAYER → `/admin` redirects. Test: logout → protected page redirects to login. |
-
-### Sprint 4 — Polish, Testing, Report & Deployment (Weeks 9–10)
-
-| # | Task | SRS Ref | Story Pts | HD Detail |
-|---|---|---|---|---|
-| S4-1 | Cloud deployment — Render | D.2.1 | 4 | Backend: Render Web Service (`node index.js`). Frontend: Render Static Site. All `.env` vars set in Render dashboard. |
-| S4-2 | MongoDB Atlas network config | Submission | 2 | Whitelist `0.0.0.0/0`. Tested from external Wi-Fi + different laptop before submission. |
-| S4-3 | Gold Dataset seeding | Interview | 3 | Admin, Player A (Premium + avatar + 5+ sessions with `moves[]`), Player B (Standard + avatar). Credentials in README. |
-| S4-4 | Cross-team testing | QA | 5 | Each member tests features they did not build. Bugs logged as GitHub Issues. All P1-critical bugs fixed before submission. |
-| S4-5 | Report — architecture section | Report | 5 | Container diagram, component diagrams (annotated folder trees), ERD, 3 sequence diagrams. |
-| S4-6 | Report — all other sections | Report | 8 | Feature checklist (all SRS IDs), API route table, dev process, GitHub screenshots, evaluation, conclusion. |
-| S4-7 | Report — three required sequence diagrams | Report | 5 | 1) Login + JWS + brute-force middleware chain. 2) Online game move + Socket.IO sync. 3) Premium subscribe + email. |
-| S4-8 | Demo rehearsal | Interview | 3 | Each member explains their feature and the overall architecture. See Section 10 for questions. |
-| S4-9 | README finalization | Submission | 2 | GitHub link, login credentials, exact start steps, contribution table with story-point breakdown. |
-| S4-10 | Zip + Canvas submission | Submission | 1 | `group_<N>_assignment_3.zip`. No `node_modules`. PDF report + source + sample data. |
-
----
-
 ## 8. Gap Analysis: Original Tasks vs SRS
 
 These gaps were identified between the team's original sprint plan and the SRS + rubric requirements. Each one risks losing marks if left unaddressed.
@@ -759,7 +618,6 @@ These gaps were identified between the team's original sprint plan and the SRS +
 | **AI Easy** | "random empty cell" | 4.2.3: Cell must be adjacent to the player's **last move specifically** — not any random empty cell | Feature points deducted |
 | **AI Medium** | "block opponent" | 4.2.4: Block 5-mark line, open-ended 4-mark line, **and fork formations** (two crossing open-ended 3-mark lines) | Feature points deducted |
 | **AI Hard** | "create winning path" | 4.2.5: All Medium defenses **+ actively complete own 5-mark line** when opportunity exists | Feature points deducted |
-| **Brute-Force Protection** | Missing | 2.2.1: Lock after 5 fails within 60 seconds — at both IP and account level | HD impossible — explicit security requirement |
 | **Dual Validation** | "validate cả 2 phía" | 1.3.1: Every error must describe the cause and give an example of valid input — shown inline per field | HD score gap |
 | **Repository Layer** | Missing | A.1.2: Dedicated Repository layer where all queries are defined and executed — separate from Service | Architecture score drops |
 | **Module Interfaces** | Missing | A.3.1: Modules expose services via interface files — no direct cross-module Service imports | Ultimo tier not achieved |
@@ -771,7 +629,6 @@ These gaps were identified between the team's original sprint plan and the SRS +
 | **Profile Search** | Missing | 3.2.2: Search by session number or Player2 name — **case-insensitive pattern match** | Profile feature incomplete |
 | **Win Animation** | Missing | 4.2.6: Animation with **both motion and color effect** on win announcement | Feature points lost |
 | **Responsive Admin** | Missing | A.4.b: All Admin UIs must support responsive design | Architecture score impact |
-| **Email on Payment** | Missing | 5.1.2: Email notification sent when premium payment is successfully processed | Simplex-tier feature missing |
 | **Gold Dataset with moves[]** | "nạp sẵn data" | Interview requirement: Player A must have complete `moves[]` arrays for Replay demo | Demo will fail live |
 | **SCRUM Story Points** | Not mentioned | Rubric: Tasks estimated in **feature/story points**, not hours. Every task needs assignee + deadline. | Team collaboration score penalty |
 
@@ -824,98 +681,6 @@ All commits follow the format `type(scope): short description` to produce a legi
 | 5 | Medium | Feature with multiple steps or cross-layer integration |
 | 7 | Large | Complex algorithm (AI Medium/Hard) or multi-component feature (Replay) |
 | 8 | Extra large | System-level change (architecture skeleton, deployment, full DTO audit) |
-
----
-
-## 10. Interview Preparation Guide
-
-Every member must be able to answer questions about the **entire system**, not just the features they personally built.
-
-### Architecture Questions
-
-- What is the difference between N-Tier and Modular Monolith? Why does this project combine both?
-- What is a Repository Layer? What is its contract with the Service layer above it? Why is it kept separate?
-- What is a DTO? Name a field that must be excluded from an admin response, and explain exactly what attack becomes possible if it were exposed.
-- Why can't Module A import Module B's Service directly in Ultimo architecture? What pattern is used instead, and what is it called?
-- What is the difference between RBAC and ABAC? Give a specific example of each from this project.
-- What does `authMiddleware` do step-by-step? How does it differ from `roleMiddleware`?
-- What does `ownershipMiddleware` protect against? Describe the exact horizontal privilege escalation attack it prevents.
-- Why is `isPremium` embedded in the JWS token instead of being fetched from the database on each request? What is the trade-off?
-- What is the Chain of Responsibility pattern? Where does it appear in the middleware chain?
-- What is the Envelope Pattern? Why does the frontend benefit from a consistent response shape across all endpoints?
-- What is the Facade pattern? Where is it applied in the backend module structure?
-- What is the Dependency Inversion Principle? How does Component–Hook decoupling apply it?
-
-### Feature Questions
-
-- Walk through exactly what happens when a player clicks a cell during an online game — from click to both screens updating. Name every component, hook, service, socket event, and middleware involved.
-- Describe the Medium AI's fork detection algorithm in plain language. What is a fork formation?
-- Explain the two-level brute-force protection. What happens at the IP level? What happens at the account level? Why do both levels need to exist together?
-- How does the Replay feature work end-to-end? What is algebraic notation and why is it required on the board in all game modes, not just in replay?
-- Describe the premium subscription flow from wallet deposit through to the user's premium status being reflected in the application.
-- When an admin closes an active game room, what exactly happens on the two players' screens?
-
-### Design & Quality Questions
-
-- Why does this project use bcrypt instead of AES encryption for passwords? What is the functional difference between hashing and encryption?
-- What is the difference between JWS and JWT? (JWS is a signed JWT — the SRS uses the term JWS to emphasize the token is signed for integrity, not encrypted for confidentiality.)
-- How does `RouteGuard` on the frontend prevent a PLAYER from accessing `/admin`? Could a malicious user bypass it on the frontend? Does it matter?
-- Why does every controller use `sendSuccess` / `sendError` instead of writing the response directly?
-- What is the Single Responsibility Principle and where does it appear in the middleware chain design?
-
----
-
-## 11. Report Writing Guide (25-Page Allocation)
-
-| Section | Pages | Must Include |
-|---|---|---|
-| Cover Page | 1 | Project name, group number, member names, date. **Not counted in the 25 pages.** |
-| Table of Contents | 1 | Clickable hyperlinks to all sections. **Not counted in the 25 pages.** |
-| 1. Introduction | 1 | Platform overview, user types (Player / Admin), problem statement, scope. |
-| 2. Project Description | 2 | Features organized by SRS level (Simplex / Medium / Ultimo). Use-case list. Design constraints. Lessons learned. |
-| 3.1 Architecture Overview | 4 | Container diagram (FE ↔ BE ↔ DB ↔ External services). Component diagrams (annotated folder trees for FE and BE). ERD. Three sequence diagrams (see below). |
-| 3.2 Frontend & Backend Implementation | 4 | API route table (Method, Path, Auth required, Request shape, Response DTO shape, excluded fields). Technologies and packages used with justification. |
-| 3.3 UI/UX Design | 2 | Screenshots of key screens. Responsive design evidence (Profile + Admin on mobile). Board customization options. |
-| 3.4 Tools & Package Selection | 1 | Justify each npm package: bcrypt, sharp, multer, nodemailer, socket.io, express-rate-limit, jsonwebtoken. |
-| 3.5 Development Process | 2 | Sprint summaries. GitHub board screenshots. Commit history graph per member. Sprint Review notes from Weeks 2, 6, 9. |
-| 3.6 Feature Checklist | 2 | Table: SRS Feature ID \| Description \| Level \| Implemented (✓/✗). All IDs from the SRS covered. |
-| 3.7 Known Issues or Limitations | 1 | Honest list of bugs or limitations. Demonstrates maturity and self-awareness. |
-| 4. Evaluation | 2 | Cross-testing approach (who tested what). Bug tracking via GitHub Issues. Performance observations. |
-| 5. Conclusion | 1 | Strengths, what would be improved with more time, design decisions you would reconsider. |
-| 6. References + AI Acknowledgement | 1 | **Required** if AI tools were used during design, ideation, or development. All external sources cited. |
-| GitHub Contribution Proof | 1 | Screenshot of commit frequency graph per member. Contribution table matching README. |
-
-**Three required sequence diagrams** (choose the three most complex flows for section 3.1):
-1. Login with JWS generation + brute-force check — show the middleware chain, the two-level lockout, and the token signing
-2. Online game move with Socket.IO sync — show the full flow from click through to both clients' boards updating
-3. Premium subscription + email notification — show wallet deduction, subscription record creation, nodemailer invocation, and DB flag update
-
----
-
-## 12. Final Submission Checklist
-
-| # | Item | Owner | ✓ |
-|---|---|---|---|
-| 1 | `index.js` is the entry point — app starts with `node index.js` | Tech Lead | ☐ |
-| 2 | `npm install && node index.js` tested clean on a different machine and external Wi-Fi | QA | ☐ |
-| 3 | MongoDB Atlas: `0.0.0.0/0` network access whitelisted | DevOps | ☐ |
-| 4 | PDF report included in zip (not `.docx`) | PM | ☐ |
-| 5 | README: GitHub link, login credentials, exact start steps, contribution table | PM | ☐ |
-| 6 | `node_modules` folder **NOT** included in zip | Tech Lead | ☐ |
-| 7 | Zip named `group_<N>_assignment_3.zip` | PM | ☐ |
-| 8 | Gold Dataset seeded: Admin, Player A (Premium), Player B (Standard) | Backend | ☐ |
-| 9 | Player A has 5+ game sessions with full `moves[]` arrays populated for Replay demo | Backend | ☐ |
-| 10 | Player A and Player B have avatar images uploaded | Backend | ☐ |
-| 11 | GitHub repository set to **PUBLIC** no more than 24 hours before deadline | Tech Lead | ☐ |
-| 12 | GitHub commit history shows all members contributing across all four sprints | All | ☐ |
-| 13 | GitHub Project Board: every task has assignee + deadline + story points | PM | ☐ |
-| 14 | Lecturer added to GitHub Project Board | PM | ☐ |
-| 15 | Every PR has at least one reviewer who approved before merge to `dev` | All | ☐ |
-| 16 | All Admin UIs tested for responsiveness at mobile viewport width | QA | ☐ |
-| 17 | Replay tested end-to-end: Premium user → open session from history → all four controls work | QA | ☐ |
-| 18 | Brute-force lockout tested: 5 failed logins → account locked for 60 seconds | QA | ☐ |
-| 19 | DTO audit confirmed: `passwordHash`, `walletBalance`, `loginAttempts` absent from every API response | Tech Lead | ☐ |
-| 20 | Contribution scores agreed by all members, total equals 5 × number of contributing members | PM | ☐ |
 
 ---
 
