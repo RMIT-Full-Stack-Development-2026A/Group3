@@ -51,9 +51,6 @@ const BottomDock = () => {
         <span className="material-symbols-outlined" style={{ fontVariationSettings: isActive('/profile') ? "'FILL' 1" : "''" }}>person</span>
       </Link>
 
-      <button className="p-3 text-on-surface/70 hover:text-primary transition-colors">
-        <span className="material-symbols-outlined">notifications</span>
-      </button>
     </nav>
   );
 };

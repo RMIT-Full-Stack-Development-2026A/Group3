@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import walletService from './walletService';
+import { useAuthStore } from '../../../app/store/authStore';
 
 export function useWallet() {
   const [walletData, setWalletData] = useState(null);
@@ -60,6 +61,13 @@ export function useWallet() {
         isPremium: data.isPremium,
         activeSubscription: data.subscription,
       } : prev);
+      
+      // Update JWT token
+      if (data.token) {
+        const currentUser = useAuthStore.getState().user;
+        useAuthStore.getState().actions.setAuth(currentUser, data.token);
+      }
+      
       setSuccessMessage(`Premium ${plan} plan activated! Check your email for confirmation.`);
       return data;
     } catch (err) {

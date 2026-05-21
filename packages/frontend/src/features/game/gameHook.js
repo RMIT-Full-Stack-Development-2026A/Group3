@@ -21,6 +21,7 @@ export function useGame(sessionId) {
   
   // Local game state history
   const [moves, setMoves] = useState([]);  
+  const [isAILocking, setIsAILocking] = useState(false);
 
   const isNewSession = sessionId === 'new' && location.state?.config;
 
@@ -43,12 +44,12 @@ export function useGame(sessionId) {
       const size = config.boardSize || 10;
       
       let initialBoard = Array(size).fill(null).map(() => Array(size).fill(null));
-      let currentTurn = config.currentTurn || 'PLAYER1';
+      let currentTurn = config.currentTurn;
       let initialMoves = [];
       
       // If AI mode and AI moves first
       if (config.gameType === 'SINGLE' && config.moveFirst === 'bot') {
-        const difficulty = config.difficulty || 'MEDIUM';
+        const difficulty = config.difficulty;
         const bestMove = getBestMove(initialBoard, difficulty, config.players.p2.marker, config.players.p1.marker);
         initialBoard[bestMove.row][bestMove.col] = config.players.p2.marker;
         initialMoves.push({
@@ -153,6 +154,7 @@ export function useGame(sessionId) {
   }, [sessionId, session?.gameType, resolvedRoomCode, fetchSession]);
 
   const makeMove = useCallback(async (row, col) => {
+    if (isAILocking) return;
     if (!session || session.status !== 'ACTIVE') return;
     
     // Handle Local or AI Move locally
@@ -166,15 +168,18 @@ export function useGame(sessionId) {
 
       // If it's SINGLE mode, and the game didn't just end, process AI move immediately
       if (session.gameType === 'SINGLE' && !finalJustEnded) {
-        const difficulty = finalSession.difficulty || 'MEDIUM';
-        const bestMove = getBestMove(finalSession.board, difficulty, finalSession.p2.marker, finalSession.p1.marker);
-        
-        const aiResult = processLocalMove(finalSession, finalMoves, bestMove.row, bestMove.col);
-        if (aiResult) {
-          finalSession = aiResult.updatedSession;
-          finalMoves = aiResult.updatedMoves;
-          finalJustEnded = aiResult.justEnded;
-        }
+        setIsAILocking(true);
+        setTimeout(() => {
+          const difficulty = finalSession.difficulty;
+          const bestMove = getBestMove(finalSession.board, difficulty, finalSession.p2.marker, finalSession.p1.marker);
+          
+          const aiResult = processLocalMove(finalSession, finalMoves, bestMove.row, bestMove.col);
+          if (aiResult) {
+            setSession(aiResult.updatedSession);
+            setMoves(aiResult.updatedMoves);
+          }
+          setIsAILocking(false);
+        }, 1000);
       }
       
       setMoves(finalMoves);
@@ -226,7 +231,7 @@ export function useGame(sessionId) {
         setSession(gameModel.formatSession(res.data));
       } catch (err) {
         console.error('Failed to make online move:', err);
-        setError(err.message || 'Failed to make move');
+        setError(err.message);
       }
     }
   }, [session, sessionId, user, resolvedRoomCode]);
@@ -260,5 +265,5 @@ export function useGame(sessionId) {
     });
   }, [resolvedRoomCode, user]);
 
-  return { session, loading, error, roomNotice, makeMove, refresh: reset, chatMessages, sendMessage };
+  return { session, loading, error, roomNotice, makeMove, refresh: reset, chatMessages, sendMessage, moves };
 }
