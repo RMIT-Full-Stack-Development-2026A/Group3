@@ -13,6 +13,7 @@ export function useGame(sessionId) {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [roomNotice, setRoomNotice] = useState(null);
   
   // Chat state for online games
   const [chatMessages, setChatMessages] = useState([]);
@@ -28,6 +29,7 @@ export function useGame(sessionId) {
     try {
       const data = await gameService.getSession(sessionId);
       setSession(gameModel.formatSession(data.data));
+      setError(null);
     } catch (err) {
       setError(err.message || 'Failed to fetch game session');
     } finally {
@@ -106,19 +108,49 @@ export function useGame(sessionId) {
       setChatMessages(prev => [...prev, messageObj]);
     };
 
+    const handleRoomAborted = (payload) => {
+      const incomingSessionId = payload?.sessionId?.toString?.() || payload?.sessionId;
+      if (incomingSessionId && incomingSessionId !== sessionId) return;
+      setRoomNotice('A player left the match. This room has been aborted.');
+      setError(null);
+      setSession((current) => current ? {
+        ...current,
+        status: 'ABORTED',
+        matchOutcome: 'CANCELLED'
+      } : current);
+      fetchSession();
+    };
+
+    const handleForceClosed = (payload) => {
+      const incomingSessionId = payload?.sessionId?.toString?.() || payload?.sessionId;
+      if (incomingSessionId && incomingSessionId !== sessionId) return;
+      setRoomNotice(payload?.message || 'This game room has been Force Closed by the admin.');
+      setError(null);
+      setSession((current) => current ? {
+        ...current,
+        status: 'ABORTED',
+        matchOutcome: 'CANCELLED'
+      } : current);
+      fetchSession();
+    };
+
     socket.on('game:move', handleGameMove);
     socket.on('chat:message', handleChatMessage);
+    socket.on('arena:room-aborted', handleRoomAborted);
+    socket.on('arena:force-closed', handleForceClosed);
 
     return () => {
       socket.off('game:move', handleGameMove);
       socket.off('chat:message', handleChatMessage);
+      socket.off('arena:room-aborted', handleRoomAborted);
+      socket.off('arena:force-closed', handleForceClosed);
       
       // Leave room when component unmounts or session changes
       if (session?.gameType === 'ONLINE' && resolvedRoomCode) {
         socket.emit('leave-room', resolvedRoomCode);
       }
     };
-  }, [sessionId, session?.gameType, resolvedRoomCode]);
+  }, [sessionId, session?.gameType, resolvedRoomCode, fetchSession]);
 
   const makeMove = useCallback(async (row, col) => {
     if (!session || session.status !== 'ACTIVE') return;
@@ -203,6 +235,7 @@ export function useGame(sessionId) {
     setChatMessages([]);
     setMoves([]);
     setError(null);
+    setRoomNotice(null);
     if (sessionId && sessionId !== 'new') {
       fetchSession();
     }
@@ -225,5 +258,5 @@ export function useGame(sessionId) {
     });
   }, [resolvedRoomCode]);
 
-  return { session, loading, error, makeMove, refresh: reset, chatMessages, sendMessage };
+  return { session, loading, error, roomNotice, makeMove, refresh: reset, chatMessages, sendMessage };
 }

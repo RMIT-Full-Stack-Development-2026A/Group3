@@ -8,11 +8,17 @@ import { getAvatarUrl } from '../../shared/utils/avatarUtil';
 import VietnamBoardTheme from '../../assets/images/boardThemes/Vietnam_theme.png';
 import SaigonBoardTheme from '../../assets/images/boardThemes/Saigon_skyline_theme.png';
 
+const getAIName = (difficulty = 'MEDIUM') => ({
+  EASY: 'Havoc',
+  MEDIUM: 'Berserker',
+  HARD: 'Mayhem'
+}[difficulty] || 'Berserker');
+
 const GameBoardView = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { session, loading, error, makeMove, refresh, chatMessages, sendMessage } = useGame(sessionId);
+  const { session, loading, error, roomNotice, makeMove, refresh, chatMessages, sendMessage } = useGame(sessionId);
 
   if (loading) return (
     <div className="min-h-screen bg-surface flex flex-col items-center justify-center text-white gap-4">
@@ -76,13 +82,15 @@ const GameBoardView = () => {
   };
 
   const getMarkerSymbol = (marker) => {
-    if (marker === 'CROSS') return 'close';
-    if (marker === 'CIRCLE') return 'circle';
-    if (marker === 'TRIANGLE') return 'change_history';
-    if (marker === 'SQUARE') return 'square';
-    if (marker === 'DIAMOND') return 'diamond';
-    if (marker === 'STAR') return 'grade';
-    return marker;
+    switch (marker) {
+      case 'CROSS': return 'close';
+      case 'CIRCLE': return 'circle';
+      case 'TRIANGLE': return 'change_history';
+      case 'SQUARE': return 'square';
+      case 'DIAMOND': return 'diamond';
+      case 'STAR': return 'grade';
+      default: return marker;
+    }
   };
 
   const isVN = session?.boardTheme === 'VIETNAM';
@@ -200,7 +208,7 @@ const GameBoardView = () => {
                       {session?.status === 'WAITING'
                         ? 'Waiting for opponent'
                         : (session.gameType === 'SINGLE'
-                          ? (session.currentTurn === 'PLAYER1' ? 'Your Turn' : "AI's Turn")
+                          ? (session.currentTurn === 'PLAYER1' ? 'Your Turn' : `${getAIName(session.difficulty)}'s Turn`)
                           : (session.currentTurn === 'PLAYER1' ? `${session?.p1.name}'s Turn` : `${session?.p2.name}'s Turn`))}
                     </p>
                     <p className={`text-2xl font-headline font-black tracking-tight ${isVN ? 'text-vn-tertiary' : isSG ? 'text-sg-cyan neon-text-cyan' : 'text-primary'}`}>
@@ -213,13 +221,20 @@ const GameBoardView = () => {
                   <div className="text-center animate-bounce">
                     <p className={`text-[10px] uppercase font-black tracking-[0.2em] mb-1 ${isVN ? 'text-vn-tertiary/60' : isSG ? 'text-sg-cyan/60' : 'text-primary/60'}`}>Status</p>
                     <p className={`text-3xl font-headline font-black tracking-tight ${isVN ? 'text-vn-tertiary' : isSG ? 'text-sg-cyan neon-text-cyan' : 'text-primary'}`}>
-                      {session?.gameType === 'SINGLE'
+                      {session?.status === 'ABORTED'
+                        ? 'MATCH ABORTED'
+                        : session?.gameType === 'SINGLE'
                         ? (session?.matchOutcome === 'WIN' ? 'VICTORY!' : session?.matchOutcome === 'LOSS' ? 'DEFEAT' : 'DRAW')
                         : session?.gameType === "LOCAL" 
                         ? (session?.matchOutcome === 'WIN' ? 'P1 VICTORY' : session?.matchOutcome === 'LOSS' ? 'P2 VICTORIOUS' : 'DRAW')
                         : (session?.winnerId === session?.p1?.id ? `${session?.p1.name} WINS` : `${session?.p2.name} WINS`)
                       }
                     </p>
+                    {roomNotice && (
+                      <p className="mt-3 max-w-md text-sm font-semibold text-rose-300">
+                        {roomNotice}
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
@@ -285,7 +300,7 @@ const GameBoardView = () => {
                 </div>
                 <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full border border-primary/20">
                   <span className="text-xs font-bold text-primary uppercase tracking-widest">
-                    {session?.gameType === 'SINGLE' ? `Difficulty: ${session?.difficulty || 'MEDIUM'}` : session?.gameType === 'ONLINE' ? 'Online Match' : 'Local Match'}
+                    {session?.gameType === 'SINGLE' ? `Difficulty: ${getAIName(session?.difficulty)}` : session?.gameType === 'ONLINE' ? 'Online Match' : 'Local Match'}
                   </span>
                 </div>
               </div>
@@ -305,7 +320,7 @@ const GameBoardView = () => {
                   </div>
                   <div>
                     <h3 className={`font-bold text-lg ${isVN ? 'text-vn-error' : isSG ? 'text-sg-magenta neon-text-magenta' : 'text-on-surface'}`}>
-                      {session?.gameType === 'SINGLE' ? (session?.p2?.name || 'Aetheris') : (session?.p2?.name || 'Player 2')}
+                      {session?.gameType === 'SINGLE' ? getAIName(session?.difficulty) : (session?.p2?.name)}
                     </h3>
                     <p className={`text-xs uppercase tracking-widest ${isVN ? 'text-vn-error/60' : isSG ? 'text-sg-magenta/60' : 'text-on-surface/50'}`}>
                       Rating: {session?.gameType === 'SINGLE' ? '2310 Elo' : 'N/A'}

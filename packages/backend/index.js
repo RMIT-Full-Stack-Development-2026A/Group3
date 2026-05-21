@@ -83,6 +83,37 @@ const chatBuffer = {};
 // Track connected users per room for cleanup
 const roomConnections = {};
 
+const removeSocketFromRoom = (roomCode, socketId) => {
+    if (!roomConnections[roomCode]) return false;
+    roomConnections[roomCode] = roomConnections[roomCode].filter(id => id !== socketId);
+    return roomConnections[roomCode].length === 0;
+};
+
+const hasUserConnectionInRoom = (roomCode, userId) => {
+    if (!roomCode || !userId || !roomConnections[roomCode]) return false;
+    return roomConnections[roomCode].some((socketId) => {
+        const connectedSocket = io.sockets.sockets.get(socketId);
+        return connectedSocket?.user?.id?.toString() === userId.toString();
+    });
+};
+
+const cleanupEmptyRoomConnection = (roomCode, reason = '') => {
+    if (roomConnections[roomCode]?.length === 0) {
+        delete chatBuffer[roomCode];
+        delete roomConnections[roomCode];
+        console.log(`Chat buffer cleared for room: ${roomCode}${reason}`);
+    }
+};
+
+const abortRoomIfPlayerLeft = async (roomCode, userId) => {
+    if (!roomCode || !userId || hasUserConnectionInRoom(roomCode, userId)) return;
+    try {
+        await arenaService.abortRoomByCode(roomCode, userId);
+    } catch (err) {
+        console.error(`Failed to abort room ${roomCode} after player left:`, err);
+    }
+};
+
 io.on('connection', (socket) => {
     // Basic connection logging
     const uid = socket.user?.id || 'anonymous';
@@ -100,22 +131,16 @@ io.on('connection', (socket) => {
         roomConnections[roomCode].push(socket.id);
     });
 
-    socket.on('leave-room', (roomCode) => {
+    socket.on('leave-room', async (roomCode) => {
         if (!roomCode) return;
         const roomName = `room-${roomCode}`;
+        const leavingUserId = socket.user?.id;
         socket.leave(roomName);
 
         // Remove socket from room connections
-        if (roomConnections[roomCode]) {
-            roomConnections[roomCode] = roomConnections[roomCode].filter(id => id !== socket.id);
-
-            // If no more connections, cleanup chat buffer for this room
-            if (roomConnections[roomCode].length === 0) {
-                delete chatBuffer[roomCode];
-                delete roomConnections[roomCode];
-                console.log(`Chat buffer cleared for room: ${roomCode}`);
-            }
-        }
+        const isRoomEmpty = removeSocketFromRoom(roomCode, socket.id);
+        await abortRoomIfPlayerLeft(roomCode, leavingUserId);
+        if (isRoomEmpty) cleanupEmptyRoomConnection(roomCode);
     });
 
     socket.on('chat:message', (data) => {
@@ -151,17 +176,14 @@ io.on('connection', (socket) => {
         console.log(`Chat message in room ${roomCode} from ${socket.user.username}: ${trimmedMessage}`);
     });
 
-    socket.on('disconnect', () => {
+    socket.on('disconnect', async () => {
         console.log(`Socket disconnected: ${socket.id} user:${uid}`);
         
         // Clean up room connections on disconnect
         for (const roomCode in roomConnections) {
-            roomConnections[roomCode] = roomConnections[roomCode].filter(id => id !== socket.id);
-            if (roomConnections[roomCode].length === 0) {
-                delete chatBuffer[roomCode];
-                delete roomConnections[roomCode];
-                console.log(`Chat buffer cleared for room: ${roomCode} (user disconnect)`);
-            }
+            const isRoomEmpty = removeSocketFromRoom(roomCode, socket.id);
+            await abortRoomIfPlayerLeft(roomCode, socket.user?.id);
+            if (isRoomEmpty) cleanupEmptyRoomConnection(roomCode, ' (user disconnect)');
         }
     });
 });

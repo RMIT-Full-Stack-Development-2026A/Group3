@@ -42,6 +42,15 @@ const ArenaRepository = {
 
   async updateRoom(roomId, update) {
     return await GameRoom.findByIdAndUpdate(roomId, update, { new: true });
+  },
+
+  async abortPlayingRoomByCode(roomCode) {
+    const now = new Date();
+    return await GameRoom.findOneAndUpdate(
+      { roomCode, status: 'PLAYING' },
+      { $set: { status: 'ABORT', endTime: now } },
+      { new: true }
+    );
   }
 };
 

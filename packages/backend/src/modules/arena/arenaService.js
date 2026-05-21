@@ -116,6 +116,47 @@ const arenaService = {
 			console.error('Failed to activate online session:', err);
 			return updated;
 		}
+	},
+
+	async abortRoomByCode(roomCode, leavingUserId = null) {
+		const room = await ArenaRepository.findByCode(roomCode);
+		if (!room || room.status !== 'PLAYING') return null;
+
+		const player1Id = room.player1Id?.toString();
+		const player2Id = room.player2Id?.toString();
+		const leaverId = leavingUserId?.toString();
+		if (leaverId && leaverId !== player1Id && leaverId !== player2Id) return null;
+
+		const abortedRoom = await ArenaRepository.abortPlayingRoomByCode(roomCode);
+		if (!abortedRoom) return null;
+
+		let abortedSession = null;
+		if (abortedRoom.sessionId) {
+			abortedSession = await GameRepository.completeGame(abortedRoom.sessionId, {
+				status: 'ABORTED',
+				winnerId: null,
+				winLine: [],
+				endTime: abortedRoom.endTime || new Date()
+			});
+		}
+
+		if (io) {
+			const payload = {
+				roomCode: abortedRoom.roomCode,
+				roomId: abortedRoom._id?.toString(),
+				status: abortedRoom.status,
+				sessionId: abortedRoom.sessionId?.toString(),
+				leavingUserId: leaverId || null
+			};
+
+			io.to(`room-${abortedRoom.roomCode}`).emit('arena:room-aborted', {
+				...payload,
+				session: abortedSession
+			});
+			io.emit('arena:room-updated', payload);
+		}
+
+		return { room: abortedRoom, session: abortedSession };
 	}
 };
 

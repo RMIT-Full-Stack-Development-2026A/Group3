@@ -1,10 +1,18 @@
+const getAIName = (difficulty = 'MEDIUM') => ({
+  EASY: 'Havoc',
+  MEDIUM: 'Berserker',
+  HARD: 'Mayhem'
+}[difficulty] || 'Berserker');
+
 const replayModel = {
   formatReplay: (data) => {
     if (!data) return null;
+    const difficulty = data.difficulty || null;
 
     return {
       id: data.id || data._id,
       gameType: data.gameType,
+      difficulty,
       boardSize: data.boardSize || 10,
       boardTheme: data.boardTheme,
       status: data.status,
@@ -14,7 +22,9 @@ const replayModel = {
         player1Id: data.players?.player1Id || data.player1Id || null,
         player1Name: data.players?.player1Name || data.player1Name || 'Player 1',
         player2Id: data.players?.player2Id || data.player2Id || null,
-        player2Name: data.players?.player2Name || data.player2Name || 'Player 2'
+        player2Name: data.gameType === 'SINGLE'
+          ? (difficulty ? getAIName(difficulty) : data.players?.player2Name || data.player2Name || 'AI')
+          : data.players?.player2Name || data.player2Name || 'Player 2'
       },
       moves: Array.isArray(data.moves) ? data.moves : []
     };

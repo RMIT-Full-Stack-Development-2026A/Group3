@@ -5,6 +5,12 @@ import defaultBoardTheme from '../../../assets/images/boardThemes/default_theme.
 import SaigonBoardTheme from '../../../assets/images/boardThemes/Saigon_skyline_theme.png';
 import VietnamBoardTheme from '../../../assets/images/boardThemes/Vietnam_theme.png';
 
+const getAIName = (difficulty = 'MEDIUM') => ({
+  EASY: 'Havoc',
+  MEDIUM: 'Berserker',
+  HARD: 'Mayhem'
+}[difficulty] || 'Berserker');
+
 const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
   if (!isOpen) return null;
   const navigate = useNavigate();
@@ -90,7 +96,7 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
           boardSize: config.boardSize,
           players: {
             p1: { name: 'Player 1', marker: config.player1Marker },
-            p2: { name: mode === 'AI' ? 'AI' : 'Player 2', marker: config.player2Marker }
+            p2: { name: mode === 'AI' ? getAIName(config.difficulty) : 'Player 2', marker: config.player2Marker }
           },
           status: 'ACTIVE',
           boardTheme: boardTheme,
@@ -281,7 +287,7 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
                       : 'border-outline-variant/30 text-on-surface/60 hover:bg-surface-variant'
                     }`}
                   >
-                    <span className="text-sm font-bold font-headline capitalize">{level.toLowerCase()}</span>
+                    <span className="text-sm font-bold font-headline">{getAIName(level)}</span>
                   </button>
                 ))}
               </div>

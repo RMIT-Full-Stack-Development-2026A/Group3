@@ -1,3 +1,9 @@
+const getAIName = (difficulty = 'MEDIUM') => ({
+  EASY: 'Havoc',
+  MEDIUM: 'Berserker',
+  HARD: 'Mayhem'
+}[difficulty] || 'Berserker');
+
 const matchHistoryModel = {
   /**
    * Format history items from the backend DTO response.
@@ -11,7 +17,9 @@ const matchHistoryModel = {
       gameType: match.gameType || 'SINGLE',
       boardSize: match.boardSize || 10,
       status: match.status || 'COMPLETED',
-      opponent: match.opponentName || match.players?.[1]?.username || 'AI',
+      opponent: match.gameType === 'SINGLE' && match.difficulty
+        ? getAIName(match.difficulty)
+        : match.opponentName || match.players?.[1]?.username || 'AI',
       result: match.result || 'DRAW',
       difficulty: match.difficulty
     }));

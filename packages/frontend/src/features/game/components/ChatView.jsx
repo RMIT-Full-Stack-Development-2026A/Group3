@@ -46,9 +46,9 @@ const ChatPanel = ({ messages = [], onSendMessage, currentUser, opponentName = '
     }
   };
 
-  if (!isPlaying) {
-    return null;
-  }
+  // if (!isPlaying) {
+  //   return null;
+  // }
 
   return (
     <div className="xl:col-span-3 h-full">

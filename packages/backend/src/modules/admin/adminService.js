@@ -109,12 +109,15 @@ class AdminService {
     await room.save();
 
     // 2. Cập nhật GameSession tương ứng nếu có
+    let closedSession = null;
     if (room.sessionId) {
       const session = await GameSession.findById(room.sessionId);
       if (session && !['DRAW', 'ABORTED', 'COMPLETED'].includes(session.status)) {
         session.status = 'ABORTED';
         session.endTime = now;
-        await session.save();
+        closedSession = await session.save();
+      } else {
+        closedSession = session;
       }
     }
 
@@ -136,9 +139,13 @@ class AdminService {
       
       // Gửi sự kiện force-closed tới các client trong room
       io.to(roomChannelName).emit('arena:force-closed', {
-        message: reason || 'This room has been closed by the Admin.',
+        message: 'This game room has been Force Closed by the admin.',
+        reason: reason || '',
         roomId: room._id.toString(),
-        roomCode: room.roomCode
+        roomCode: room.roomCode,
+        sessionId: room.sessionId?.toString() || null,
+        status: room.status,
+        sessionStatus: closedSession?.status || 'ABORTED'
       });
 
       // Phát sự kiện cập nhật trạng thái phòng ra Lobby
