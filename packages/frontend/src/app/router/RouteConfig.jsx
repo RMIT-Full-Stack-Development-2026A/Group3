@@ -8,18 +8,21 @@ import AdminLayout from '../../shared/components/layout/AdminLayout';
 // Features
 import LoginView from '../../features/auth/LoginView';
 import RegisterView from '../../features/auth/RegisterView';
-import DashboardView from '../../features/dashboard/DashboardView';
+import DashboardView from '../../features/Dashboard/DashboardView';
 import GameBoardView from '../../features/game/GameBoardView';
 import MatchHistoryView from '../../features/matchHistory/MatchHistoryView';
 import ProfileView from '../../features/profile/ProfileView';
+import ArenaView from '../../features/Arena/ArenaView';
 import ReplayView from '../../features/replay/ReplayView';
 import AdminDashboardView from '../../features/admin/AdminDashboardView';
 import AdminUserManagementView from '../../features/admin/AdminUserManagementView';
+import AdminRoomManagementView from '../../features/admin/AdminRoomManagementView';
 
 // Shared
 import { RouteGuard } from '../../shared/components/RouteGuard';
 
 export const router = createBrowserRouter([
+  // PUBLIC ROUTES (no layout)
   { 
     path: '/login', 
     element: <LoginView /> 
@@ -28,6 +31,8 @@ export const router = createBrowserRouter([
     path: '/register', 
     element: <RegisterView /> 
   },
+
+  // AUTHENTICATED ROUTES (with MainLayout → Header + BottomDock)
   {
     path: '/',
     element: (
@@ -39,6 +44,10 @@ export const router = createBrowserRouter([
       { 
         path: 'dashboard', 
         element: <DashboardView /> 
+      },
+      { 
+        path: 'arena', 
+        element: <ArenaView /> 
       },
       { 
         path: 'match-history',
@@ -60,6 +69,10 @@ export const router = createBrowserRouter([
             element: <GameBoardView /> 
           },
           { 
+            path: 'online/:sessionId', 
+            element: <GameBoardView /> 
+          },
+          { 
             path: 'local/:sessionId', 
             element: <GameBoardView /> 
           }
@@ -72,7 +85,7 @@ export const router = createBrowserRouter([
     ]
   },
 
-  // ADMIN ROUTES
+  // ADMIN ROUTES (with AdminLayout)
   {
     path: '/admin',
     element: (
@@ -89,10 +102,17 @@ export const router = createBrowserRouter([
         path: 'users', 
         element: <AdminUserManagementView /> 
       },
+      {
+        path: 'rooms',
+        element: <AdminRoomManagementView />
+      },
     ]
   },
+
+  // CATCH-ALL
   { 
     path: '*', 
     element: <Navigate to="/dashboard" replace /> 
   }
 ]);
+

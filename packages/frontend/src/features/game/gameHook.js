@@ -4,6 +4,8 @@ import gameService from './gameService';
 import gameModel from './gameModel';
 import { useAuthStore } from '../../app/store/authStore';
 import { processLocalMove } from './localGameLogic';
+import { getSocket } from '../Arena/arenaHook';
+import { getBestMove } from '@tictactoang/shared/utils/aiLogicUtil';
 
 export function useGame(sessionId) {
   const location = useLocation();
@@ -11,17 +13,23 @@ export function useGame(sessionId) {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [roomNotice, setRoomNotice] = useState(null);
+  
+  // Chat state for online games
+  const [chatMessages, setChatMessages] = useState([]);
+  const resolvedRoomCode = location.state?.roomCode || session?.roomCode || null;
   
   // Local game state history
-  const [localMoves, setLocalMoves] = useState([]);
+  const [moves, setMoves] = useState([]);  
 
-  const isLocalNew = sessionId === 'new' && location.state?.config;
+  const isNewSession = sessionId === 'new' && location.state?.config;
 
   const fetchSession = useCallback(async () => {
     if (!sessionId || sessionId === 'new') return;
     try {
       const data = await gameService.getSession(sessionId);
       setSession(gameModel.formatSession(data.data));
+      setError(null);
     } catch (err) {
       setError(err.message || 'Failed to fetch game session');
     } finally {
@@ -30,94 +38,227 @@ export function useGame(sessionId) {
   }, [sessionId]);
 
   useEffect(() => {
-    if (isLocalNew && !session) {
+    if (isNewSession && !session) {
       const config = location.state.config;
       const size = config.boardSize || 10;
-      console.log("Initializing local session...");
+      
+      let initialBoard = Array(size).fill(null).map(() => Array(size).fill(null));
+      let currentTurn = config.currentTurn || 'PLAYER1';
+      let initialMoves = [];
+      
+      // If AI mode and AI moves first
+      if (config.gameType === 'SINGLE' && config.moveFirst === 'bot') {
+        const difficulty = config.difficulty || 'MEDIUM';
+        const bestMove = getBestMove(initialBoard, difficulty, config.players.p2.marker, config.players.p1.marker);
+        initialBoard[bestMove.row][bestMove.col] = config.players.p2.marker;
+        initialMoves.push({
+          x: bestMove.col,
+          y: bestMove.row,
+          marker: config.players.p2.marker,
+          pId: null, // AI
+          time: new Date()
+        });
+        currentTurn = 'PLAYER1';
+      }
+
       setSession({
         ...config,
-        id: 'local-session',
-        board: Array(size).fill(null).map(() => Array(size).fill(null)),
-        currentTurn: config.currentTurn || 'PLAYER1',
-        p1: { ...config.players.p1, id: user?.id || 'p1-local' },
+        id: config.gameType === 'SINGLE' ? 'ai-session' : 'local-session',
+        board: initialBoard,
+        currentTurn: currentTurn,
+        p1: { ...config.players.p1, id: user?.id, name: user?.username, avatar: user?.avatarUrl },
         p2: { ...config.players.p2, id: null },
         status: 'ACTIVE'
       });
+      setMoves(initialMoves);
       setLoading(false);
       return;
     }
 
-    // Not fetch if it's a local session
     if (sessionId === 'new') return;
 
     fetchSession();
-    
-    // Polling for AI move
-    let interval;
-    if (session && session.gameType === 'SINGLE' && session.status === 'ACTIVE' && session.currentTurn === 'PLAYER2') {
-      interval = setInterval(fetchSession, 2000);
-    }
-    
-    return () => clearInterval(interval);
-  }, [fetchSession, isLocalNew, session?.id, session?.status, session?.currentTurn, session?.gameType, sessionId]);
+  }, [fetchSession, isNewSession, session?.id, session?.status, session?.currentTurn, session?.gameType, sessionId]);
 
-  const makeMove = async (row, col) => {
+  useEffect(() => {
+    if (!sessionId) return;
+    const socket = getSocket();
+    if (!socket) return;
+
+    if (!socket.connected) {
+      const token = useAuthStore.getState().token;
+      socket.auth = { token };
+      socket.connect();
+    }
+
+    // For online games, join the room socket channel
+    if (session?.gameType === 'ONLINE' && resolvedRoomCode) {
+      socket.emit('join-room', resolvedRoomCode);
+    }
+
+    const handleGameMove = (payload) => {
+      if (!payload || !payload.session) return;
+      const incoming = payload.session;
+      if (incoming.sessionId !== sessionId) return;
+      setSession(gameModel.formatSession(incoming));
+    };
+
+    const handleChatMessage = (messageObj) => {
+      // Add incoming chat message to chat messages array
+      setChatMessages(prev => [...prev, messageObj]);
+    };
+
+    const handleRoomAborted = (payload) => {
+      const incomingSessionId = payload?.sessionId?.toString?.() || payload?.sessionId;
+      if (incomingSessionId && incomingSessionId !== sessionId) return;
+      setRoomNotice('A player left the match. This room has been aborted.');
+      setError(null);
+      setSession((current) => current ? {
+        ...current,
+        status: 'ABORTED',
+        matchOutcome: 'CANCELLED'
+      } : current);
+      fetchSession();
+    };
+
+    const handleForceClosed = (payload) => {
+      const incomingSessionId = payload?.sessionId?.toString?.() || payload?.sessionId;
+      if (incomingSessionId && incomingSessionId !== sessionId) return;
+      setRoomNotice(payload?.message || 'This game room has been Force Closed by the admin.');
+      setError(null);
+      setSession((current) => current ? {
+        ...current,
+        status: 'ABORTED',
+        matchOutcome: 'CANCELLED'
+      } : current);
+      fetchSession();
+    };
+
+    socket.on('game:move', handleGameMove);
+    socket.on('chat:message', handleChatMessage);
+    socket.on('arena:room-aborted', handleRoomAborted);
+    socket.on('arena:force-closed', handleForceClosed);
+
+    return () => {
+      socket.off('game:move', handleGameMove);
+      socket.off('chat:message', handleChatMessage);
+      socket.off('arena:room-aborted', handleRoomAborted);
+      socket.off('arena:force-closed', handleForceClosed);
+      
+      // Leave room when component unmounts or session changes
+      if (session?.gameType === 'ONLINE' && resolvedRoomCode) {
+        socket.emit('leave-room', resolvedRoomCode);
+      }
+    };
+  }, [sessionId, session?.gameType, resolvedRoomCode, fetchSession]);
+
+  const makeMove = useCallback(async (row, col) => {
     if (!session || session.status !== 'ACTIVE') return;
     
-    // Handle Local Move
-    if (session.gameType === 'LOCAL') {
-      const result = processLocalMove(session, localMoves, row, col);
-      if (!result) return;
+    // Handle Local or AI Move locally
+    if (session.gameType === 'LOCAL' || session.gameType === 'SINGLE') {
+      const playerResult = processLocalMove(session, moves, row, col);
+      if (!playerResult) return;
 
-      const { updatedSession, updatedMoves, justEnded } = result;
+      let finalSession = playerResult.updatedSession;
+      let finalMoves = playerResult.updatedMoves;
+      let finalJustEnded = playerResult.justEnded;
+
+      // If it's SINGLE mode, and the game didn't just end, process AI move immediately
+      if (session.gameType === 'SINGLE' && !finalJustEnded) {
+        const difficulty = finalSession.difficulty || 'MEDIUM';
+        const bestMove = getBestMove(finalSession.board, difficulty, finalSession.p2.marker, finalSession.p1.marker);
+        
+        const aiResult = processLocalMove(finalSession, finalMoves, bestMove.row, bestMove.col);
+        if (aiResult) {
+          finalSession = aiResult.updatedSession;
+          finalMoves = aiResult.updatedMoves;
+          finalJustEnded = aiResult.justEnded;
+        }
+      }
       
-      setLocalMoves(updatedMoves);
-      setSession(updatedSession);
+      setMoves(finalMoves);
+      setSession(finalSession);
 
       // Sync if game ended
-      if (justEnded) {
+      if (finalJustEnded) {
         try {
           await gameService.syncLocalMatch({
-            gameType: 'LOCAL',
-            boardSize: session.boardSize,
-            boardTheme: session.boardTheme,
-            p1Id: session.p1.id,
-            p1Name: session.p1.name,
-            p1Marker: session.p1.marker,
-            p2Name: session.p2.name,
-            p2Marker: session.p2.marker,
-            winnerId: updatedSession.winnerId,
-            winLine: updatedSession.winLine,
-            moves: updatedMoves,
-            status: updatedSession.status,
-            currentTurn: updatedSession.currentTurn,
-            boardState: updatedSession.board
+            gameType: finalSession.gameType,
+            boardSize: finalSession.boardSize,
+            boardTheme: finalSession.boardTheme,
+            p1Id: finalSession.p1.id,
+            p1Name: finalSession.p1.name,
+            p1Marker: finalSession.p1.marker,
+            p2Name: finalSession.p2.name,
+            p2Marker: finalSession.p2.marker,
+            winnerId: finalSession.winnerId,
+            winLine: finalSession.winLine,
+            moves: finalMoves,
+            status: finalSession.status,
+            currentTurn: finalSession.currentTurn,
+            boardState: finalSession.board
           });
         } catch (err) {
-          console.error('Failed to sync local match:', err);
+          console.error('Failed to sync match:', err);
         }
       }
       return;
     }
 
-    // Handle AI Move
-    try {
-      const currentMarker = session.currentTurn === 'PLAYER1' ? session.p1.marker : session.p2.marker;
-      const data = await gameService.makeMove(sessionId, { row, col, marker: currentMarker });
-      setSession(gameModel.formatSession(data.data));
-    } catch (err) {
-      setError(err.message || 'Failed to make move');
-    }
-  };
+    if (session.gameType === 'ONLINE') {
+      const isP1 = session.p1 && String(session.p1.id) === String(user?.id);
+      const isP2 = session.p2 && String(session.p2.id) === String(user?.id);
+      const isMyTurn = (session.currentTurn === 'PLAYER1' && isP1) || (session.currentTurn === 'PLAYER2' && isP2);
 
+      if (!isMyTurn) {
+        console.log("It's not your turn!");
+        return;
+      }
+      
+      const currentMarker = session.currentTurn === 'PLAYER1' ? session.p1.marker : session.p2.marker;
+      try {
+        const res = await gameService.makeMove(sessionId, {
+          row,
+          col,
+          marker: currentMarker
+        });
+        setSession(gameModel.formatSession(res.data));
+      } catch (err) {
+        console.error('Failed to make online move:', err);
+        setError(err.message || 'Failed to make move');
+      }
+    }
+  }, [session, sessionId, user, resolvedRoomCode]);
   const reset = useCallback(() => {
     setSession(null);
-    setLocalMoves([]);
+    setChatMessages([]);
+    setMoves([]);
     setError(null);
+    setRoomNotice(null);
     if (sessionId && sessionId !== 'new') {
       fetchSession();
     }
   }, [sessionId, fetchSession]);
 
-  return { session, loading, error, makeMove, refresh: reset };
+  const sendMessage = useCallback((message) => {
+    if (!message || !message.trim()) return;
+    
+    const socket = getSocket();
+    if (!socket) return;
+
+    if (!resolvedRoomCode) {
+      console.log(`Room #${resolvedRoomCode} not available`);
+      return;
+    }
+
+    socket.emit('chat:message', { 
+      roomCode: resolvedRoomCode,
+      message: message.trim(),
+      senderId: user?.id || user?._id,
+      senderName: user?.username || 'Player'
+    });
+  }, [resolvedRoomCode, user]);
+
+  return { session, loading, error, roomNotice, makeMove, refresh: reset, chatMessages, sendMessage };
 }

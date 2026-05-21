@@ -1,72 +1,7 @@
 import GameRepository from './gameRepository.js';
-import AuthService from '../auth/authService.js';
-import { getBestMove } from '@tictactoang/shared/utils/aiLogicUtil.js';
-import { checkWin, isValidMove, isBoardFull } from '@tictactoang/shared/utils/gameLogicUtil.js';
+import { checkWin, isValidMove, isBoardFull } from '@tictactoang/shared';
 
 class GameService {
-  async startGame(userId, gameData) {
-    const activeSession = await GameRepository.findActiveSessionByPlayer(userId);
-    if (activeSession) {
-      await GameRepository.completeGame(activeSession._id, {
-        status: 'ABORTED',
-        winnerId: null
-      });
-    }
-
-    const p1 = await AuthService.getUserById(userId);
-
-    const boardSizeRaw = parseInt(gameData.boardSize) || 10;
-    const size = Math.max(3, Math.min(boardSizeRaw, 20));
-
-    const difficultyRaw = (gameData.difficulty || 'MEDIUM').toUpperCase();
-    const difficulty = ['EASY', 'MEDIUM', 'HARD'].includes(difficultyRaw) ? difficultyRaw : 'MEDIUM';
-
-    const player1Marker = gameData.player1Marker || 'CROSS';
-    const player2Marker = gameData.player2Marker || 'CIRCLE';
-    const moveFirst = (gameData.moveFirst || 'player').toLowerCase();
-
-    const initialBoard = Array(size).fill(null).map(() => Array(size).fill(null));
-    const initialMoves = [];
-    let currentTurn = 'PLAYER1';
-
-    // AI moves first
-    if (moveFirst === 'bot') {
-      const bestMove = getBestMove(initialBoard, difficulty, player2Marker, player1Marker);
-      initialBoard[bestMove.row][bestMove.col] = player2Marker;
-
-      initialMoves.push({
-        step: 1,
-        pId: null, // AI move
-        x: bestMove.col,
-        y: bestMove.row,
-        marker: player2Marker,
-        time: new Date()
-      });
-
-      currentTurn = 'PLAYER1';
-    }
-
-    const newSession = await GameRepository.createSession({
-      gameType: gameData.gameType || 'SINGLE',
-      boardSize: size,
-      boardTheme: gameData.boardTheme || 'DEFAULT',
-      difficulty: difficulty,
-      player1Id: userId,
-      player1Name: p1.username,
-      player1Avatar: p1.avatarUrl || '',
-      player1Marker: player1Marker,
-      player2Id: null,
-      player2Name: 'AI',
-      player2Avatar: '',
-      player2Marker: player2Marker,
-      boardState: initialBoard,
-      moves: initialMoves,
-      currentTurn: currentTurn,
-      status: 'ACTIVE'
-    });
-
-    return newSession;
-  }
 
   async makeMove(sessionId, userId, { x, y }) {
     const session = await GameRepository.findById(sessionId);
@@ -74,7 +9,15 @@ class GameService {
       throw new Error('Game not found or game has ended');
     }
 
-    const isP1 = session.player1Id._id.toString() === userId.toString();
+    const p1Id = session.player1Id?._id?.toString();
+    const p2Id = session.player2Id?._id?.toString();
+    const currentUserId = userId.toString();
+
+    if (currentUserId !== p1Id && currentUserId !== p2Id) {
+      throw new Error('You do not have permission to play in this match');
+    }
+
+    const isP1 = p1Id === currentUserId;
     const currentTurnLabel = isP1 ? 'PLAYER1' : 'PLAYER2';
 
     if (session.currentTurn !== currentTurnLabel) {
@@ -114,45 +57,6 @@ class GameService {
       await GameRepository.recordMoves(sessionId, { moves: [playerMove], nextBoard: board, nextTurn: currentTurnLabel });
       const finalSession = await GameRepository.completeGame(sessionId, { status: 'COMPLETED', winnerId: null, winLine: [] });
       return finalSession;
-    }
-
-    if (session.gameType === 'SINGLE') {
-      const aiMarker = isP1 ? session.player2Marker : session.player1Marker;
-      const bestMove = getBestMove(board, session.difficulty, aiMarker, playerMarker);
-
-      board[bestMove.row][bestMove.col] = aiMarker;
-      const aiMove = {
-        step: session.moves.length + 2,
-        pId: null,
-        x: bestMove.col,
-        y: bestMove.row,
-        marker: aiMarker,
-        time: new Date()
-      };
-
-      const aiWin = checkWin(board, bestMove.row, bestMove.col, aiMarker);
-
-      const updatedSession = await GameRepository.recordMoves(sessionId, {
-        moves: [playerMove, aiMove],
-        nextBoard: board,
-        nextTurn: 'PLAYER1'
-      });
-
-      if (aiWin.win) {
-        const finalSession = await GameRepository.completeGame(sessionId, {
-          status: 'COMPLETED',
-          winnerId: null, // AI win
-          winLine: aiWin.winLine
-        });
-        return finalSession;
-      }
-
-      if (isBoardFull(board)) {
-        const finalSession = await GameRepository.completeGame(sessionId, { status: 'COMPLETED', winnerId: null, winLine: [] });
-        return finalSession;
-      }
-
-      return updatedSession;
     }
 
     const nextTurn = isP1 ? 'PLAYER2' : 'PLAYER1';

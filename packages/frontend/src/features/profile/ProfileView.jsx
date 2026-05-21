@@ -1,13 +1,13 @@
 import React, { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useProfile } from './profileHook';
-import { useWallet } from './walletHook';
+import { useWallet } from './wallet/walletHook';
 
 import { getAvatarUrl } from '../../shared/utils/avatarUtil';
 import { useAuthStore } from '../../app/store/authStore';
-import EditProfileModal from './components/EditProfileModal';
-import WalletTopUpModal from './components/WalletTopUpModal';
-import PremiumSubscribeModal from './components/PremiumSubscribeModal';
+import EditProfileModal from './components/profile/EditProfileModal';
+import WalletTopUpModal from './components/wallet/WalletTopUpModal';
+import PremiumSubscribeModal from './components/wallet/PremiumSubscribeModal';
 import { countries } from '../../shared/utils/countries';
 
 const ProfileView = () => {

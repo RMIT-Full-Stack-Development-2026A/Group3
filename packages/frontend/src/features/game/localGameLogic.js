@@ -1,11 +1,7 @@
 import { checkWin, isValidMove } from '@tictactoang/shared/utils/gameLogicUtil.js';
 
-/**
- * Local Game Logic Engine
- * Processes a move and returns the updated session state.
- */
 export const processLocalMove = (session, localMoves, row, col) => {
-  // 1. Validation
+  // Validation
   if (!session || session.status !== 'ACTIVE') return null;
   if (!isValidMove(session.board, row, col)) return null;
 
@@ -14,12 +10,12 @@ export const processLocalMove = (session, localMoves, row, col) => {
   const player = isP1 ? session.p1 : session.p2;
   const marker = player.marker;
 
-  // 2. Update Board
+  // Update Board
   const newBoard = session.board.map((r, ri) => 
     ri === row ? r.map((c, ci) => ci === col ? marker : c) : r
   );
   
-  // 3. Record Move
+  // Record Move
   const newMove = {
     x: col,
     y: row,
@@ -30,7 +26,7 @@ export const processLocalMove = (session, localMoves, row, col) => {
   
   const updatedMoves = [...localMoves, newMove];
 
-  // 4. Check Outcome
+  // Check Outcome
   const winResult = checkWin(newBoard, row, col, marker);
   let newStatus = 'ACTIVE';
   let winnerId = null;
@@ -45,7 +41,7 @@ export const processLocalMove = (session, localMoves, row, col) => {
     matchOutcome = 'DRAW';
   }
 
-  // 5. Construct Updated Session
+  // Construct Updated Session
   const updatedSession = {
     ...session,
     board: newBoard,
@@ -53,7 +49,7 @@ export const processLocalMove = (session, localMoves, row, col) => {
     status: newStatus,
     winnerId,
     matchOutcome,
-    winLine: winResult.winLine || []
+    winLine: winResult.winLine
   };
 
   return {

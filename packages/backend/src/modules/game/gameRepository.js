@@ -4,15 +4,20 @@ import { GameSession } from './gameModel.js';
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 class GameRepository {
-    async createSession(sessionData) {
-        return await GameSession.create(sessionData);
-    }
 
-    async findById(sessionId) {
-        return await GameSession.findById(sessionId)
-            .populate('player1Id', 'username avatar')
-            .populate('player2Id', 'username avatar')
-            .lean();
+     async completeGame(sessionId, { status, winnerId, winLine, endTime }) {
+        return await GameSession.findByIdAndUpdate(
+            sessionId,
+            {
+                $set: {
+                    status,
+                    winnerId,
+                    winLine,
+                    endTime: endTime || new Date()
+                }
+            },
+            { new: true }
+        );
     }
 
     async recordMoves(sessionId, { moves, nextBoard, nextTurn }) {
@@ -32,35 +37,33 @@ class GameRepository {
         );
     }
 
-    async completeGame(sessionId, { status, winnerId, winLine, endTime }) {
+    async createSession(sessionData) {
+        return await GameSession.create(sessionData);
+    }
+
+    async findById(sessionId) {
+        return await GameSession.findById(sessionId)
+            .populate('player1Id', 'username avatar')
+            .populate('player2Id', 'username avatar')
+            .populate('roomId', 'roomCode')
+            .lean();
+    }
+
+
+
+    async updateSessionWithPlayer2(sessionId, { player2Id, player2Name, player2Avatar, player2Rating }) {
         return await GameSession.findByIdAndUpdate(
             sessionId,
             {
                 $set: {
-                    status,
-                    winnerId,
-                    winLine,
-                    endTime: endTime || new Date()
+                    player2Id,
+                    player2Name,
+                    player2Avatar,
+                    status: 'ACTIVE'
                 }
             },
             { new: true }
         );
-    }
-
-    async findActiveSessionByPlayer(userId) {
-        return await GameSession.findOne({
-            $or: [{ player1Id: userId }, { player2Id: userId }],
-            status: 'ACTIVE'
-        }).lean();
-    }
-
-    async findPlayerHistory(userId, limit = 10) {
-        return await GameSession.find({
-            $or: [{ player1Id: userId }, { player2Id: userId }]
-        })
-        .sort({ createdAt: -1 })
-        .limit(limit)
-        .lean();
     }
 
     _buildBasePipeline ({ userId, search, result, date, dateFrom, dateTo }) {

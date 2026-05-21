@@ -1,6 +1,6 @@
 import React from 'react';
 
-const GameBoard = ({ board, onMove, status, winner }) => {
+const GameBoard = ({ board, onMove, status }) => {
   return (
     <div className="grid grid-cols-3 gap-4 p-4 bg-surface-container-high rounded-2xl border border-white/5 shadow-2xl relative">
       {board?.map((cell, index) => (

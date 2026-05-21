@@ -14,7 +14,7 @@ const gameRoomSchema = new mongoose.Schema({
   player2Id: { type: mongoose.Schema.Types.ObjectId, ref: 'user', default: null },
   player2Name: { type: String, default: null },
   sessionId: { type: mongoose.Schema.Types.ObjectId, ref: 'game_session', default: null },
-  status: { type: String, enum: ['WAITING', 'PLAYING', 'CLOSED'], default: 'WAITING' },
+  status: { type: String, enum: ['WAITING', 'PLAYING', 'ABORT', 'CLOSED'], default: 'WAITING' },
   endTime: { type: Date, default: null }
 }, { timestamps: true });
 

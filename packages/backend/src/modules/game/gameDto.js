@@ -17,8 +17,17 @@ const ALLOWED_HISTORY_RESULTS = new Set(['ALL', 'WIN', 'LOSS', 'DRAW']);
 
 
 class GameDTO {
+
+    static toMoveReq(body) {
+        const { row, col, marker } = body;
+        if (row === undefined || col === undefined || !marker) {
+            throw new Error('Invalid move coordinates or marker');
+        }
+        return {y: parseInt(row), x: parseInt(col), marker: marker.toUpperCase()};
+    }
+    
     static _calculateOutcome(session, userId) {
-        if (session.status === 'ACTIVE') return 'ONGOING';
+        if (session.status === 'ACTIVE' || session.status === 'WAITING') return 'ONGOING';
         if (session.status === 'ABORTED') return 'CANCELLED';
     
         if (!session.winnerId) {
@@ -34,9 +43,9 @@ class GameDTO {
 
         const page = parsePositiveInteger(query.page, 1);
         const limit = Math.min(parsePositiveInteger(query.limit, 10), 50);
-        const sortOrder = String(query.sortOrder || 'desc').toLowerCase() === 'asc' ? 'asc' : 'desc';
+        const sortOrder = String(query.sortOrder).toLowerCase() === 'asc' ? 'asc' : 'desc';
         const search = typeof query.search === 'string' ? query.search.trim() : '';
-        const historyResult = String(query.result || 'ALL').toUpperCase();
+        const historyResult = String(query.result).toUpperCase();
 
         if (!ALLOWED_HISTORY_RESULTS.has(historyResult)) {
             throw new Error('result must be one of ALL, WIN, LOSS, DRAW');
@@ -53,14 +62,6 @@ class GameDTO {
             dateTo: parseDateValue(query.dateTo, 'dateTo'),
             sortOrder
         };
-    }
-
-    static toMoveReq(body) {
-        const { row, col, marker } = body;
-        if (row === undefined || col === undefined || !marker) {
-            throw new Error('Invalid move coordinates or marker');
-        }
-        return {y: parseInt(row), x: parseInt(col), marker: marker.toUpperCase()};
     }
 
     static toHistoryRes(payload) {
@@ -89,6 +90,8 @@ class GameDTO {
             boardTheme: session.boardTheme || 'DEFAULT',
             difficulty: session.difficulty,
             status: session.status,
+            roomId: session.roomId,
+            roomCode: session.roomId?.roomCode || null,
             players: {
                 p1: {
                     id: serializeId(session.player1Id),
@@ -134,13 +137,13 @@ class GameDTO {
         const serializeId = (val) => val?._id?.toString() || val?.toString() || null;
 
         return {
-            id: game._id?.toString() || game._id,
+            id: game._id?.toString(),
             gameType: game.gameType,
             boardSize: game.boardSize,
-            boardTheme: game.boardTheme || 'DEFAULT',
+            boardTheme: game.boardTheme,
             status: game.status,
             winnerId: serializeId(game.winnerId),
-            winLine: game.winLine || [],
+            winLine: game.winLine,
             players: {
                 player1Id: serializeId(game.player1Id),
                 player1Name: game.player1Name,
@@ -166,7 +169,7 @@ class GameDTO {
             throw new Error('Moves history must be a valid array');
         }
 
-        const isP1 = (id) => id === p1Id || id === 'p1-local';
+        const isP1 = (id) => id === p1Id;
         const sanitizeId = (id) => isP1(id) ? p1Id : null;
 
         const status = bodyStatus || (winnerId ? 'COMPLETED' : 'DRAW');

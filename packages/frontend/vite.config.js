@@ -18,4 +18,7 @@ export default defineConfig({
       '@tictactoang/shared': path.resolve(__dirname, '../shared'),
     },
   },
+  server: {
+    port: 3000
+  }
 });

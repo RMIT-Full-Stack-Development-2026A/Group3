@@ -10,7 +10,6 @@ router.use(AuthMiddleware);
 
 router.post('/local', GameController.syncLocalMatch);
 router.get('/history', GameController.getMatchHistory);
-router.post('/sessions', GameController.startGame);
 router.get('/sessions/:sessionId', GameController.getGame);
 router.post('/sessions/:sessionId/move', GameController.makeMove);
 router.get(

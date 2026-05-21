@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useAuthActions } from '../../../app/store/authStore';
-import { countries } from '../../../shared/utils/countries';
+import { useAuthActions } from '../../../../app/store/authStore';
+import { countries } from '../../../../shared/utils/countries';
 
 const EditProfileModal = ({ isOpen, onClose, currentData, onUpdate, onSave, loading }) => {
   const [username, setUsername] = useState('');

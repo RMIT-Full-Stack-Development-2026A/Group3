@@ -1,4 +1,4 @@
-import httpUtil from '../../shared/utils/httpUtil';
+import httpUtil from '../../../shared/utils/httpUtil';
 
 const walletService = {
   /**
