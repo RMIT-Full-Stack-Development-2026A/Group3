@@ -9,6 +9,8 @@ const ChatPanel = ({ messages = [], onSendMessage, currentUser, opponentName = '
   const { user } = useAuthStore();
 
   const RATE_LIMIT_MS = 500;
+  const activeUser = currentUser || user;
+  const activeUserIds = [activeUser?.id, activeUser?._id].filter(Boolean).map(String);
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
@@ -70,16 +72,21 @@ const ChatPanel = ({ messages = [], onSendMessage, currentUser, opponentName = '
             </div>
           ) : (
             messages.map((msg, idx) => {
-              const isCurrentUser = String(msg.senderId) === String(user?.id);
+              const senderId = msg.senderId?._id || msg.senderId;
+              const isCurrentUser = activeUserIds.includes(String(senderId)) ||
+                (!!activeUser?.username && msg.senderName === activeUser.username);
+              const displayName = isCurrentUser ? 'YOU' : (msg.senderName || opponentName);
               return (
-                <div key={idx} className={`space-y-1 ${isCurrentUser ? 'text-right' : ''}`}>
+                <div key={idx} className={`flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'}`}>
                   <p className={`text-[10px] font-bold tracking-tighter ${
                     isCurrentUser ? 'text-violet-400' : 'text-secondary'
                   }`}>
-                    {isCurrentUser ? 'YOU' : msg.senderName}
+                    {displayName}
                   </p>
-                  <p className={`text-sm text-on-surface leading-relaxed ${
-                    isCurrentUser ? 'bg-primary/10 p-2 rounded-lg inline-block max-w-xs ml-auto' : ''
+                  <p className={`mt-1 max-w-[78%] px-3 py-2 text-sm leading-relaxed shadow-sm ${
+                    isCurrentUser
+                      ? 'rounded-2xl rounded-br-md bg-primary text-on-primary'
+                      : 'rounded-2xl rounded-bl-md bg-surface-container-high text-on-surface'
                   }`}>
                     {msg.message}
                   </p>

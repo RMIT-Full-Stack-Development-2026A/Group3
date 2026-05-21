@@ -26,27 +26,27 @@ app.use(express.json());
 // Serve static files (avatars)
 app.use('/public', express.static('public'));
 
-app.get('/api/v1/health', (req, res) => {
+app.get('/health', (req, res) => {
         res.status(200).json({ success: true, message: 'Server is running' });
 });
 
 // Auth routes
-app.use('/api/v1/auth', authRouter);
+app.use('/auth', authRouter);
 
 // Game Module
-app.use('/api/v1/game', gameRouter);
+app.use('/game', gameRouter);
 
 // Arena module
-app.use('/api/v1/arena', arenaRouter);
+app.use('/arena', arenaRouter);
 
 // Profile module
-app.use('/api/v1/profile', profileRouter);
+app.use('/profile', profileRouter);
 
 // Subscription module
-app.use('/api/v1/subscription', subscriptionRouter);
+app.use('/subscription', subscriptionRouter);
 
 // Admin module
-app.use('/api/v1/admin', adminRouter);
+app.use('/admin', adminRouter);
 
 const PORT = env.PORT;
 
@@ -144,8 +144,9 @@ io.on('connection', (socket) => {
     });
 
     socket.on('chat:message', (data) => {
-        const { roomCode, message } = data;
-        if (!roomCode || !socket.user) return;
+        const { roomCode, message, senderId, senderName } = data;
+        const chatSenderId = socket.user?.id || senderId;
+        if (!roomCode || !chatSenderId) return;
 
         // Message validation
         const trimmedMessage = message.trim();
@@ -155,8 +156,8 @@ io.on('connection', (socket) => {
 
         // Create message object with metadata
         const messageObj = {
-            senderId: socket.user.id,
-            senderName: socket.user.username || 'Player',
+            senderId: chatSenderId,
+            senderName: senderName || socket.user?.username || 'Player',
             message: trimmedMessage,
             timestamp: new Date()
         };
@@ -173,7 +174,7 @@ io.on('connection', (socket) => {
         const roomName = `room-${roomCode}`;
         io.to(roomName).emit('chat:message', messageObj);
 
-        console.log(`Chat message in room ${roomCode} from ${socket.user.username}: ${trimmedMessage}`);
+        console.log(`Chat message in room ${roomCode} from ${messageObj.senderName}: ${trimmedMessage}`);
     });
 
     socket.on('disconnect', async () => {

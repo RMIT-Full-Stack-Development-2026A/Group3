@@ -8,11 +8,11 @@ import { getAvatarUrl } from '../../shared/utils/avatarUtil';
 import VietnamBoardTheme from '../../assets/images/boardThemes/Vietnam_theme.png';
 import SaigonBoardTheme from '../../assets/images/boardThemes/Saigon_skyline_theme.png';
 
-const getAIName = (difficulty = 'MEDIUM') => ({
+const getAIName = (difficulty) => ({
   EASY: 'Havoc',
   MEDIUM: 'Berserker',
   HARD: 'Mayhem'
-}[difficulty] || 'Berserker');
+});
 
 const GameBoardView = () => {
   const { sessionId } = useParams();

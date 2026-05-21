@@ -5,11 +5,11 @@ import defaultBoardTheme from '../../../assets/images/boardThemes/default_theme.
 import SaigonBoardTheme from '../../../assets/images/boardThemes/Saigon_skyline_theme.png';
 import VietnamBoardTheme from '../../../assets/images/boardThemes/Vietnam_theme.png';
 
-const getAIName = (difficulty = 'MEDIUM') => ({
+const getAIName = (difficulty) => ({
   EASY: 'Havoc',
   MEDIUM: 'Berserker',
   HARD: 'Mayhem'
-}[difficulty] || 'Berserker');
+});
 
 const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
   if (!isOpen) return null;

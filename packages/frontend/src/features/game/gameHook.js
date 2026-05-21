@@ -254,9 +254,11 @@ export function useGame(sessionId) {
 
     socket.emit('chat:message', { 
       roomCode: resolvedRoomCode,
-      message: message.trim() 
+      message: message.trim(),
+      senderId: user?.id || user?._id,
+      senderName: user?.username || 'Player'
     });
-  }, [resolvedRoomCode]);
+  }, [resolvedRoomCode, user]);
 
   return { session, loading, error, roomNotice, makeMove, refresh: reset, chatMessages, sendMessage };
 }

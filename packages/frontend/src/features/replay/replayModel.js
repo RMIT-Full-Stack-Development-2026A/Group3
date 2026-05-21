@@ -1,8 +1,8 @@
-const getAIName = (difficulty = 'MEDIUM') => ({
+const getAIName = (difficulty) => ({
   EASY: 'Havoc',
   MEDIUM: 'Berserker',
   HARD: 'Mayhem'
-}[difficulty] || 'Berserker');
+});
 
 const replayModel = {
   formatReplay: (data) => {
