@@ -1,5 +1,6 @@
 import GameRepository from './gameRepository.js';
 import { checkWin, isValidMove, isBoardFull } from '@tictactoang/shared';
+import ProfileRepository from '../profile/profileRepository.js';
 
 class GameService {
 
@@ -50,12 +51,27 @@ class GameService {
         winnerId: userId,
         winLine: playerWin.winLine
       });
+
+      // Update Winner Stats (Online mode only)
+      await ProfileRepository.updateStatsByUserId(userId, { totalGames: 1, wins: 1, eloRating: 25 });
+      
+      // Update Loser Stats
+      const loserId = isP1 ? p2Id : p1Id;
+      if (loserId) {
+        await ProfileRepository.updateStatsByUserId(loserId, { totalGames: 1, losses: 1, eloRating: -25 });
+      }
+
       return finalSession;
     }
 
     if (isBoardFull(board)) {
       await GameRepository.recordMoves(sessionId, { moves: [playerMove], nextBoard: board, nextTurn: currentTurnLabel });
       const finalSession = await GameRepository.completeGame(sessionId, { status: 'COMPLETED', winnerId: null, winLine: [] });
+
+      // Update Draw Stats for both players (Online mode only)
+      if (p1Id) await ProfileRepository.updateStatsByUserId(p1Id, { totalGames: 1, draws: 1 });
+      if (p2Id) await ProfileRepository.updateStatsByUserId(p2Id, { totalGames: 1, draws: 1 });
+
       return finalSession;
     }
 
@@ -79,7 +95,7 @@ class GameService {
     return session;
   }
 
-  async getMatchHistory (historyQuery) {
+  async getMatchHistory(historyQuery) {
     return await GameRepository.getPaginatedMatchHistory(historyQuery);
   }
 

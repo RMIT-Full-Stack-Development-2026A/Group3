@@ -38,8 +38,8 @@ export class ProfileDTO {
     static formatResponse(user, profile, stats) {
         if (!user || !profile) return null;
 
-        const totalGames = stats?.totalGames || 0;
-        const wins = stats?.wins || 0;
+        const totalGames = stats?.totalGames;
+        const wins = stats?.wins;
         const winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0;
 
 
@@ -53,7 +53,7 @@ export class ProfileDTO {
             },
             profile: {
                 country: profile.country,
-                avatarUrl: profile.avatarUrl || '',
+                avatarUrl: profile.avatarUrl,
                 isPremium: profile.isPremium,
                 walletBalance: profile.walletBalance,
                 premiumExpiry: profile.premiumExpiry
@@ -61,9 +61,9 @@ export class ProfileDTO {
             statistics: {
                 totalGames,
                 wins,
-                losses: stats?.losses || 0,
-                draws: stats?.draws || 0,
-                eloRating: stats?.eloRating || 1000,
+                losses: stats?.losses,
+                draws: stats?.draws,
+                eloRating: stats?.eloRating,
                 winRate: `${winRate}%`
             }
         };
