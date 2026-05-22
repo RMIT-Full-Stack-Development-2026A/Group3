@@ -4,33 +4,33 @@ import AuthMiddleware, { AdminMiddleware } from '../../middleware/authMiddleware
 
 const router = express.Router();
 
-// Tất cả các route admin đều yêu cầu đăng nhập và quyền Admin
+// All admin routes require authentication and Admin privileges
 router.use(AuthMiddleware, AdminMiddleware);
 
 /**
  * @route   GET /api/admin/users
- * @desc    Lấy danh sách tất cả người chơi
+ * @desc    Get a list of all users
  * @access  Private (Admin)
  */
 router.get('/users', AdminController.getUsers);
 
 /**
  * @route   PATCH /api/admin/users/:id/status
- * @desc    Khóa/Mở khóa tài khoản người chơi
+ * @desc    Ban or Unban a user account
  * @access  Private (Admin)
  */
 router.patch('/users/:id/status', AdminController.updateUserStatus);
 
 /**
  * @route   GET /api/admin/rooms
- * @desc    Lấy danh sách các phòng chơi kèm tìm kiếm và phân trang
+ * @desc    Get a list of game rooms with search and pagination
  * @access  Private (Admin)
  */
 router.get('/rooms', AdminController.getRooms);
 
 /**
  * @route   POST /api/admin/rooms/:id/close
- * @desc    Force-close phòng đấu và hủy trận đấu trực tuyến tương ứng
+ * @desc    Force-close a game room and abort the active match
  * @access  Private (Admin)
  */
 router.post('/rooms/:id/close', AdminController.closeRoom);

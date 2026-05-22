@@ -7,14 +7,14 @@ import { getIO } from '@tictactoang/shared/utils/socketManager.js';
 
 class AdminService {
   /**
-   * Lấy danh sách tất cả người dùng kèm trạng thái Premium
+   * Retrieve all users along with their premium profiles
    */
   async getAllUsers() {
     return await UsersRepository.findAllWithProfiles();
   }
 
   /**
-   * Khóa hoặc mở khóa tài khoản người dùng
+   * Ban or Unban a user account by updating their active status
    */
   async toggleUserStatus(adminId, targetUserId, isActive) {
     const user = await User.findById(targetUserId);
@@ -26,7 +26,7 @@ class AdminService {
     user.isActive = isActive;
     await user.save();
 
-    // Ghi Audit Log
+    // Create Audit Log record
     await AuditLog.create({
       adminId,
       action: isActive ? 'UNBAN_USER' : 'BAN_USER',
@@ -40,19 +40,19 @@ class AdminService {
   }
 
   /**
-   * Lấy danh sách phòng chơi và hỗ trợ tìm kiếm, phân trang
+   * Retrieve paginated game rooms with search and filtering
    */
   async getRooms({ page, limit, search, status }) {
     const query = {};
 
-    // Xử lý bộ lọc trạng thái status
+    // Handle status filtering
     if (status === 'online') {
       query.status = { $in: ['WAITING', 'PLAYING'] };
     } else if (status !== 'all') {
       query.status = status;
     }
 
-    // Xử lý tìm kiếm theo mã phòng hoặc tên người chơi (Player 1 hoặc Player 2)
+    // Handle search query for room code or player names
     if (search) {
       query.$or = [
         { roomCode: { $regex: search, $options: 'i' } },
@@ -88,7 +88,7 @@ class AdminService {
   }
 
   /**
-   * Force-close phòng đấu và hủy trận đấu trực tuyến thông qua socket
+   * Force-close a game room and abort the online match via Socket.IO
    */
   async closeRoom(adminId, roomId, reason = '') {
     const room = await GameRoom.findById(roomId);
@@ -103,12 +103,12 @@ class AdminService {
     const oldStatus = room.status;
     const now = new Date();
 
-    // 1. Cập nhật GameRoom
+    // 1. Update GameRoom status
     room.status = 'CLOSED';
     room.endTime = now;
     await room.save();
 
-    // 2. Cập nhật GameSession tương ứng nếu có
+    // 2. Abort the associated GameSession if active
     let closedSession = null;
     if (room.sessionId) {
       const session = await GameSession.findById(room.sessionId);
@@ -121,7 +121,7 @@ class AdminService {
       }
     }
 
-    // 3. Ghi Audit Log cho hành động CLOSE_ROOM
+    // 3. Create Audit Log for CLOSE_ROOM action
     await AuditLog.create({
       adminId,
       action: 'CLOSE_ROOM',
@@ -137,7 +137,7 @@ class AdminService {
     if (io) {
       const roomChannelName = `room-${room.roomCode}`;
       
-      // Gửi sự kiện force-closed tới các client trong room
+      // Broadcast force-closed event to clients in the room
       io.to(roomChannelName).emit('arena:force-closed', {
         message: 'This game room has been Force Closed by the admin.',
         reason: reason || '',
@@ -148,13 +148,13 @@ class AdminService {
         sessionStatus: closedSession?.status || 'ABORTED'
       });
 
-      // Phát sự kiện cập nhật trạng thái phòng ra Lobby
+      // Broadcast room status update to Lobby
       io.emit('arena:room-updated', {
         roomCode: room.roomCode,
         status: 'CLOSED'
       });
 
-      // Cleanup: Cho tất cả client rời khỏi room channel đó
+      // Cleanup: Force all clients to leave the room channel
       const roomSockets = io.sockets.adapter.rooms.get(roomChannelName);
       if (roomSockets) {
         for (const socketId of roomSockets) {

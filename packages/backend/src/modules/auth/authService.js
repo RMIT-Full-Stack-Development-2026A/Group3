@@ -6,12 +6,12 @@ import env from '../../configs/env.js';
 
 class AuthService {
   /**
-   * Đăng ký: Tạo User + Khởi tạo Profile
+   * Register: Create a new User and initialize their Profile
    */
   async register(data) {
     const { authData, profileData } = data;
 
-    // 1. Kiểm tra trùng lặp
+    // 1. Check for duplicates
     const existingUser = await UsersService.findByEmailOrUsername(authData.email) ||
       await UsersService.findByUsername(authData.username);
     
@@ -19,10 +19,10 @@ class AuthService {
       throw new Error('Username or Email already exists');
     }
 
-    // 2. Hash mật khẩu
+    // 2. Hash the password
     const passwordHash = await bcrypt.hash(authData.password, 10);
 
-    // 3. Tạo User
+    // 3. Create the user
     const newUser = await UsersService.create({
       username: authData.username,
       email: authData.email,
@@ -31,7 +31,7 @@ class AuthService {
       isActive: true
     });
 
-    // 4. Khởi tạo Profile & Stats
+    // 4. Initialize Profile & Stats
     await ProfileRepository.initUserProfile(
       newUser._id,
       profileData.country || 'Vietnam',
@@ -42,10 +42,10 @@ class AuthService {
   }
 
   /**
-   * Đăng nhập: Kiểm tra Auth + Lấy thông tin Profile cho Token
+   * Login: Authenticate User and generate JWT Token with Profile info
    */
   async login(identifier, password) {
-    // 1. Tìm User
+    // 1. Find User by identifier
     const user = await UsersService.findByEmailOrUsername(identifier);
     if (!user || !user.isActive) {
       throw new Error('Invalid credentials or account is disabled');
@@ -90,7 +90,7 @@ class AuthService {
   }
 
   /**
-   * Lấy thông tin người dùng theo ID
+   * Retrieve user info by ID
    */
   async getUserById(userId) {
     const user = await UsersService.getPublicById(userId);
@@ -101,7 +101,7 @@ class AuthService {
   }
 
   /**
-   * Tạo JWT Token
+   * Generate JWT Token
    */
   _generateToken(user, profile) {
     const isPremium = profile?.isPremium === true;

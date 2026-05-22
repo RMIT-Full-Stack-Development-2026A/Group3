@@ -5,7 +5,7 @@ const auditLogSchema = new mongoose.Schema({
     action: { type: String, enum: ['BAN_USER', 'CLOSE_ROOM', 'UNBAN_USER'], required: true },
     targetId: { type: mongoose.Schema.Types.ObjectId, required: true, index: true },
     targetType: {type: String, enum: ['USER', 'ROOM'], required: true },
-    oldValue: { type: mongoose.Schema.Types.Mixed, default: null }, // Mixed cho phép lưu Object JSON linh hoạt
+    oldValue: { type: mongoose.Schema.Types.Mixed, default: null }, // Mixed allows flexible JSON object storage
     newValue: { type: mongoose.Schema.Types.Mixed, default: null },
     reason: { type: String, trim: true, default: '' }
 }, { timestamps: { createdAt: true, updatedAt: false } });

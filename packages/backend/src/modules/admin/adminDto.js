@@ -1,6 +1,6 @@
 class AdminDTO {
   /**
-   * Chuyển đổi dữ liệu Request cập nhật trạng thái
+   * Transform and validate the status update request body
    */
   static transformUpdateStatusReq(params, body) {
     const { id } = params;
@@ -21,7 +21,7 @@ class AdminDTO {
   }
 
   /**
-   * Định dạng danh sách người dùng trả về cho Frontend
+   * Format the user list response payload for the frontend
    */
   static formatUserListResponse(users) {
     if (!Array.isArray(users)) return [];
@@ -37,7 +37,7 @@ class AdminDTO {
   }
 
   /**
-   * Chuyển đổi và validate query lấy danh sách phòng
+   * Transform and validate the query parameters for retrieving rooms
    */
   static transformGetRoomsQuery(query) {
     const page = Math.max(1, parseInt(query.page) || 1);
@@ -54,7 +54,7 @@ class AdminDTO {
   }
 
   /**
-   * Định dạng danh sách phòng chơi trả về cho Frontend
+   * Format the room list response payload for the frontend
    */
   static formatRoomListResponse(rooms) {
     if (!Array.isArray(rooms)) return [];
@@ -71,7 +71,7 @@ class AdminDTO {
   }
 
   /**
-   * Định dạng response thành công
+   * Helper function to format a standardized success response
    */
   static formatSuccessResponse(message, data = null) {
     const response = {

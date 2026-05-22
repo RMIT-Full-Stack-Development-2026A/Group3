@@ -2,21 +2,21 @@ import { User } from './usersModel.js';
 
 class UsersRepository {
   /**
-   * Tạo người dùng mới (Register)
+   * Create a new user (Register)
    */
   async create(userData) {
     return await User.create(userData);
   }
 
   /**
-   * Tìm người dùng theo Email
+   * Find a user by Email
    */
   async findByEmail(email) {
     return await User.findOne({ email: email.toLowerCase() }).lean();
   }
 
   /**
-   * Tìm người dùng theo Username (Không phân biệt hoa thường)
+   * Find a user by Username (Case-insensitive)
    */
   async findByUsername(username) {
     return await User.findOne({ 
@@ -25,14 +25,14 @@ class UsersRepository {
   }
 
   /**
-   * Tìm người dùng theo ID
+   * Find a user by ID
    */
   async findById(id) {
     return await User.findById(id).select('-passwordHash').lean();
   }
 
   /**
-   * Cập nhật thông tin User
+   * Update user information
    */
   async updateUserInfo(userId, updateData) {
     return await User.findByIdAndUpdate(
@@ -43,7 +43,7 @@ class UsersRepository {
   }
 
   /**
-   * Tìm người dùng bằng Email hoặc Username
+   * Find a user by Email or Username
    */
   async findByEmailOrUsername(identifier) {
     const normalizedIdentifier = identifier.trim().toLowerCase();
@@ -56,7 +56,7 @@ class UsersRepository {
   }
 
   /**
-   * Lấy tất cả Player cùng với thông tin Profile (Premium status)
+   * Retrieve all players along with their Profile info
    */
   async findAllWithProfiles() {
     return await User.aggregate([

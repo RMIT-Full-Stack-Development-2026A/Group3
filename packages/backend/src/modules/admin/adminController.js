@@ -25,14 +25,14 @@ class AdminController {
    */
   async updateUserStatus(req, res) {
     try {
-      // 1. DTO xử lý validate và transform dữ liệu
+      // 1. Transform and validate the update request via DTO
       const { targetUserId, isActive } = AdminDTO.transformUpdateStatusReq(req.params, req.body);
       const adminId = req.user.id;
 
-      // 2. Gọi Service xử lý nghiệp vụ
+      // 2. Call the Service to perform the business logic
       await AdminService.toggleUserStatus(adminId, targetUserId, isActive);
 
-      // 3. DTO định dạng response trả về
+      // 3. Format the response data
       res.json(AdminDTO.formatSuccessResponse(
         `User account has been ${isActive ? 'activated' : 'deactivated'} successfully.`
       ));
@@ -50,13 +50,13 @@ class AdminController {
    */
   async getRooms(req, res) {
     try {
-      // 1. DTO transform & validate query parameters
+      // 1. Transform and validate the query parameters via DTO
       const filter = AdminDTO.transformGetRoomsQuery(req.query);
 
-      // 2. Gọi Service xử lý
+      // 2. Call the Service to fetch data
       const { rooms, pagination } = await AdminService.getRooms(filter);
 
-      // 3. Định dạng response trả về qua DTO
+      // 3. Format the response list via DTO
       const formattedRooms = AdminDTO.formatRoomListResponse(rooms);
 
       res.json(AdminDTO.formatSuccessResponse('Rooms retrieved successfully', {
@@ -84,7 +84,7 @@ class AdminController {
         throw new Error('Room ID is required');
       }
 
-      // Gọi Service đóng phòng đấu
+      // Call the Service to force-close the room
       const closedRoom = await AdminService.closeRoom(adminId, roomId, reason);
 
       res.json(AdminDTO.formatSuccessResponse(
