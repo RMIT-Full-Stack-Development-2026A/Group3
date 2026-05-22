@@ -13,4 +13,3 @@ const gameRoomSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 export const GameRoom = mongoose.model('game_room', gameRoomSchema);
-export const ChatMessage = mongoose.model('chat_message', chatMessageSchema);
