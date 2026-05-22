@@ -42,14 +42,6 @@ function RoomCard({ room, featured = false, onJoin, isOwner = false }) {
                 <MaterialIcon name="group" className="text-sm" />
                 <span>{playerCount}/2 Players</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <MaterialIcon name="token" filled className="text-sm text-primary" />
-                <span className="font-bold text-primary">500 TOANG</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <MaterialIcon name="timer" className="text-sm" />
-                <span>15s Move</span>
-              </div>
             </div>
 
             <div className="mt-4 flex items-center gap-2">
@@ -260,40 +252,6 @@ export default function ArenaView() {
         </div>
       </main>
       
-
-      <div className="fixed bottom-6 left-6 right-6 z-50 md:hidden">
-        <div className="flex items-center justify-around rounded-2xl border border-white/10 bg-surface-bright/50 p-3 shadow-2xl backdrop-blur-3xl">
-          <button className="flex flex-col items-center gap-1 text-primary">
-            <MaterialIcon name="grid_view" filled />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Lobby</span>
-          </button>
-
-          <button className="flex flex-col items-center gap-1 text-on-surface-variant">
-            <MaterialIcon name="leaderboard" />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Rank</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleCreateRoomClick}
-            disabled={submitting || hasCreatedRoom}
-            className="relative -top-8 flex h-14 w-14 items-center justify-center rounded-full border-4 border-surface bg-linear-to-br from-primary to-primary-container text-on-primary shadow-xl shadow-primary/40 disabled:opacity-60"
-          >
-            <MaterialIcon name="add" className="text-3xl" />
-          </button>
-
-          <button className="flex flex-col items-center gap-1 text-on-surface-variant">
-            <MaterialIcon name="chat" />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Chat</span>
-          </button>
-
-          <button className="flex flex-col items-center gap-1 text-on-surface-variant" onClick={handleLogout}>
-            <MaterialIcon name="person" />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Profile</span>
-          </button>
-        </div>
-      </div>
-
       <GameSetupModal
         isOpen={isSetupOpen}
         mode="ONLINE"
