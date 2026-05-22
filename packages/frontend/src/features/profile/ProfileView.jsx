@@ -118,7 +118,7 @@ const ProfileView = () => {
               <div className="space-y-4">
                 <div>
                   <h1 className="text-4xl md:text-5xl font-extrabold headline-font text-on-surface tracking-tight">
-                    {user?.username || 'Kaelen_Void'}
+                    {user?.username}
                   </h1>
                   <div className="flex items-center gap-3 mt-2 text-on-surface-variant">
                     <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white/5 border border-white/5">
@@ -127,10 +127,10 @@ const ProfileView = () => {
                       ) : (
                         <span className="material-symbols-outlined text-[18px] text-primary">flag</span>
                       )}
-                      <span className="text-sm font-medium">{profile?.country || 'Global'}</span>
+                      <span className="text-sm font-medium">{profile?.country}</span>
                     </div>
                     <div className="w-1.5 h-1.5 rounded-full bg-outline-variant"></div>
-                    <span className="text-sm">Joined {new Date(user?.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
+                    <span className="text-sm">Joined {new Date(user?.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-4">
@@ -159,6 +159,72 @@ const ProfileView = () => {
             </div>
           </div>
         </header>
+
+        {/* Stats Grid */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="relative overflow-hidden group p-8 rounded-2xl bg-surface-container-high/60 border border-white/5 flex flex-col justify-between min-h-[220px]">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <span className="material-symbols-outlined text-8xl">trending_up</span>
+            </div>
+            <span className="text-on-surface-variant text-sm font-semibold uppercase tracking-widest">Current Rating</span>
+            <div>
+              <h2 className="text-6xl font-extrabold headline-font text-primary tracking-tighter">
+                {stats?.eloRating}
+              </h2>
+              <p className="text-secondary text-sm mt-1 font-medium flex items-center gap-1">
+                <span className="material-symbols-outlined text-sm">
+                  {(!stats?.eloRating < 1100) ? 'shield' : 
+                   (stats.eloRating < 1300) ? 'military_tech' : 
+                   (stats.eloRating < 1500) ? 'workspace_premium' : 'diamond'}
+                </span>
+                {(!stats?.eloRating < 1100) ? 'Silver Tier' : 
+                 (stats.eloRating < 1300) ? 'Gold Tier' : 
+                 (stats.eloRating < 1500) ? 'Platinum Tier' : 'Grandmaster Tier'}
+              </p>
+            </div>
+          </div>
+
+          <div className="md:col-span-2 relative p-8 rounded-2xl bg-surface-container-high/60 border border-white/5 flex flex-col md:flex-row gap-8 items-center justify-around">
+            <div className="flex flex-col items-center gap-2">
+              <div className="w-24 h-24 rounded-full border-4 border-primary/20 flex items-center justify-center relative">
+                <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100">
+                  <circle className="text-white/5" cx="50" cy="50" fill="transparent" r="40" stroke="currentColor" strokeWidth="8"></circle>
+                  <circle
+                    className="text-primary transition-all duration-1000"
+                    cx="50"
+                    cy="50"
+                    fill="transparent"
+                    r="40"
+                    stroke="currentColor"
+                    strokeWidth="8"
+                    strokeDasharray="251.2"
+                    strokeDashoffset={251.2 - (251.2 * (stats?.winRateNumber)) / 100}
+                  ></circle>
+                </svg>
+                <span className="text-2xl font-bold headline-font">{stats?.winRate}</span>
+              </div>
+              <span className="text-xs uppercase tracking-widest text-on-surface-variant font-bold">Win Rate</span>
+            </div>
+            <div className="grid grid-cols-2 gap-x-12 gap-y-6 flex-1">
+              <div className="space-y-1">
+                <span className="text-[10px] text-on-surface-variant uppercase font-bold tracking-widest">Total Battles</span>
+                <p className="text-2xl font-bold headline-font text-on-surface">{stats?.totalGames}</p>
+              </div>
+              <div className="space-y-1">
+                <span className="text-[10px] text-on-surface-variant uppercase font-bold tracking-widest">Wins</span>
+                <p className="text-2xl font-bold headline-font text-on-surface">{stats?.wins}</p>
+              </div>
+              <div className="space-y-1">
+                <span className="text-[10px] text-on-surface-variant uppercase font-bold tracking-widest">Total Draws</span>
+                <p className="text-2xl font-bold headline-font text-on-surface">{stats?.draws}</p>
+              </div>
+              <div className="space-y-1">
+                <span className="text-[10px] text-on-surface-variant uppercase font-bold tracking-widest">Losses</span>
+                <p className="text-2xl font-bold headline-font text-on-surface">{stats?.losses}</p>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* Wallet & Premium Section */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -151,7 +151,30 @@ export function useGame(sessionId) {
         socket.emit('leave-room', resolvedRoomCode);
       }
     };
-  }, [sessionId, session?.gameType, resolvedRoomCode, fetchSession]);
+  }, [sessionId, session?.gameType, resolvedRoomCode, fetchSession]); 
+
+  const handleSyncMatch = async (sessionToSync, movesToSync) => {
+    try {
+      await gameService.syncLocalMatch({
+        gameType: sessionToSync.gameType,
+        boardSize: sessionToSync.boardSize,
+        boardTheme: sessionToSync.boardTheme,
+        p1Id: sessionToSync.p1.id,
+        p1Name: sessionToSync.p1.name,
+        p1Marker: sessionToSync.p1.marker,
+        p2Name: sessionToSync.p2.name,
+        p2Marker: sessionToSync.p2.marker,
+        winnerId: sessionToSync.winnerId,
+        winLine: sessionToSync.winLine,
+        moves: movesToSync,
+        status: sessionToSync.status,
+        currentTurn: sessionToSync.currentTurn,
+        boardState: sessionToSync.board
+      });
+    } catch (err) {
+      console.error('Failed to sync match:', err);
+    }
+  };
 
   const makeMove = useCallback(async (row, col) => {
     if (isAILocking) return;
@@ -166,47 +189,32 @@ export function useGame(sessionId) {
       let finalMoves = playerResult.updatedMoves;
       let finalJustEnded = playerResult.justEnded;
 
-      // If it's SINGLE mode, and the game didn't just end, process AI move immediately
-      if (session.gameType === 'SINGLE' && !finalJustEnded) {
-        setIsAILocking(true);
-        setTimeout(() => {
-          const difficulty = finalSession.difficulty;
-          const bestMove = getBestMove(finalSession.board, difficulty, finalSession.p2.marker, finalSession.p1.marker);
-          
-          const aiResult = processLocalMove(finalSession, finalMoves, bestMove.row, bestMove.col);
-          if (aiResult) {
-            setSession(aiResult.updatedSession);
-            setMoves(aiResult.updatedMoves);
-          }
-          setIsAILocking(false);
-        }, 1000);
-      }
-      
       setMoves(finalMoves);
       setSession(finalSession);
 
-      // Sync if game ended
       if (finalJustEnded) {
-        try {
-          await gameService.syncLocalMatch({
-            gameType: finalSession.gameType,
-            boardSize: finalSession.boardSize,
-            boardTheme: finalSession.boardTheme,
-            p1Id: finalSession.p1.id,
-            p1Name: finalSession.p1.name,
-            p1Marker: finalSession.p1.marker,
-            p2Name: finalSession.p2.name,
-            p2Marker: finalSession.p2.marker,
-            winnerId: finalSession.winnerId,
-            winLine: finalSession.winLine,
-            moves: finalMoves,
-            status: finalSession.status,
-            currentTurn: finalSession.currentTurn,
-            boardState: finalSession.board
-          });
-        } catch (err) {
-          console.error('Failed to sync match:', err);
+        handleSyncMatch(finalSession, finalMoves);
+        return;
+      }
+
+      if (session.gameType === 'SINGLE') {
+        setIsAILocking(true);
+
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        const difficulty = finalSession.difficulty;
+        const bestMove = getBestMove(finalSession.board, difficulty, finalSession.p2.marker, finalSession.p1.marker);
+        
+        const aiResult = processLocalMove(finalSession, finalMoves, bestMove.row, bestMove.col);
+        if (aiResult) {
+          setSession(aiResult.updatedSession);
+          setMoves(aiResult.updatedMoves);
+
+          if (aiResult.justEnded) {
+            handleSyncMatch(aiResult.updatedSession, aiResult.updatedMoves);
+          }
         }
+        setIsAILocking(false);
       }
       return;
     }
@@ -235,6 +243,7 @@ export function useGame(sessionId) {
       }
     }
   }, [session, sessionId, user, resolvedRoomCode]);
+
   const reset = useCallback(() => {
     setSession(null);
     setChatMessages([]);

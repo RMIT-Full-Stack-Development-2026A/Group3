@@ -6,7 +6,7 @@ const ProfileHeader = ({ user, profile, stats }) => {
       <div className="relative">
         <div className="w-32 h-32 md:w-40 md:h-40 rounded-3xl overflow-hidden border-4 border-primary/20 shadow-2xl">
           <img 
-            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || 'default'}`} 
+            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username}`} 
             alt="Avatar" 
             className="w-full h-full object-cover"
           />

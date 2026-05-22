@@ -19,8 +19,8 @@ const profileModel = {
       },
       stats: {
         ...statistics,
-        level: Math.floor((statistics?.totalGames || 0) / 10) + 1,
-        winRateNumber: parseFloat(statistics?.winRate) || 0
+        level: Math.floor((statistics?.totalGames) / 10) + 1,
+        winRateNumber: parseFloat(statistics?.winRate)
       }
     };
   }

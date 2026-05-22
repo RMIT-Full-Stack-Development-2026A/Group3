@@ -138,7 +138,9 @@ const ReplayView = () => {
                 </div>
               </div>
               <div className="flex items-center justify-center mt-4">
-                <span className="text-4xl font-black text-primary/30">X</span>
+                <span className="material-symbols-outlined text-5xl text-primary/30" style={{ fontVariationSettings: "'FILL' 1" }}>
+                  {getMarkerSymbol(markers.p1)}
+                </span>
               </div>
             </div>
 
@@ -162,7 +164,9 @@ const ReplayView = () => {
                 </div>
               </div>
               <div className="flex items-center justify-center mt-4">
-                <span className="text-4xl font-black text-secondary/30">O</span>
+                <span className="material-symbols-outlined text-5xl text-secondary/30" style={{ fontVariationSettings: "'FILL' 1" }}>
+                  {getMarkerSymbol(markers.p2)}
+                </span>
               </div>
             </div>
 
