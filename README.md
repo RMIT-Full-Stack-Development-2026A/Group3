@@ -9,6 +9,14 @@ TicTacToang is a premium Tic-Tac-Toe platform built with the MEN stack
 
 [https://github.com/RMIT-Full-Stack-Development-2026A/Group3.git](https://github.com/RMIT-Full-Stack-Development-2026A/Group3.git)
 
+## Live Production Deployment
+
+The application is deployed and hosted on the Render cloud platform. Use the following link to access the live environment:
+
+- **Frontend Application (Web Client):** [https://tictactoang-web.onrender.com/](https://tictactoang-web.onrender.com/)
+
+---
+
 ## Login Credentials for Testing
 
 The following accounts are provided for testing the submitted application.
