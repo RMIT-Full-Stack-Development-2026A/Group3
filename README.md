@@ -14,6 +14,7 @@ TicTacToang is a premium Tic-Tac-Toe platform built with the MEN stack
 The application is deployed and hosted on the Render cloud platform. Use the following link to access the live environment:
 
 - **Frontend Application (Web Client):** [https://tictactoang-web.onrender.com/](https://tictactoang-web.onrender.com/)
+- **Backend API Service:** [https://group3-tictactoang-backend.onrender.com/](https://group3-tictactoang-backend.onrender.com/)
 
 ---
 
