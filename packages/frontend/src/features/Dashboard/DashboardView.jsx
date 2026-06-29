@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthUser } from '../../app/store/authStore.js';
 import ModeCard from './components/ModeCard.jsx';
 import GameSetupModal from '../game/components/GameSetupModal.jsx';
+import Lightfall from '../../shared/components/ui/lightfall/Lightfall.jsx';
 
 export default function DashboardView() {
   const navigate = useNavigate();
@@ -11,13 +12,31 @@ export default function DashboardView() {
   const [setupMode, setSetupMode] = useState('AI');
 
   return (
-    <div className={`min-h-screen bg-surface text-on-surface font-body selection:bg-primary selection:text-on-primary ${isSetupModalOpen ? 'overflow-hidden' : ''}`}>
+    <div className={`min-h-screen bg-surface text-on-surface font-body selection:bg-primary selection:text-on-primary relative ${isSetupModalOpen ? 'overflow-hidden' : ''}`}>
+      
+      {/* Lightfall Background */}
+      <div className="absolute inset-0 z-0 pointer-events-auto">
+        <Lightfall
+          colors={['#A6C8FF', '#5227FF', '#FF9FFC']}
+          backgroundColor="#0A29FF"
+          speed={0.5}
+          streakCount={2}
+          streakWidth={1}
+          streakLength={1}
+          glow={1}
+          density={0.6}
+          twinkle={1}
+          zoom={3}
+          backgroundGlow={0.5}
+          opacity={1}
+          mouseInteraction={true}
+          mouseStrength={0.5}
+          mouseRadius={1}
+        />
+      </div>
 
-
-      <main className={`min-h-screen pt-32 pb-40 px-6 flex flex-col items-center relative overflow-hidden transition-all duration-500 ${isSetupModalOpen ? 'blur-md scale-[0.98] pointer-events-none' : ''}`}>
-        {/* Background Atmospheric Element */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[120px] pointer-events-none"></div>
-
+      <main className={`min-h-screen pt-32 pb-40 px-6 flex flex-col items-center relative z-10 overflow-hidden transition-all duration-500 ${isSetupModalOpen ? 'blur-md scale-[0.98] pointer-events-none' : ''}`}>
+        
         {/* Hero Section */}
         <section className="text-center mb-16 relative z-10">
           <h2 className="text-6xl md:text-8xl font-extrabold font-headline tracking-tighter text-on-surface neon-glow mb-4">

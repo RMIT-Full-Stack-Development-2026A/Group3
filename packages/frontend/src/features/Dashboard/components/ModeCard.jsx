@@ -12,8 +12,8 @@ const ModeCard = ({
   children 
 }) => {
   const baseClasses = isFeatured 
-    ? "h-full glass-card bg-primary/5 border border-primary/20 rounded-xl p-8 transition-all duration-500 hover:bg-primary/10 hover:-translate-y-2 flex flex-col justify-between overflow-hidden relative shadow-[0_20px_50px_rgba(0,0,0,0.3)]"
-    : "h-full glass-xcard bg-surface-container-high/40 border border-outline-variant/15 rounded-xl p-8 transition-all duration-500 hover:bg-surface-container-highest/60 hover:-translate-y-2 flex flex-col justify-between overflow-hidden relative";
+    ? "h-full glass-card bg-black/50 backdrop-blur-lg border border-primary/30 rounded-xl p-8 transition-all duration-500 hover:bg-black/70 hover:-translate-y-2 flex flex-col justify-between overflow-hidden relative shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+    : "h-full glass-xcard bg-black/40 backdrop-blur-lg border border-outline-variant/20 rounded-xl p-8 transition-all duration-500 hover:bg-black/60 hover:-translate-y-2 flex flex-col justify-between overflow-hidden relative";
 
   const iconBgClasses = isFeatured
     ? "w-14 h-14 rounded-lg bg-primary/20 flex items-center justify-center mb-6 text-primary shadow-lg"
