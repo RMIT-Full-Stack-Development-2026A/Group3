@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuthActions } from '../../../app/store/authStore';
 import { getAvatarUrl } from '../../../shared/utils/avatarUtil';
 
+import GradientText from '../ui/gradient-text/GradientText';
+
 const Header = ({ user, theme = 'DEFAULT' }) => {
   const isVN = theme === 'VIETNAM';
   const isSG = theme === 'SAIGON';
@@ -25,15 +27,22 @@ const Header = ({ user, theme = 'DEFAULT' }) => {
     }`}>
       <div className="flex items-center gap-8">
         <Link to="/dashboard">
-          <h1 className={`text-2xl font-bold font-headline tracking-tight hover:brightness-110 transition-all ${
-            isVN 
-              ? 'text-vn-tertiary uppercase tracking-widest' 
-              : isSG
-              ? 'bg-gradient-to-r from-sg-cyan to-sg-magenta bg-clip-text text-transparent italic font-black'
-              : 'bg-gradient-to-br from-indigo-300 to-purple-500 bg-clip-text text-transparent'
-          }`}>
-            {isVN ? 'Heritage Tic-Tac-Toe' : isSG ? 'SAIGON Tic-Tac-Toe' : 'TicTacToang'}
-          </h1>
+          <GradientText
+            colors={
+              isVN 
+                ? ["#facc15", "#ea580c", "#facc15", "#ea580c", "#facc15"]
+                : isSG 
+                ? ["#22d3ee", "#c026d3", "#22d3ee", "#c026d3", "#22d3ee"]
+                : ["#8b5cf6", "#d946ef", "#8b5cf6", "#d946ef", "#8b5cf6"]
+            }
+            animationSpeed={isVN || isSG ? 5 : 3}
+            showBorder={false}
+            className={`text-2xl font-bold font-headline tracking-tight hover:brightness-110 ${
+              isVN ? 'uppercase tracking-widest' : isSG ? 'italic font-black' : ''
+            }`}
+          >
+              TicTacToang
+          </GradientText>
         </Link>
       </div>
       

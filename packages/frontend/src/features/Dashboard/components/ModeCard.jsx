@@ -1,4 +1,5 @@
 import React from 'react';
+import BorderGlow from '../../../shared/components/ui/border-glow/BorderGlow';
 
 const ModeCard = ({ 
   title, 
@@ -12,8 +13,8 @@ const ModeCard = ({
   children 
 }) => {
   const baseClasses = isFeatured 
-    ? "h-full glass-card bg-primary/5 border border-primary/20 rounded-xl p-8 transition-all duration-500 hover:bg-primary/10 hover:-translate-y-2 flex flex-col justify-between overflow-hidden relative shadow-[0_20px_50px_rgba(0,0,0,0.3)]"
-    : "h-full glass-xcard bg-surface-container-high/40 border border-outline-variant/15 rounded-xl p-8 transition-all duration-500 hover:bg-surface-container-highest/60 hover:-translate-y-2 flex flex-col justify-between overflow-hidden relative";
+    ? "h-full glass-card bg-black/50 backdrop-blur-lg p-8 transition-all duration-500 hover:bg-black/70 hover:-translate-y-2 flex flex-col justify-between overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] !border-none"
+    : "h-full glass-xcard bg-black/40 backdrop-blur-lg p-8 transition-all duration-500 hover:bg-black/60 hover:-translate-y-2 flex flex-col justify-between overflow-hidden !border-none";
 
   const iconBgClasses = isFeatured
     ? "w-14 h-14 rounded-lg bg-primary/20 flex items-center justify-center mb-6 text-primary shadow-lg"
@@ -21,17 +22,28 @@ const ModeCard = ({
 
   return (
     <div className={`${spanCols} group cursor-pointer`} onClick={onClick}>
-      <div className={baseClasses}>
+      <BorderGlow
+        className={baseClasses}
+        edgeSensitivity={30}
+        glowColor="40 80 80"
+        backgroundColor="#120F17"
+        borderRadius={28}
+        glowRadius={40}
+        glowIntensity={1}
+        coneSpread={25}
+        animated={false}
+        colors={['#c084fc', '#f472b6', '#38bdf8']}
+      >
         {/* Glow effect for featured card */}
         {isFeatured && (
-          <div className="absolute inset-0 opacity-20 pointer-events-none overflow-hidden">
+          <div className="absolute inset-0 opacity-20 pointer-events-none overflow-hidden -z-10">
             <div className="w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/30 via-transparent to-transparent"></div>
           </div>
         )}
         
         {/* Ambient background blur for normal cards */}
         {!isFeatured && (
-          <div className="absolute -right-12 -top-12 w-48 h-48 bg-indigo-500/5 rounded-full blur-3xl group-hover:bg-indigo-500/10 transition-colors"></div>
+          <div className="absolute -right-12 -top-12 w-48 h-48 bg-indigo-500/5 rounded-full blur-3xl group-hover:bg-indigo-500/10 transition-colors -z-10"></div>
         )}
 
         <div>
@@ -60,7 +72,7 @@ const ModeCard = ({
             </>
           )}
         </div>
-      </div>
+      </BorderGlow>
     </div>
   );
 };
