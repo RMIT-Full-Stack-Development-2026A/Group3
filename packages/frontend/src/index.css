@@ -24,6 +24,11 @@
   --color-teal-light: #99f6e4;
   --color-coral: #fb7185;
 
+  /* Auth redesign accent (volt) — scoped to the new auth screens, additive */
+  --color-volt: #c3ff4a;
+  --color-volt-dim: #9fe62a;
+  --color-volt-ink: #0a0e05;
+
   /* Vietnam Theme Colors */
   --color-vn-tertiary: #e7c365;
   --color-vn-tertiary-container: #c9a74d;
