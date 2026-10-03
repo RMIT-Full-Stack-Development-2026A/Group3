@@ -34,6 +34,8 @@
   --color-vn-tertiary-container: #c9a74d;
   --color-vn-on-tertiary: #3e2e00;
   --color-vn-error: #93000a;
+  /* Light tint of vn-error for text/markers on dark glass (#93000a alone is ~2:1) */
+  --color-vn-error-text: #ffb4ab;
   --color-vn-surface-dim: #141218;
 
   /* Saigon Neon Theme */
@@ -60,14 +62,14 @@
   }
   
   .marker-glow-x {
-    text-shadow: 0 0 15px rgba(179, 161, 255, 0.8);
+    text-shadow: 0 0 15px rgba(195, 255, 74, 0.8);
   }
   .marker-glow-o {
-    text-shadow: 0 0 15px rgba(214, 188, 244, 0.8);
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
   }
   .marker-winner-glow {
     color: #ffffff !important;
-    text-shadow: 0 0 20px #fff, 0 0 30px #b3a1ff, 0 0 40px #b3a1ff;
+    text-shadow: 0 0 20px #fff, 0 0 30px #c3ff4a, 0 0 40px #c3ff4a;
     animation: winner-pulse 2s infinite ease-in-out;
     z-index: 30;
   }
