@@ -51,7 +51,7 @@ const Header = ({ user, theme = 'DEFAULT' }) => {
       </div>
       
       <div className="flex items-center gap-2 md:gap-4 shrink-0">
-        <Link to="/profile" className={`w-9 h-9 md:w-10 md:h-10 shrink-0 rounded-full overflow-hidden border-2 transition-colors active:scale-95 block ${
+        <Link to="/profile" className={`w-9 h-9 md:w-10 md:h-10 shrink-0 rounded-full overflow-hidden border-2 transition-colors active:scale-95 block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-volt/60 focus-visible:ring-offset-2 focus-visible:ring-offset-surface ${
           isVN ? 'border-vn-tertiary/50 hover:border-vn-tertiary' : isSG ? 'border-sg-magenta/50 hover:border-sg-magenta' : 'border-volt/30 hover:border-volt'
         }`}>
           <img
@@ -63,7 +63,7 @@ const Header = ({ user, theme = 'DEFAULT' }) => {
           />
         </Link>
 
-        <Link to="/profile" className={`px-3 py-1.5 text-sm md:px-5 md:py-2 md:text-base font-bold rounded-lg transition-all active:scale-95 whitespace-nowrap ${
+        <Link to="/profile" className={`px-3 py-1.5 text-sm md:px-5 md:py-2 md:text-base font-bold rounded-lg transition-all active:scale-95 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-volt/60 focus-visible:ring-offset-2 focus-visible:ring-offset-surface ${
           isVN
             ? 'bg-vn-tertiary text-vn-on-tertiary shadow-lg shadow-vn-tertiary/20'
             : isSG
@@ -76,7 +76,7 @@ const Header = ({ user, theme = 'DEFAULT' }) => {
         <button
           onClick={handleLogout}
           aria-label="Log out"
-          className="p-2 shrink-0 text-slate-400 hover:text-error transition-colors"
+          className="p-2 shrink-0 text-slate-400 hover:text-error transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-volt/60 rounded-lg"
         >
           <span className="material-symbols-outlined" aria-hidden="true">logout</span>
         </button>

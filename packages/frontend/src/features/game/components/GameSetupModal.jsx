@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, useReducedMotion } from 'motion/react';
 import gameService from '../gameService';
 import defaultBoardTheme from '../../../assets/images/boardThemes/default_theme.png';
 import SaigonBoardTheme from '../../../assets/images/boardThemes/Saigon_skyline_theme.png';
@@ -11,39 +12,52 @@ const getAIName = (difficulty) => ({
   HARD: 'Mayhem'
 }[difficulty]);
 
+const markers = [
+  { id: 'close', icon: 'close', name: 'X' },
+  { id: 'circle', icon: 'circle', name: 'Circle' },
+  { id: 'triangle', icon: 'change_history', name: 'Triangle' },
+  { id: 'square', icon: 'square', name: 'Square' },
+  { id: 'diamond', icon: 'diamond', name: 'Diamond' },
+  { id: 'star', icon: 'grade', name: 'Star' },
+];
+
+const markerMap = {
+  'close': 'CROSS',
+  'circle': 'CIRCLE',
+  'triangle': 'TRIANGLE',
+  'square': 'SQUARE',
+  'diamond': 'DIAMOND',
+  'star': 'STAR'
+};
+
 const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
-  if (!isOpen) return null;
   const navigate = useNavigate();
+  const prefersReducedMotion = useReducedMotion();
+  const panelRef = useRef(null);
   const [boardSize, setBoardSize] = useState(10);
   const [loading, setLoading] = useState(false);
-  
+
   // AI specific / P1 state
   const [p1Marker, setP1Marker] = useState('close');
   const [difficulty, setDifficulty] = useState('MEDIUM');
   const [moveFirst, setMoveFirst] = useState(1);
   const [boardTheme, setBoardTheme] = useState('DEFAULT');
-  
+
   // Local specific / P2 state
   const [p2Marker, setP2Marker] = useState('circle');
   const [activeSelector, setActiveSelector] = useState('P1');
 
-  const markers = [
-    { id: 'close', icon: 'close' },
-    { id: 'circle', icon: 'circle' },
-    { id: 'triangle', icon: 'change_history' },
-    { id: 'square', icon: 'square' },
-    { id: 'diamond', icon: 'diamond' },
-    { id: 'star', icon: 'grade' },
-  ];
+  useEffect(() => {
+    if (!isOpen) return;
+    panelRef.current?.focus();
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
-  const markerMap = {
-    'close': 'CROSS',
-    'circle': 'CIRCLE',
-    'triangle': 'TRIANGLE',
-    'square': 'SQUARE',
-    'diamond': 'DIAMOND',
-    'star': 'STAR'
-  };
+  if (!isOpen) return null;
 
   const handleMarkerSelect = (markerId) => {
     if (mode === 'AI') {
@@ -89,7 +103,7 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
           difficulty: difficulty
         })
       };
-      
+
       if (mode === 'LOCAL' || mode === 'AI') {
         const localSession = {
           gameType: mode === 'AI' ? 'SINGLE' : 'LOCAL',
@@ -132,7 +146,7 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
 
       const res = await gameService.createSession(config);
       const sessionId = res.data.sessionId || res.data._id || res.data.id;
-      
+
       const path = mode === 'AI' ? `/game/ai/${sessionId}` : `/game/local/${sessionId}`;
       navigate(path);
       onClose();
@@ -144,39 +158,61 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* Backdrop Dimmer */}
-      <div className="absolute inset-0 bg-[#000000]/70 backdrop-blur-sm" onClick={onClose}></div>
-      
+      <motion.div
+        initial={prefersReducedMotion ? false : { opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.2 }}
+        className="absolute inset-0 bg-[#000000]/70 backdrop-blur-sm"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+
       {/* Game Setup Modal */}
-      <div className="relative glass-panel w-[95%] max-w-lg max-h-[90vh] rounded-2xl border border-outline-variant/15 shadow-[0_20px_80px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col transition-all duration-300">
-        
+      <motion.div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="game-setup-title"
+        tabIndex={-1}
+        initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.95, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+        className="relative glass-panel w-[95%] max-w-lg max-h-[90vh] rounded-2xl border border-outline-variant/15 shadow-[0_20px_80px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col outline-none"
+      >
+
         {/* Header - Fixed */}
-        <div className="px-6 pt-6 pb-4 flex justify-between items-center border-b border-white/5">
-          <h2 className="text-2xl font-extrabold font-headline tracking-tighter text-on-surface">Game Setup</h2>
-          <button onClick={onClose} className="text-on-surface-variant hover:text-on-surface transition-colors p-2 hover:bg-white/5 rounded-full">
-            <span className="material-symbols-outlined">close</span>
+        <div className="px-4 sm:px-6 pt-6 pb-4 flex justify-between items-center border-b border-white/5">
+          <h2 id="game-setup-title" className="text-xl sm:text-2xl font-extrabold font-headline tracking-tighter text-on-surface">Game Setup</h2>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="text-on-surface-variant hover:text-on-surface transition-colors p-2 hover:bg-white/5 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-volt/60"
+          >
+            <span className="material-symbols-outlined" aria-hidden="true">close</span>
           </button>
         </div>
 
         {/* Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto p-6 scrollbar-ethereal space-y-6">
-          
+        <div className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 scrollbar-ethereal space-y-6">
+
           {/* Section 1: Board Size */}
           <div>
-            <label className="block text-[10px] font-bold uppercase tracking-widest text-primary mb-3">Board Size</label>
+            <label className="block text-[10px] font-bold uppercase tracking-widest text-volt mb-3">Board Size</label>
             <div className="grid grid-cols-2 gap-4">
               {[10, 15].map(size => (
-                <button 
+                <button
                   key={size}
                   onClick={() => setBoardSize(size)}
-                  className={`flex flex-col items-center justify-center py-4 px-4 rounded-xl border transition-all duration-300 ${
-                    boardSize === size 
-                    ? 'border-primary text-primary bg-primary/10 shadow-[0_0_20px_rgba(179,161,255,0.2)]' 
+                  aria-pressed={boardSize === size}
+                  className={`flex flex-col items-center justify-center py-4 px-4 rounded-xl border transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-volt/60 ${
+                    boardSize === size
+                    ? 'border-volt text-volt bg-volt/10 shadow-[0_0_20px_rgba(195,255,74,0.2)]'
                     : 'border-outline-variant/30 text-on-surface/60 hover:bg-surface-variant'
                   }`}
                 >
-                  <span className={`text-xl font-black font-headline mb-1 ${boardSize === size ? 'text-primary' : 'text-on-surface'}`}>
+                  <span className={`text-xl font-black font-headline mb-1 ${boardSize === size ? 'text-volt' : 'text-on-surface'}`}>
                     {size} x {size}
                   </span>
                   <span className={`text-[9px] font-medium ${boardSize === size ? 'opacity-60' : 'opacity-40'}`}>
@@ -189,8 +225,8 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
 
           {/* Section 1.5: Select Board Theme */}
           <div>
-            <label className="block text-[10px] font-bold uppercase tracking-widest text-primary mb-3">Select Board Theme</label>
-            <div className="grid grid-cols-3 gap-3">
+            <label className="block text-[10px] font-bold uppercase tracking-widest text-volt mb-3">Select Board Theme</label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {['DEFAULT', 'SAIGON', 'VIETNAM'].map(theme => {
                 const imgUrls = {
                   'DEFAULT': defaultBoardTheme,
@@ -198,19 +234,20 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
                   'VIETNAM': VietnamBoardTheme
                 };
                 return (
-                  <button 
+                  <button
                     key={theme}
                     onClick={() => setBoardTheme(theme)}
-                    className={`flex flex-col gap-2 p-1.5 rounded-xl border transition-all duration-300 group ${
-                      boardTheme === theme 
-                      ? 'border-primary bg-primary/10 shadow-[0_0_20px_rgba(179,161,255,0.2)]' 
+                    aria-pressed={boardTheme === theme}
+                    className={`flex flex-col gap-2 p-1.5 rounded-xl border transition-all duration-300 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-volt/60 ${
+                      boardTheme === theme
+                      ? 'border-volt bg-volt/10 shadow-[0_0_20px_rgba(195,255,74,0.2)]'
                       : 'border-outline-variant/30 text-on-surface/60 hover:bg-surface-variant'
                     }`}
                   >
                     <div className="aspect-video w-full rounded-lg overflow-hidden relative border border-outline-variant/10">
                       <img alt={`${theme} Theme`} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" src={imgUrls[theme]}/>
                     </div>
-                    <span className={`text-[9px] font-bold font-headline text-center uppercase tracking-tighter ${boardTheme === theme ? 'text-primary' : ''}`}>{theme}</span>
+                    <span className={`text-[9px] font-bold font-headline text-center uppercase tracking-tighter ${boardTheme === theme ? 'text-volt' : ''}`}>{theme}</span>
                   </button>
                 );
               })}
@@ -219,16 +256,17 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
           {/* Section 2: Select Marker */}
           <div>
             <div className="flex justify-between items-center mb-3">
-              <label className="block text-[10px] font-bold uppercase tracking-widest text-primary">Select Marker</label>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-volt">Select Marker</label>
               {(mode === 'LOCAL' || mode === 'ONLINE') && (
                 <div className="flex p-1 bg-surface-container-highest/50 rounded-lg border border-white/5">
                   {['P1', 'P2'].map(sel => (
-                    <button 
+                    <button
                       key={sel}
                       onClick={() => setActiveSelector(sel)}
-                      className={`px-3 py-1 rounded-md text-[9px] font-black tracking-widest transition-all duration-300 ${
-                        activeSelector === sel 
-                        ? (sel === 'P1' ? 'bg-primary text-on-primary' : 'bg-cyan-500 text-white') 
+                      aria-pressed={activeSelector === sel}
+                      className={`px-3 py-1 rounded-md text-[9px] font-black tracking-widest transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-volt/60 ${
+                        activeSelector === sel
+                        ? (sel === 'P1' ? 'bg-volt text-volt-ink' : 'bg-cyan-500 text-white')
                         : 'text-on-surface/40 hover:text-on-surface/70'
                       }`}
                     >
@@ -238,32 +276,34 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
                 </div>
               )}
             </div>
-            <div className="grid grid-cols-6 gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
               {markers.map((marker) => {
                 const isP1 = p1Marker === marker.id;
                 const isP2 = p2Marker === marker.id;
-                const isActive = (mode === 'AI' && isP1) || 
+                const isActive = (mode === 'AI' && isP1) ||
                                  ((mode === 'LOCAL' || mode === 'ONLINE') && ((activeSelector === 'P1' && isP1) || (activeSelector === 'P2' && isP2)));
                 const isDisabled = (mode === 'LOCAL' || mode === 'ONLINE') && ((activeSelector === 'P1' && isP2) || (activeSelector === 'P2' && isP1));
-                
+
                 return (
                   <button
                     key={marker.id}
                     disabled={isDisabled}
                     onClick={() => handleMarkerSelect(marker.id)}
-                    className={`aspect-square flex items-center justify-center rounded-lg transition-all active:scale-95 group relative border ${
-                      isActive 
-                      ? 'bg-linear-to-br from-primary to-primary-container border-transparent text-on-primary marker-glow' 
-                      : 'bg-surface-container-highest border border-outline-variant/30 text-on-surface-variant hover:text-primary'
+                    aria-label={marker.name}
+                    aria-pressed={isActive}
+                    className={`aspect-square flex items-center justify-center rounded-lg transition-all active:scale-95 group relative border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-volt/60 ${
+                      isActive
+                      ? 'bg-linear-to-br from-volt to-volt-dim border-transparent text-volt-ink marker-glow'
+                      : 'bg-surface-container-highest border border-outline-variant/30 text-on-surface-variant hover:text-volt'
                     } ${isDisabled ? 'opacity-20 cursor-not-allowed grayscale' : ''}`}
                   >
-                    <span className="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">
+                    <span className="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform" aria-hidden="true">
                       {marker.icon}
                     </span>
                     {(mode === 'LOCAL' || mode === 'ONLINE') && (
                       <>
-                        {isP1 && <div className="absolute -top-1 -left-1 bg-primary text-[6px] font-black px-1 rounded shadow-sm text-on-primary">P1</div>}
-                        {isP2 && <div className="absolute -top-1 -right-1 bg-cyan-500 text-[6px] font-black px-1 rounded shadow-sm text-white">P2</div>}
+                        {isP1 && <div aria-hidden="true" className="absolute -top-1 -left-1 bg-volt text-[6px] font-black px-1 rounded shadow-sm text-volt-ink">P1</div>}
+                        {isP2 && <div aria-hidden="true" className="absolute -top-1 -right-1 bg-cyan-500 text-[6px] font-black px-1 rounded shadow-sm text-white">P2</div>}
                       </>
                     )}
                   </button>
@@ -275,15 +315,16 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
           {/* Section: Select Difficulty (AI Only) */}
           {mode === 'AI' && (
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-widest text-primary mb-3">Select Difficulty</label>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-volt mb-3">Select Difficulty</label>
               <div className="grid grid-cols-3 gap-3">
                 {['EASY', 'MEDIUM', 'HARD'].map((level) => (
-                  <button 
+                  <button
                     key={level}
                     onClick={() => setDifficulty(level)}
-                    className={`flex items-center justify-center py-3 px-2 rounded-xl border transition-all duration-300 ${
-                      difficulty === level 
-                      ? 'border-primary text-primary bg-primary/10 shadow-[0_0_20px_rgba(179,161,255,0.2)]' 
+                    aria-pressed={difficulty === level}
+                    className={`flex items-center justify-center py-3 px-2 rounded-xl border transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-volt/60 ${
+                      difficulty === level
+                      ? 'border-volt text-volt bg-volt/10 shadow-[0_0_20px_rgba(195,255,74,0.2)]'
                       : 'border-outline-variant/30 text-on-surface/60 hover:bg-surface-variant'
                     }`}
                   >
@@ -297,7 +338,7 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
           {/* Section 3: Move First */}
           {(mode === 'AI' || mode === 'LOCAL' || mode === 'ONLINE') && (
           <div className="mb-8">
-            <label className="block text-xs font-bold uppercase tracking-widest text-primary mb-4">Move First</label>
+            <label className="block text-xs font-bold uppercase tracking-widest text-volt mb-4">Move First</label>
             <div className="grid grid-cols-2 gap-4">
               {[1, 2].map(p => {
                 const isActive = moveFirst === p;
@@ -307,18 +348,19 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
                 } else {
                   label = p === 1 ? 'Player 1' : 'Player 2';
                 }
-                
+
                 return (
-                  <button 
+                  <button
                     key={p}
                     onClick={() => setMoveFirst(p)}
-                    className={`flex flex-col items-center justify-center py-3 px-4 rounded-xl border transition-all duration-300 active:scale-95 ${
-                      isActive 
-                      ? 'border-primary text-primary bg-primary/10 shadow-[0_0_20px_rgba(179,161,255,0.2)]' 
+                    aria-pressed={isActive}
+                    className={`flex flex-col items-center justify-center py-3 px-4 rounded-xl border transition-all duration-300 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-volt/60 ${
+                      isActive
+                      ? 'border-volt text-volt bg-volt/10 shadow-[0_0_20px_rgba(195,255,74,0.2)]'
                       : 'border-outline-variant/30 text-on-surface/60 hover:bg-surface-variant'
                     }`}
                   >
-                    <span className={`text-sm font-bold font-headline ${isActive ? 'text-primary' : 'text-on-surface'}`}>
+                    <span className={`text-sm font-bold font-headline ${isActive ? 'text-volt' : 'text-on-surface'}`}>
                       {label}
                     </span>
                   </button>
@@ -331,21 +373,21 @@ const GameSetupModal = ({ isOpen, mode = 'AI', onClose, onStartOnline }) => {
         </div>
 
         {/* Footer - Fixed */}
-        <div className="p-6 pt-2 border-t border-white/5 bg-surface/50 backdrop-blur-md">
+        <div className="p-4 sm:p-6 pt-2 border-t border-white/5 bg-surface/50 backdrop-blur-md">
           <button
             onClick={handleStart}
             disabled={loading}
-            className="w-full py-4 rounded-xl bg-gradient-to-br from-primary to-primary-container text-on-primary font-headline font-extrabold text-lg tracking-tight shadow-[0_8px_24px_rgba(179,161,255,0.3)] hover:shadow-[0_12px_32px_rgba(179,161,255,0.5)] active:scale-[0.98] transition-all disabled:opacity-50"
+            className="w-full py-4 rounded-xl bg-volt text-volt-ink font-headline font-extrabold text-lg tracking-tight shadow-[0_8px_24px_rgba(195,255,74,0.3)] hover:shadow-[0_12px_32px_rgba(195,255,74,0.5)] active:scale-[0.98] transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-volt/60 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
           >
-            {loading ? 'Initializing...' : (mode === 'ONLINE' ? 'Create Room' : 'Start Game')}
+            {loading ? 'Initializing…' : (mode === 'ONLINE' ? 'Create Room' : 'Start Game')}
           </button>
           {/* Bottom decorative glass accent */}
-          <div className="mt-4 h-1 w-24 mx-auto rounded-full bg-primary/20"></div>
+          <div className="mt-4 h-1 w-24 mx-auto rounded-full bg-volt/20" aria-hidden="true"></div>
         </div>
 
         {/* Bottom decorative glass accent */}
-        <div className="h-1.5 w-full bg-linear-to-r from-transparent via-primary/40 to-transparent"></div>
-      </div>
+        <div className="h-1.5 w-full bg-linear-to-r from-transparent via-volt/40 to-transparent" aria-hidden="true"></div>
+      </motion.div>
     </div>
   );
 

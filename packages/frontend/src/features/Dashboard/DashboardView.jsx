@@ -12,7 +12,7 @@ export default function DashboardView() {
   const [setupMode, setSetupMode] = useState('AI');
 
   return (
-    <div className={`min-h-screen bg-surface text-on-surface font-body selection:bg-primary selection:text-on-primary relative ${isSetupModalOpen ? 'overflow-hidden' : ''}`}>
+    <div className={`min-h-screen bg-surface text-on-surface font-body selection:bg-volt selection:text-volt-ink relative ${isSetupModalOpen ? 'overflow-hidden' : ''}`}>
       
       {/* Lightfall Background */}
       <div className="absolute inset-0 z-0 pointer-events-auto">
@@ -39,7 +39,7 @@ export default function DashboardView() {
 
         {/* Hero Section */}
         <section className="text-center mb-10 relative z-10">
-          <h2 className="text-3xl md:text-5xl font-extrabold font-headline tracking-tight text-on-surface mb-3">
+          <h2 className="text-3xl md:text-5xl font-extrabold font-headline tracking-tight text-on-surface mb-3 break-words">
             Welcome back, <span className="text-volt">{user?.username}</span>
           </h2>
           <p className="text-on-surface-variant max-w-xl mx-auto text-base md:text-lg font-light tracking-wide">
@@ -49,7 +49,12 @@ export default function DashboardView() {
 
         {/* Mode Grid: horizontal scroll-snap on mobile (keeps first-paint height under one card,
             so content never collides with the fixed BottomDock), real grid from md: up */}
-        <div className="flex overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory gap-4 -mx-6 px-6 md:grid md:grid-cols-12 md:gap-6 md:mx-0 md:px-0 w-full max-w-6xl relative z-10 mb-12">
+        <div
+          role="region"
+          aria-label="Game modes"
+          tabIndex={0}
+          className="flex overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory gap-4 -mx-6 px-6 md:grid md:grid-cols-12 md:gap-6 md:mx-0 md:px-0 w-full max-w-6xl relative z-10 mb-12 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-volt/40 rounded-2xl"
+        >
           <ModeCard
             title="Local Mode"
             description="Battle a friend side-by-side. 2 players, same device, infinite rivalry."
