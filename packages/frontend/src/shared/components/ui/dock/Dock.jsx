@@ -39,7 +39,7 @@ function DockItem({ children, className = '', onClick, mouseX, spring, distance,
       onFocus={() => isHovered.set(1)}
       onBlur={() => isHovered.set(0)}
       onClick={onClick}
-      className={`dock-item ${isActive ? 'bg-primary/20 border-primary shadow-[0_0_15px_rgba(var(--color-primary),0.3)]' : ''} ${className}`}
+      className={`dock-item ${isActive ? 'bg-volt/20 border-volt shadow-[0_0_15px_rgba(195,255,74,0.3)]' : ''} ${className}`}
       tabIndex={0}
       role="button"
       aria-haspopup="true"

@@ -20,21 +20,21 @@ const BottomDock = () => {
         label: 'Dashboard',
         onClick: () => navigate('/admin'),
         isActive: isActive('/admin'),
-        className: isActive('/admin') ? 'text-primary' : 'text-on-surface/70 hover:text-primary'
+        className: isActive('/admin') ? 'text-volt' : 'text-on-surface/70 hover:text-volt'
       },
       {
         icon: <span className="material-symbols-outlined" style={{ fontVariationSettings: isActive('/admin/users') ? "'FILL' 1" : "''" }}>group</span>,
         label: 'Users',
         onClick: () => navigate('/admin/users'),
         isActive: isActive('/admin/users'),
-        className: isActive('/admin/users') ? 'text-primary' : 'text-on-surface/70 hover:text-primary'
+        className: isActive('/admin/users') ? 'text-volt' : 'text-on-surface/70 hover:text-volt'
       },
       {
         icon: <span className="material-symbols-outlined" style={{ fontVariationSettings: isActive('/admin/rooms') ? "'FILL' 1" : "''" }}>grid_view</span>,
         label: 'Rooms',
         onClick: () => navigate('/admin/rooms'),
         isActive: isActive('/admin/rooms'),
-        className: isActive('/admin/rooms') ? 'text-primary' : 'text-on-surface/70 hover:text-primary'
+        className: isActive('/admin/rooms') ? 'text-volt' : 'text-on-surface/70 hover:text-volt'
       }
     ];
   } else {
@@ -45,21 +45,21 @@ const BottomDock = () => {
         label: 'Play',
         onClick: () => navigate('/dashboard'),
         isActive: isActive('/dashboard'),
-        className: isActive('/dashboard') ? 'text-primary' : 'text-on-surface/70 hover:text-primary'
+        className: isActive('/dashboard') ? 'text-volt' : 'text-on-surface/70 hover:text-volt'
       },
       {
         icon: <span className="material-symbols-outlined" style={{ fontVariationSettings: isActive('/match-history') ? "'FILL' 1" : "''" }}>history</span>,
         label: 'History',
         onClick: () => navigate('/match-history'),
         isActive: isActive('/match-history'),
-        className: isActive('/match-history') ? 'text-primary' : 'text-on-surface/70 hover:text-primary'
+        className: isActive('/match-history') ? 'text-volt' : 'text-on-surface/70 hover:text-volt'
       },
       {
         icon: <span className="material-symbols-outlined" style={{ fontVariationSettings: isActive('/profile') ? "'FILL' 1" : "''" }}>person</span>,
         label: 'Profile',
         onClick: () => navigate('/profile'),
         isActive: isActive('/profile'),
-        className: isActive('/profile') ? 'text-primary' : 'text-on-surface/70 hover:text-primary'
+        className: isActive('/profile') ? 'text-volt' : 'text-on-surface/70 hover:text-volt'
       }
     ];
   }
